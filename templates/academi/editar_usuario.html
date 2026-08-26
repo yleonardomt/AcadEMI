@@ -1,0 +1,59 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Editar usuario - Admin{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-user-edit" style="font-size: 48px; color: var(--primary);"></i>
+                        <h3 class="mt-3 fw-bold">Editar usuario</h3>
+                        <p class="text-muted">Modifica la información del usuario</p>
+                    </div>
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Usuario</label>
+                            <input type="text" name="username" value="{{ user.username }}" class="form-control">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" name="email" value="{{ user.email }}" class="form-control">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Rol</label>
+                            <select name="role" class="form-control">
+                                <option value="student" {% if user.role == 'student' %}selected{% endif %}>Estudiante</option>
+                                <option value="teacher" {% if user.role == 'teacher' %}selected{% endif %}>Docente</option>
+                                <option value="admin" {% if user.role == 'admin' %}selected{% endif %}>Administrador</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="is_active" class="form-check-input" id="is_active" {% if user.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">Activo</label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                            <i class="fas fa-save me-2"></i> Guardar cambios
+                        </button>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'admin_users' %}" class="text-muted">
+                            <i class="fas fa-arrow-left me-1"></i> Volver a la lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

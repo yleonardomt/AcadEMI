@@ -1,0 +1,198 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Mi perfil - Academia Bolivia{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <!-- ====== HEADER CON AVATAR ====== -->
+                    <div class="text-center mb-4">
+                        <div class="position-relative d-inline-block">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" 
+                                     class="rounded-circle" 
+                                     style="width: 100px; height: 100px; object-fit: cover; border: 4px solid var(--primary);">
+                            {% else %}
+                                <div class="avatar-placeholder rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+                                     style="width: 100px; height: 100px; background: var(--primary-lighter); font-size: 40px; color: var(--primary); border: 4px solid var(--primary);">
+                                    {{ user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            <span class="position-absolute bottom-0 end-0 bg-success rounded-circle" 
+                                  style="width: 20px; height: 20px; border: 3px solid white;"></span>
+                        </div>
+                        <h3 class="mt-3 fw-bold">{{ user.first_name|default:user.username }}</h3>
+                        <p class="text-muted">{{ user.email }}</p>
+                        <span class="badge" style="background: var(--primary); color: white; padding: 6px 16px; border-radius: 50px;">
+                            <i class="fas fa-user-tag"></i> {{ user.get_role_display }}
+                        </span>
+                    </div>
+
+                    <hr>
+
+                    <!-- ====== FORMULARIO ====== -->
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Información personal -->
+                        <h6 class="fw-bold mb-3"><i class="fas fa-id-card" style="color: var(--primary);"></i> Información personal</h6>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_username" class="form-label fw-bold">
+                                        <i class="fas fa-user me-1"></i> Nombre de usuario
+                                    </label>
+                                    {{ form.username }}
+                                    <div class="form-text">Este nombre será visible públicamente</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="id_email" class="form-label fw-bold">
+                                        <i class="fas fa-envelope me-1"></i> Correo electrónico
+                                    </label>
+                                    {{ form.email }}
+                                    <div class="form-text">Usado para inicio de sesión y notificaciones</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_phone" class="form-label fw-bold">
+                                <i class="fas fa-phone me-1"></i> Teléfono
+                            </label>
+                            {{ form.phone }}
+                            <div class="form-text">Ejemplo: 79123456</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_bio" class="form-label fw-bold">
+                                <i class="fas fa-info-circle me-1"></i> Biografía
+                            </label>
+                            {{ form.bio }}
+                            <div class="form-text">Cuéntanos sobre ti, tus intereses y experiencia</div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Foto de perfil -->
+                        <h6 class="fw-bold mb-3"><i class="fas fa-image" style="color: var(--primary);"></i> Foto de perfil</h6>
+                        
+                        <div class="mb-3">
+                            <label for="id_profile_picture" class="form-label fw-bold">
+                                <i class="fas fa-cloud-upload-alt me-1"></i> Subir foto
+                            </label>
+                            {{ form.profile_picture }}
+                            <div class="form-text">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB</div>
+                        </div>
+
+                        {% if user.profile_picture %}
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <img src="{{ user.profile_picture.url }}" alt="Tu foto" 
+                                     style="width: 60px; height: 60px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gray-light);">
+                                <div>
+                                    <small class="text-muted">Foto actual</small>
+                                    <br>
+                                    <small class="text-muted">{{ user.profile_picture.name|cut:"profiles/" }}</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <hr>
+
+                        <!-- ====== INFORMACIÓN ADICIONAL ====== -->
+                        <h6 class="fw-bold mb-3"><i class="fas fa-shield-alt" style="color: var(--primary);"></i> Seguridad</h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                    <i class="fas fa-key"></i> Cambiar contraseña
+                                </a>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="#" class="btn btn-outline-danger w-100 py-2">
+                                    <i class="fas fa-trash-alt"></i> Eliminar cuenta
+                                </a>
+                            </div>
+                        </div>
+
+                        <!-- ====== BOTÓN GUARDAR ====== -->
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary w-100 py-3 fw-bold">
+                                <i class="fas fa-save me-2"></i> Guardar cambios
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- ====== VOLVER ====== -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'dashboard' %}" class="text-muted text-decoration-none">
+                            <i class="fas fa-arrow-left me-1"></i> Volver al dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Estilos adicionales para el perfil */
+.avatar-placeholder {
+    transition: all 0.3s ease;
+}
+
+.avatar-placeholder:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 30px rgba(0, 51, 160, 0.2);
+}
+
+.form-control {
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+}
+
+.btn-outline-danger:hover {
+    background: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+}
+
+.btn-outline-primary {
+    transition: all 0.3s ease;
+}
+
+.btn-outline-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 51, 160, 0.2);
+}
+
+/* Mejoras responsive */
+@media (max-width: 768px) {
+    .card-body {
+        padding: 20px !important;
+    }
+    
+    .avatar-placeholder {
+        width: 80px !important;
+        height: 80px !important;
+        font-size: 32px !important;
+    }
+    
+    .row .col-md-6 {
+        margin-bottom: 0;
+    }
+}
+</style>
+{% endblock %}

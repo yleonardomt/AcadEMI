@@ -1,0 +1,402 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Gestión de Usuarios - Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <!-- ====== HEADER ====== -->
+                    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+                        <div>
+                            <h4 class="fw-bold">
+                                <i class="fas fa-users-cog" style="color: var(--primary);"></i> 
+                                Gestión de Usuarios
+                            </h4>
+                            <p class="text-muted mb-0">Administra todos los usuarios de la plataforma</p>
+                        </div>
+                        <div>
+                            <a href="{% url 'admin_user_create' %}" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Nuevo usuario
+                            </a>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary ms-2">
+                                <i class="fas fa-arrow-left"></i> Volver
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- ====== ESTADÍSTICAS ====== -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-2 col-6">
+                            <div class="stat-card p-2 text-center rounded" style="background: var(--primary-lighter); border-bottom: 3px solid var(--primary);">
+                                <span class="d-block fw-bold h5">{{ total_users }}</span>
+                                <small class="text-muted">Total</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="stat-card p-2 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid #3b82f6;">
+                                <span class="d-block fw-bold h5">{{ total_students }}</span>
+                                <small class="text-muted">Estudiantes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="stat-card p-2 text-center rounded" style="background: #fef3c7; border-bottom: 3px solid var(--secondary);">
+                                <span class="d-block fw-bold h5">{{ total_teachers }}</span>
+                                <small class="text-muted">Docentes</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="stat-card p-2 text-center rounded" style="background: #fce4ec; border-bottom: 3px solid #ef5350;">
+                                <span class="d-block fw-bold h5">{{ total_admins }}</span>
+                                <small class="text-muted">Admins</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="stat-card p-2 text-center rounded" style="background: #d1fae5; border-bottom: 3px solid #10b981;">
+                                <span class="d-block fw-bold h5">{{ total_active }}</span>
+                                <small class="text-muted">Activos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6">
+                            <div class="stat-card p-2 text-center rounded" style="background: #fee2e2; border-bottom: 3px solid #ef4444;">
+                                <span class="d-block fw-bold h5">{{ total_inactive }}</span>
+                                <small class="text-muted">Inactivos</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ====== BUSCADOR ====== -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <form method="GET" class="d-flex gap-2">
+                                <input type="text" name="q" class="form-control" placeholder="Buscar por nombre, usuario o email..." value="{{ query }}">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                {% if query %}
+                                    <a href="{% url 'admin_users' %}" class="btn btn-outline-secondary">
+                                        <i class="fas fa-times"></i>
+                                    </a>
+                                {% endif %}
+                            </form>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <span class="text-muted small">Mostrando {{ users|length }} usuarios</span>
+                        </div>
+                    </div>
+
+                    <!-- ====== TABLA DE USUARIOS ====== -->
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th style="width: 50px;">#</th>
+                                    <th>Usuario</th>
+                                    <th>Email</th>
+                                    <th style="width: 120px;">Rol</th>
+                                    <th style="width: 100px;">Estado</th>
+                                    <th style="width: 140px;">Registro</th>
+                                    <th style="width: 200px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for u in users %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if u.profile_picture %}
+                                                <img src="{{ u.profile_picture.url }}" alt="{{ u.username }}" style="width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid var(--primary-lighter);">
+                                            {% else %}
+                                                <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-lighter); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: var(--primary); border: 2px solid var(--gray-light);">
+                                                    {{ u.username|first|upper }}
+                                                </div>
+                                            {% endif %}
+                                            <div>
+                                                <strong class="d-block">{{ u.username }}</strong>
+                                                <small class="text-muted">{{ u.first_name|default:"Sin nombre" }}</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ u.email }}</td>
+                                    <td>
+                                        <span class="badge" style="background: 
+                                            {% if u.role == 'admin' %}#ef5350{% elif u.role == 'teacher' %}#f59e0b{% else %}#3b82f6{% endif %}; color: white; padding: 6px 12px; border-radius: 50px;">
+                                            <i class="fas fa-user-tag"></i> {{ u.get_role_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if u.is_active %}
+                                            <span class="badge bg-success" style="padding: 6px 12px; border-radius: 50px;">
+                                                <i class="fas fa-circle" style="font-size: 6px;"></i> Activo
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger" style="padding: 6px 12px; border-radius: 50px;">
+                                                <i class="fas fa-circle" style="font-size: 6px;"></i> Inactivo
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>{{ u.date_joined|date:"d/m/Y" }}</small>
+                                        <br>
+                                        <small class="text-muted">{{ u.date_joined|date:"H:i" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'admin_user_edit' u.id %}" class="btn btn-outline-primary" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'admin_user_reset_password' u.id %}" class="btn btn-outline-warning" title="Restablecer contraseña">
+                                                <i class="fas fa-key"></i>
+                                            </a>
+                                            <a href="{% url 'admin_user_toggle' u.id %}" class="btn btn-toggle-user {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" 
+                                               data-user="{{ u.username }}" 
+                                               data-url="{% url 'admin_user_toggle' u.id %}"
+                                               title="{% if u.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                                <i class="fas {% if u.is_active %}fa-pause{% else %}fa-play{% endif %}"></i>
+                                            </a>
+                                            {% if u != request.user %}
+                                            <a href="#" class="btn btn-outline-danger btn-delete-user" 
+                                               data-user="{{ u.username }}" 
+                                               data-url="{% url 'admin_user_delete' u.id %}"
+                                               title="Eliminar">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                            {% else %}
+                                            <button class="btn btn-outline-secondary" title="No puedes eliminarte a ti mismo" disabled>
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted py-5">
+                                        <i class="fas fa-users fa-3x d-block mb-3" style="color: var(--gray-light);"></i>
+                                        <h5>No hay usuarios registrados</h5>
+                                        <p class="text-muted">Comienza creando tu primer usuario</p>
+                                        <a href="{% url 'admin_user_create' %}" class="btn btn-primary mt-2">
+                                            <i class="fas fa-user-plus"></i> Crear usuario
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== MODAL DE CONFIRMACIÓN (SIN ALERT) ====== -->
+<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom: 3px solid var(--danger);">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> 
+                    Confirmar acción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-user-slash" style="font-size: 48px; color: var(--danger); margin-bottom: 16px;"></i>
+                <h5 id="modalMessage" class="fw-bold">¿Estás seguro de eliminar a <span id="modalUsername"></span>?</h5>
+                <p class="text-muted" id="modalSubMessage">Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <a href="#" id="modalConfirmBtn" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> Eliminar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+
+.table thead {
+    background: var(--primary);
+    color: white;
+}
+
+.table thead th {
+    border: none;
+    font-weight: 600;
+    padding: 12px 16px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+}
+
+.table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.table tbody tr:hover {
+    background: var(--primary-lighter);
+}
+
+.btn-group .btn {
+    border-radius: 4px !important;
+    padding: 4px 10px;
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+    transform: scale(1.05);
+}
+
+.btn-group .btn-outline-danger:hover {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-group .btn-outline-success:hover {
+    background: #10b981;
+    color: white;
+}
+
+.btn-group .btn-outline-warning:hover {
+    background: #f59e0b;
+    color: white;
+}
+
+.btn-group .btn-outline-primary:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Modal personalizado */
+.modal-content {
+    border-radius: var(--radius);
+    border: none;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    padding: 16px 24px;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--gray-light);
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 8px !important;
+    }
+    .stat-card .h5 {
+        font-size: 16px !important;
+    }
+    .table {
+        font-size: 13px;
+    }
+    .table thead {
+        display: none;
+    }
+    .table tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid var(--gray-light);
+        border-radius: var(--radius-sm);
+        padding: 10px;
+    }
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border: none;
+    }
+    .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--gray);
+    }
+    .btn-group .btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // ====== CONFIRMAR ELIMINACIÓN (SIN ALERT) ======
+    var deleteButtons = document.querySelectorAll('.btn-delete-user');
+    var modal = document.getElementById('confirmModal');
+    var modalUsername = document.getElementById('modalUsername');
+    var modalMessage = document.getElementById('modalMessage');
+    var modalSubMessage = document.getElementById('modalSubMessage');
+    var confirmBtn = document.getElementById('modalConfirmBtn');
+    
+    deleteButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var username = this.getAttribute('data-user');
+            var url = this.getAttribute('data-url');
+            
+            modalUsername.textContent = username;
+            modalMessage.innerHTML = '¿Estás seguro de eliminar a <span class="fw-bold" style="color: var(--danger);">' + username + '</span>?';
+            modalSubMessage.textContent = 'Esta acción no se puede deshacer.';
+            confirmBtn.href = url;
+            
+            var modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+        });
+    });
+    
+    // ====== ACTIVAR/DESACTIVAR CON CONFIRMACIÓN ======
+    var toggleButtons = document.querySelectorAll('.btn-toggle-user');
+    
+    toggleButtons.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            var username = this.getAttribute('data-user');
+            var url = this.getAttribute('data-url');
+            var isActive = this.classList.contains('btn-outline-danger');
+            
+            modalUsername.textContent = username;
+            if (isActive) {
+                modalMessage.innerHTML = '¿Estás seguro de <span class="fw-bold" style="color: var(--danger);">desactivar</span> a ' + username + '?';
+                modalSubMessage.textContent = 'El usuario no podrá iniciar sesión.';
+                confirmBtn.className = 'btn btn-warning';
+                confirmBtn.innerHTML = '<i class="fas fa-pause"></i> Desactivar';
+            } else {
+                modalMessage.innerHTML = '¿Estás seguro de <span class="fw-bold" style="color: var(--success);">activar</span> a ' + username + '?';
+                modalSubMessage.textContent = 'El usuario podrá iniciar sesión nuevamente.';
+                confirmBtn.className = 'btn btn-success';
+                confirmBtn.innerHTML = '<i class="fas fa-play"></i> Activar';
+            }
+            confirmBtn.href = url;
+            
+            var modalInstance = new bootstrap.Modal(modal);
+            modalInstance.show();
+        });
+    });
+});
+</script>
+{% endblock %}

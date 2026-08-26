@@ -1,0 +1,332 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Dashboard - Academia Bolivia{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- ========== PERFIL DEL USUARIO ========== -->
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-body text-center p-4">
+                    <div class="profile-avatar mb-3 position-relative">
+                        {% if user.profile_picture %}
+                            <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid var(--primary);">
+                        {% else %}
+                            <div class="avatar-placeholder rounded-circle mx-auto d-flex align-items-center justify-content-center" style="width: 120px; height: 120px; background: var(--primary-lighter); font-size: 50px; color: var(--primary); border: 4px solid var(--primary);">
+                                {{ user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <span class="status-dot online"></span>
+                    </div>
+                    <h4 class="fw-bold mt-2">{{ user.first_name|default:user.username }}</h4>
+                    <p class="text-muted"><i class="fas fa-envelope me-1"></i> {{ user.email }}</p>
+                    
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <span class="badge" style="background: var(--primary); color: var(--white); padding: 8px 16px; border-radius: 50px;">
+                            <i class="fas fa-user-tag"></i> {{ user.get_role_display }}
+                        </span>
+                        {% if user.is_superuser %}
+                        <span class="badge" style="background: var(--secondary); color: var(--primary); padding: 8px 16px; border-radius: 50px;">
+                            <i class="fas fa-crown"></i> Super Admin
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
+                        <a href="{% url 'profile' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-edit"></i> Editar perfil
+                        </a>
+                        <a href="{% url 'change_password' %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-key"></i> Cambiar contraseña
+                        </a>
+                    </div>
+                    
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <span class="d-block fw-bold">{{ user.date_joined|date:"d/m/Y" }}</span>
+                            <small class="text-muted">Miembro</small>
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block fw-bold">0</span>
+                            <small class="text-muted">Cursos</small>
+                        </div>
+                        <div class="col-4">
+                            <span class="d-block fw-bold">0</span>
+                            <small class="text-muted">Certificados</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ========== CONTENIDO PRINCIPAL ========== -->
+        <div class="col-lg-8">
+            <!-- Panel de bienvenida -->
+            <div class="card shadow-lg border-0 mb-4">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <h5 class="fw-bold">
+                                <i class="fas fa-wave-square" style="color: var(--primary);"></i> 
+                                ¡Bienvenido, {{ user.first_name|default:user.username }}!
+                            </h5>
+                            <p class="text-muted mb-0">Hoy es {{ now|date:"l, d \d\e F \d\e Y" }}</p>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-success">Activo</span>
+                            <span class="badge bg-info text-white">Último acceso: {{ user.last_login|date:"H:i" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ====== ESTADÍSTICAS RÁPIDAS ====== -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-3 col-6">
+                    <div class="stat-card p-3 rounded" style="background: var(--primary-lighter); border-bottom: 4px solid var(--primary);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small">Cursos</span>
+                                <h4 class="mb-0">0</h4>
+                            </div>
+                            <i class="fas fa-book-open" style="font-size: 24px; color: var(--primary);"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card p-3 rounded" style="background: #fef3c7; border-bottom: 4px solid var(--secondary);">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small">Progreso</span>
+                                <h4 class="mb-0">0%</h4>
+                            </div>
+                            <i class="fas fa-chart-line" style="font-size: 24px; color: var(--secondary-dark);"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card p-3 rounded" style="background: #d1fae5; border-bottom: 4px solid #10b981;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small">Completados</span>
+                                <h4 class="mb-0">0</h4>
+                            </div>
+                            <i class="fas fa-check-circle" style="font-size: 24px; color: #10b981;"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-card p-3 rounded" style="background: #fce4ec; border-bottom: 4px solid #ef5350;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small">Certificados</span>
+                                <h4 class="mb-0">0</h4>
+                            </div>
+                            <i class="fas fa-certificate" style="font-size: 24px; color: #ef5350;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- ====== ROLES Y ACCIONES ====== -->
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    
+                    {% if is_admin %}
+                    <!-- PANEL ADMIN -->
+                    <h6 class="fw-bold mb-3"><i class="fas fa-shield-alt" style="color: var(--primary);"></i> Panel de Administración</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-md-3 col-6">
+                            <a href="{% url 'admin_users' %}" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-users"></i><br>
+                                <small>Usuarios</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-book"></i><br>
+                                <small>Cursos</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-chart-bar"></i><br>
+                                <small>Reportes</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="/admin/" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-database"></i><br>
+                                <small>Admin Django</small>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if is_teacher %}
+                    <!-- PANEL DOCENTE -->
+                    <h6 class="fw-bold mb-3"><i class="fas fa-chalkboard-teacher" style="color: var(--primary);"></i> Panel del Docente</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-plus-circle"></i><br>
+                                <small>Crear curso</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-list"></i><br>
+                                <small>Mis cursos</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-users"></i><br>
+                                <small>Estudiantes</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-chart-line"></i><br>
+                                <small>Estadísticas</small>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if is_student %}
+                    <!-- PANEL ESTUDIANTE -->
+                    <h6 class="fw-bold mb-3"><i class="fas fa-graduation-cap" style="color: var(--primary);"></i> Mis cursos</h6>
+                    <div class="row g-2 mb-4">
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-primary w-100 py-2">
+                                <i class="fas fa-book-open"></i><br>
+                                <small>Ver cursos</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-tasks"></i><br>
+                                <small>Mi progreso</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-certificate"></i><br>
+                                <small>Certificados</small>
+                            </a>
+                        </div>
+                        <div class="col-md-3 col-6">
+                            <a href="#" class="btn btn-outline-primary w-100 py-2">
+                                <i class="fas fa-clock"></i><br>
+                                <small>Historial</small>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- ====== ACTIVIDAD RECIENTE ====== -->
+                    <hr>
+                    <h6 class="fw-bold mb-3"><i class="fas fa-history" style="color: var(--primary);"></i> Actividad reciente</h6>
+                    <div class="timeline">
+                        <div class="timeline-item d-flex gap-3 mb-3">
+                            <div class="timeline-icon" style="background: var(--primary-lighter); width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-sign-in-alt" style="color: var(--primary);"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0">Iniciaste sesión hoy <span class="text-muted">{{ user.last_login|date:"H:i" }}</span></p>
+                                <small class="text-muted">Última actividad</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item d-flex gap-3 mb-3">
+                            <div class="timeline-icon" style="background: #fef3c7; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-user-plus" style="color: var(--secondary-dark);"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0">Te registraste en Academia Bolivia</p>
+                                <small class="text-muted">{{ user.date_joined|date:"d/m/Y" }}</small>
+                            </div>
+                        </div>
+                        <div class="timeline-item d-flex gap-3">
+                            <div class="timeline-icon" style="background: #d1fae5; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                                <i class="fas fa-check" style="color: #10b981;"></i>
+                            </div>
+                            <div>
+                                <p class="mb-0">¡Empieza tu primer curso!</p>
+                                <small class="text-muted">Pendiente</small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.status-dot {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid white;
+}
+
+.status-dot.online {
+    background: #10b981;
+}
+.status-dot.away {
+    background: #f59e0b;
+}
+.status-dot.offline {
+    background: #ef4444;
+}
+
+.stat-card {
+    transition: all 0.3s ease;
+    cursor: default;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.timeline-item {
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: var(--radius-sm);
+}
+
+.timeline-item:hover {
+    background: var(--primary-lighter);
+}
+
+.btn.w-100 {
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+}
+
+.btn.w-100:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+@media (max-width: 768px) {
+    .btn.w-100 {
+        padding: 10px !important;
+    }
+    .btn.w-100 small {
+        font-size: 11px;
+    }
+    .stat-card h4 {
+        font-size: 18px;
+    }
+}
+</style>
+{% endblock %}

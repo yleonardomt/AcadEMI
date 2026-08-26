@@ -1,0 +1,498 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia Bolivia - Aprende desde cualquier lugar</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<!-- ========== NAVBAR ========== -->
+<nav class="navbar navbar-expand-lg fixed-top">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="fas fa-graduation-cap"></i> Academia Bolivia
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item">
+                    <a class="nav-link" href="#cursos">Cursos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#caracteristicas">Características</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#estadisticas">Estadísticas</a>
+                </li>
+                
+                {% if user.is_authenticated %}
+                    <!-- Usuario logueado -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                            {% if user.profile_picture %}
+                                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 8px;">
+                            {% else %}
+                                <div style="width: 32px; height: 32px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; margin-right: 8px;">
+                                    {{ user.username|first|upper }}
+                                </div>
+                            {% endif %}
+                            {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="{% url 'dashboard' %}">
+                                <i class="fas fa-tachometer-alt"></i> Dashboard
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">
+                                <i class="fas fa-user"></i> Mi perfil
+                            </a></li>
+                            {% if user.role == 'admin' %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="{% url 'admin_users' %}">
+                                    <i class="fas fa-users-cog"></i> Administrar usuarios
+                                </a></li>
+                            {% endif %}
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                            </a></li>
+                        </ul>
+                    </li>
+                {% else %}
+                    <!-- Usuario no logueado -->
+                    <li class="nav-item">
+                        <a class="btn btn-outline-primary btn-nav" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-primary btn-nav" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus"></i> Registrarse
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- ========== HERO CON VIDEO ========== -->
+<section class="hero">
+    <video class="hero-video-bg" autoplay muted loop playsinline>
+        <source src="/media/sitio/academia.mp4" type="video/mp4">
+        Tu navegador no soporta el elemento de video.
+    </video>
+    <div class="hero-overlay"></div>
+    
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <div class="hero-tag">
+                    <i class="fas fa-bolt"></i> Plataforma #1 en Bolivia
+                </div>
+                <h1 class="hero-title">
+                    Aprende desde cualquier lugar de <span>Bolivia</span>
+                </h1>
+                <p class="hero-subtitle">
+                    Transforma tu futuro con nuestros cursos online. Aprende de expertos,
+                    avanza a tu propio ritmo y obtén certificados reconocidos.
+                </p>
+                <div class="hero-buttons">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-hero">
+                            <i class="fas fa-play-circle"></i> Ir al Dashboard
+                        </a>
+                    {% else %}
+                        <a href="{% url 'register' %}" class="btn btn-primary btn-hero">
+                            <i class="fas fa-play-circle"></i> Comenzar ahora
+                            <span class="btn-badge">Gratis</span>
+                        </a>
+                    {% endif %}
+                    <a href="#cursos" class="btn btn-outline-primary btn-hero">
+                        <i class="fas fa-info-circle"></i> Ver cursos
+                    </a>
+                </div>
+                <div class="hero-badges">
+                    <span class="badge-custom">
+                        <i class="fas fa-check-circle"></i> 100+ cursos
+                    </span>
+                    <span class="badge-custom">
+                        <i class="fas fa-users"></i> 5000+ estudiantes
+                    </span>
+                    <span class="badge-custom">
+                        <i class="fas fa-star"></i> 4.8/5 calificación
+                    </span>
+                    <span class="badge-custom">
+                        <i class="fas fa-certificate"></i> Certificados
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-5 d-none d-lg-block">
+                <div class="hero-stats-card">
+                    <div class="stats-card-inner">
+                        <div class="stat-item">
+                            <span class="stat-number-hero">98%</span>
+                            <span class="stat-label">Satisfacción</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <span class="stat-number-hero">24/7</span>
+                            <span class="stat-label">Soporte</span>
+                        </div>
+                        <div class="stat-divider"></div>
+                        <div class="stat-item">
+                            <span class="stat-number-hero">+50</span>
+                            <span class="stat-label">Instructores</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== CURSOS DESTACADOS ========== -->
+<section id="cursos" class="courses">
+    <div class="container">
+        <div class="section-header">
+            <span class="badge-section">
+                <i class="fas fa-rocket"></i> Cursos destacados
+            </span>
+            <h2>Nuestros <span>cursos</span> más populares</h2>
+            <p>Los cursos más valorados por nuestra comunidad de estudiantes</p>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Curso 1 -->
+            <div class="col-md-4">
+                <div class="course-card">
+                    <div class="course-image course-image-python">
+                        <i class="fab fa-python"></i>
+                        <span class="course-badge-top">Popular</span>
+                    </div>
+                    <div class="course-body">
+                        <span class="course-badge course-badge-python">Python</span>
+                        <h5>Python desde cero</h5>
+                        <p>Aprende Python desde fundamentos hasta avanzado</p>
+                        <div class="course-meta">
+                            <span class="course-price">Bs. 349</span>
+                            <span class="course-rating">
+                                <i class="fas fa-star"></i> 4.8
+                                <span class="rating-count">(1,234)</span>
+                            </span>
+                        </div>
+                        <a href="#" class="btn btn-primary btn-course btn-comprar" data-curso="Python desde cero">
+                            <i class="fas fa-shopping-cart"></i> Ver curso
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Curso 2 -->
+            <div class="col-md-4">
+                <div class="course-card">
+                    <div class="course-image course-image-javascript">
+                        <i class="fab fa-js"></i>
+                        <span class="course-badge-top">Más vendido</span>
+                    </div>
+                    <div class="course-body">
+                        <span class="course-badge course-badge-javascript">JavaScript</span>
+                        <h5>JavaScript Full Stack</h5>
+                        <p>Domina JavaScript y frameworks modernos</p>
+                        <div class="course-meta">
+                            <span class="course-price">Bs. 429</span>
+                            <span class="course-rating">
+                                <i class="fas fa-star"></i> 4.9
+                                <span class="rating-count">(2,567)</span>
+                            </span>
+                        </div>
+                        <a href="#" class="btn btn-primary btn-course btn-comprar" data-curso="JavaScript Full Stack">
+                            <i class="fas fa-shopping-cart"></i> Ver curso
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Curso 3 -->
+            <div class="col-md-4">
+                <div class="course-card">
+                    <div class="course-image course-image-react">
+                        <i class="fab fa-react"></i>
+                        <span class="course-badge-top">Nuevo</span>
+                    </div>
+                    <div class="course-body">
+                        <span class="course-badge course-badge-react">React</span>
+                        <h5>React + Redux</h5>
+                        <p>Construye aplicaciones web modernas con React</p>
+                        <div class="course-meta">
+                            <span class="course-price">Bs. 499</span>
+                            <span class="course-rating">
+                                <i class="fas fa-star"></i> 4.7
+                                <span class="rating-count">(876)</span>
+                            </span>
+                        </div>
+                        <a href="#" class="btn btn-primary btn-course btn-comprar" data-curso="React + Redux">
+                            <i class="fas fa-shopping-cart"></i> Ver curso
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="#" class="btn btn-primary btn-all-courses" id="btnVerTodos">
+                Explorar todos los cursos <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ========== CARACTERÍSTICAS ========== -->
+<section id="caracteristicas" class="features">
+    <div class="container">
+        <div class="section-header">
+            <span class="badge-section">
+                <i class="fas fa-gem"></i> Características
+            </span>
+            <h2>¿Por qué <span>elegirnos</span>?</h2>
+            <p>Todo lo que necesitas para aprender de manera efectiva</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-video"></i>
+                    </div>
+                    <h5>Videos HD</h5>
+                    <p>Contenido en alta definición con la mejor calidad</p>
+                    <span class="feature-tag">Calidad</span>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-certificate"></i>
+                    </div>
+                    <h5>Certificados</h5>
+                    <p>Obtén certificados verificables al finalizar cada curso</p>
+                    <span class="feature-tag">Validado</span>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h5>Comunidad</h5>
+                    <p>Conecta con otros estudiantes y comparte conocimientos</p>
+                    <span class="feature-tag">Social</span>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h5>Acceso móvil</h5>
+                    <p>Aprende desde cualquier dispositivo, en cualquier lugar</p>
+                    <span class="feature-tag">Mobile</span>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h5>A tu ritmo</h5>
+                    <p>Estudia a tu propio ritmo sin presiones ni fechas límite</p>
+                    <span class="feature-tag">Flexible</span>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h5>Soporte 24/7</h5>
+                    <p>Soporte técnico disponible todo el día para ayudarte</p>
+                    <span class="feature-tag">Ayuda</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== ESTADÍSTICAS ========== -->
+<section id="estadisticas" class="stats">
+    <div class="container">
+        <div class="row g-4 text-center">
+            <div class="col-md-3">
+                <div class="stat-number">100+</div>
+                <p>Cursos disponibles</p>
+                <span class="stat-sub">En crecimiento</span>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number">5000+</div>
+                <p>Estudiantes activos</p>
+                <span class="stat-sub">Felices aprendiendo</span>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number">50+</div>
+                <p>Instructores expertos</p>
+                <span class="stat-sub">Profesionales</span>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-number">4.8</div>
+                <p>Calificación promedio</p>
+                <span class="stat-sub">Excelente</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== TESTIMONIOS ========== -->
+<section class="testimonials">
+    <div class="container">
+        <div class="section-header">
+            <span class="badge-section">
+                <i class="fas fa-quote-left"></i> Testimonios
+            </span>
+            <h2>Lo que dicen <span>nuestros</span> estudiantes</h2>
+            <p>Historias reales de personas que transformaron sus vidas</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>"Gracias a Academia Bolivia pude conseguir mi primer trabajo como desarrollador. Los cursos son excelentes."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">JD</div>
+                        <div>
+                            <span class="author-name">Juan Delgado</span>
+                            <span class="author-role">Desarrollador Python</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>"La plataforma es increíble, aprendí JavaScript desde cero y ahora trabajo como freelance."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">MR</div>
+                        <div>
+                            <span class="author-name">María Rojas</span>
+                            <span class="author-role">Desarrolladora Full Stack</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p>"Los certificados me ayudaron a conseguir un ascenso en mi empresa. 100% recomendado."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">CP</div>
+                        <div>
+                            <span class="author-name">Carlos Pérez</span>
+                            <span class="author-role">Ingeniero de Software</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========== FOOTER ========== -->
+<footer class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <h5>
+                    <i class="fas fa-graduation-cap"></i> Academia Bolivia
+                </h5>
+                <p>Transformando vidas a través de la educación online en Bolivia.</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <h6>Plataforma</h6>
+                <ul>
+                    <li><a href="#">Cursos</a></li>
+                    <li><a href="#">Instructores</a></li>
+                    <li><a href="#">Precios</a></li>
+                </ul>
+            </div>
+            <div class="col-md-2">
+                <h6>Soporte</h6>
+                <ul>
+                    <li><a href="#">Ayuda</a></li>
+                    <li><a href="#">Contacto</a></li>
+                    <li><a href="#">FAQ</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <h6>Suscríbete</h6>
+                <p>Recibe novedades y ofertas especiales</p>
+                <div class="subscribe-form">
+                    <input type="email" placeholder="Tu email" id="emailSubscribe">
+                    <button type="button" id="btnSubscribe">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <p class="copyright">
+            &copy; 2024 Academia Bolivia. Todos los derechos reservados.
+            <span>|</span> Hecho con <i class="fas fa-heart"></i> en Bolivia
+        </p>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="{% static 'js/main.js' %}"></script>
+
+</body>
+</html>
