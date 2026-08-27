@@ -1,0 +1,166 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Crear curso - AcadEMI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="icon-circle">
+                            <i class="fas fa-plus-circle fa-2x" style="color: var(--primary);"></i>
+                        </div>
+                        <h3 class="mt-3 fw-bold">Crear nuevo curso</h3>
+                        <p class="text-muted">Comparte tu conocimiento con la comunidad</p>
+                    </div>
+
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Título del curso <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" placeholder="Ej: Python desde cero" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descripción <span class="text-danger">*</span></label>
+                            <textarea name="description" class="form-control" rows="5" placeholder="Describe el contenido del curso" required></textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Categoría <span class="text-danger">*</span></label>
+                                <select name="category" class="form-control">
+                                    <option value="">Selecciona una categoría</option>
+                                    <option value="1">Programación</option>
+                                    <option value="2">Diseño</option>
+                                    <option value="3">Marketing</option>
+                                    <option value="4">Negocios</option>
+                                    <option value="5">Idiomas</option>
+                                    <option value="6">Ciencia</option>
+                                    <option value="7">Arte</option>
+                                    <option value="8">Música</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Nivel <span class="text-danger">*</span></label>
+                                <select name="level" class="form-control">
+                                    <option value="beginner">Principiante</option>
+                                    <option value="intermediate">Intermedio</option>
+                                    <option value="advanced">Avanzado</option>
+                                    <option value="expert">Experto</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Precio (Bs.)</label>
+                                <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                <div class="form-text">Deja 0 para curso gratuito</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Imagen del curso</label>
+                                <input type="file" name="image" class="form-control" accept="image/*">
+                                <div class="form-text">Formatos: JPG, PNG, GIF</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Video promocional</label>
+                            <input type="file" name="video_promo" class="form-control" accept="video/*">
+                            <div class="form-text">Sube un video de muestra (opcional)</div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_free" class="form-check-input" id="is_free">
+                                    <label class="form-check-label" for="is_free">Curso gratuito</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_featured" class="form-check-input" id="is_featured">
+                                    <label class="form-check-label" for="is_featured">Destacar curso</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info py-2 mt-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Los cursos deben ser aprobados por el administrador antes de publicarse.
+                        </div>
+
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary flex-grow-1 py-2">
+                                <i class="fas fa-save me-2"></i> Guardar curso
+                            </button>
+                            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary py-2">
+                                <i class="fas fa-times me-2"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.icon-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--primary-lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    transition: all 0.3s ease;
+}
+
+.icon-circle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 20px rgba(0, 51, 160, 0.1);
+}
+
+.form-control:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+}
+
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+    border-color: var(--primary);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 51, 160, 0.3);
+}
+
+.btn-outline-secondary:hover {
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 20px !important;
+    }
+}
+</style>
+{% endblock %}

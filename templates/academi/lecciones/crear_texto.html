@@ -1,0 +1,184 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Crear lección de texto - {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-2" style="background: var(--primary-lighter);">
+                        <i class="fas fa-file-alt" style="color: var(--primary); font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0" style="color: var(--primary-dark);">Crear lección de texto</h4>
+                        <p class="text-muted mb-0">
+                            <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
+                            <span class="mx-1">|</span>
+                            <i class="far fa-file-alt"></i> {{ module.lessons.count }} lecciones
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold">
+                                Título de la lección
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   name="title"
+                                   id="title"
+                                   class="form-control form-control-lg"
+                                   placeholder="Ej: Introducción a Python"
+                                   required
+                                   autofocus
+                                   value="{{ form_data.title|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Descripción</label>
+                            <textarea name="description"
+                                      id="description"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Describe el contenido de esta lección">{{ form_data.description|default:'' }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="duration" class="form-label fw-semibold">Duración (minutos)</label>
+                            <input type="number"
+                                   name="duration"
+                                   id="duration"
+                                   class="form-control"
+                                   placeholder="30"
+                                   min="0"
+                                   max="999"
+                                   style="max-width: 200px;"
+                                   value="{{ form_data.duration|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-semibold">
+                                Contenido
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="content"
+                                      id="content"
+                                      class="form-control"
+                                      rows="8"
+                                      placeholder="Escribe el contenido de la lección...">{{ form_data.content|default:'' }}</textarea>
+                        </div>
+
+                        <div class="mb-4 p-3 rounded" style="background: var(--white-smoke); border: 1px solid var(--gray-light);">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div class="form-check form-switch mb-0">
+                                    <input type="checkbox"
+                                           name="is_free"
+                                           id="is_free"
+                                           class="form-check-input"
+                                           style="width: 44px; height: 22px; cursor: pointer;"
+                                           {% if form_data.is_free %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="is_free" style="cursor: pointer;">
+                                        <i class="fas fa-star" style="color: var(--secondary);"></i>
+                                        Lección gratuita
+                                    </label>
+                                </div>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary small">
+                                    <i class="fas fa-info-circle"></i> Visible sin comprar
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary flex-grow-1" id="submitBtn">
+                                <i class="fas fa-save"></i> Crear lección
+                            </button>
+                            <a href="{% url 'manage_course' module.course.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const titleInput = document.getElementById('title');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            let valid = true;
+
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+            function showError(input, message) {
+                input.classList.add('is-invalid');
+                let feedback = input.parentNode.querySelector('.invalid-feedback');
+                if (!feedback) {
+                    feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    input.parentNode.insertBefore(feedback, input.nextSibling);
+                }
+                feedback.textContent = message;
+                valid = false;
+            }
+
+            const title = titleInput.value.trim();
+            if (!title) {
+                showError(titleInput, 'El título es obligatorio.');
+            } else if (title.length < 3) {
+                showError(titleInput, 'El título debe tener al menos 3 caracteres.');
+            }
+
+            const content = document.getElementById('content').value.trim();
+            if (!content) {
+                const input = document.getElementById('content');
+                input.classList.add('is-invalid');
+                let feedback = input.parentNode.querySelector('.invalid-feedback');
+                if (!feedback) {
+                    feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    input.parentNode.insertBefore(feedback, input.nextSibling);
+                }
+                feedback.textContent = 'El contenido es obligatorio.';
+                valid = false;
+            }
+
+            if (!valid) {
+                e.preventDefault();
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) firstError.focus();
+                return false;
+            }
+
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+            submitBtn.disabled = true;
+            return true;
+        });
+
+        titleInput.addEventListener('input', function() {
+            if (this.value.trim().length >= 3) {
+                this.classList.remove('is-invalid');
+                const feedback = this.parentNode.querySelector('.invalid-feedback');
+                if (feedback) feedback.remove();
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,128 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Crear lección de video - {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-2" style="background: #e8edf5;">
+                        <i class="fas fa-video" style="color: #0033a0; font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0" style="color: #002277;">Crear lección de video</h4>
+                        <p class="text-muted mb-0">
+                            <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
+                            <span class="mx-1">|</span>
+                            <i class="far fa-file-alt"></i> {{ module.lessons.count }} lecciones
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <form method="POST" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold">
+                                Título de la lección
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   name="title"
+                                   id="title"
+                                   class="form-control form-control-lg"
+                                   placeholder="Ej: Introducción a Python"
+                                   required
+                                   autofocus
+                                   value="{{ form_data.title|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Descripción</label>
+                            <textarea name="description"
+                                      id="description"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Describe el contenido de esta lección">{{ form_data.description|default:'' }}</textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="duration" class="form-label fw-semibold">Duración (minutos)</label>
+                            <input type="number"
+                                   name="duration"
+                                   id="duration"
+                                   class="form-control"
+                                   placeholder="30"
+                                   min="0"
+                                   max="999"
+                                   style="max-width: 200px;"
+                                   value="{{ form_data.duration|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="video_url" class="form-label fw-semibold">URL del video</label>
+                            <input type="url"
+                                   name="video_url"
+                                   id="video_url"
+                                   class="form-control"
+                                   placeholder="https://www.youtube.com/watch?v=..."
+                                   value="{{ form_data.video_url|default:'' }}">
+                            <div class="form-text">
+                                <i class="fas fa-link"></i> YouTube, Vimeo, o cualquier plataforma de video.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="video_file" class="form-label fw-semibold">Archivo de video</label>
+                            <input type="file"
+                                   name="video_file"
+                                   id="video_file"
+                                   class="form-control"
+                                   accept="video/*">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> MP4, AVI, MOV, WMV, MKV. Máximo 500MB.
+                            </div>
+                        </div>
+
+                        <div class="mb-4 p-3 rounded" style="background: #f5f7fa; border: 1px solid #e2e8f0;">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div class="form-check form-switch mb-0">
+                                    <input type="checkbox"
+                                           name="is_free"
+                                           id="is_free"
+                                           class="form-check-input"
+                                           style="width: 44px; height: 22px; cursor: pointer;"
+                                           {% if form_data.is_free %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="is_free" style="cursor: pointer;">
+                                        <i class="fas fa-star" style="color: #f7c600;"></i>
+                                        Lección gratuita
+                                    </label>
+                                </div>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary small">
+                                    <i class="fas fa-info-circle"></i> Visible sin comprar
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-save"></i> Crear lección
+                            </button>
+                            <a href="{% url 'manage_course' module.course.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

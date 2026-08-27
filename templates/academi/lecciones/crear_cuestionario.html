@@ -1,0 +1,651 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Crear cuestionario - {{ module.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .question-item {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    .question-item:hover {
+        border-color: #0033a0;
+        box-shadow: 0 2px 12px rgba(0, 51, 160, 0.06);
+    }
+    .question-number {
+        font-size: 13px;
+        font-weight: 700;
+        color: #718096;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 10px;
+    }
+    .question-remove {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: none;
+        border: none;
+        color: #e53e3e;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        font-size: 16px;
+    }
+    .question-remove:hover {
+        background: #fee2e2;
+    }
+    .option-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+        padding: 8px 12px;
+        background: white;
+        border-radius: 6px;
+        border: 1px solid #e2e8f0;
+    }
+    .option-item .option-letter {
+        font-weight: 700;
+        color: #0033a0;
+        min-width: 24px;
+        font-size: 14px;
+    }
+    .option-item input[type="text"] {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 6px 4px;
+        font-size: 14px;
+        outline: none;
+    }
+    .option-item input[type="text"]:focus {
+        border-bottom: 2px solid #0033a0;
+    }
+    .option-item .option-correct {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+        accent-color: #10b981;
+        flex-shrink: 0;
+    }
+    .option-item .option-remove {
+        background: none;
+        border: none;
+        color: #e53e3e;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+    .option-item .option-remove:hover {
+        background: #fee2e2;
+    }
+    .btn-add-question {
+        width: 100%;
+        padding: 14px;
+        border: 2px dashed #cbd5e0;
+        border-radius: 8px;
+        background: transparent;
+        color: #4a5568;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        margin-top: 8px;
+    }
+    .btn-add-question:hover {
+        border-color: #0033a0;
+        color: #0033a0;
+        background: #e8edf5;
+    }
+    .btn-add-option {
+        padding: 6px 14px;
+        border: 1px dashed #cbd5e0;
+        border-radius: 4px;
+        background: transparent;
+        color: #4a5568;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 4px;
+    }
+    .btn-add-option:hover {
+        border-color: #0033a0;
+        color: #0033a0;
+    }
+    .question-text-input {
+        font-weight: 500;
+        font-size: 15px;
+        margin-bottom: 10px;
+    }
+    .correct-label {
+        font-size: 12px;
+        color: #718096;
+        margin-left: 4px;
+    }
+    .badge-secondary {
+        background: #e2e8f0;
+        color: #2d3748;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-md-11">
+
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-white py-3 border-0 d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-2" style="background: #e8edf5;">
+                        <i class="fas fa-tasks" style="color: #0033a0; font-size: 24px;"></i>
+                    </div>
+                    <div>
+                        <h4 class="fw-bold mb-0" style="color: #002277;">Crear cuestionario</h4>
+                        <p class="text-muted mb-0">
+                            <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
+                            <span class="mx-1">|</span>
+                            <i class="far fa-file-alt"></i> {{ module.lessons.count }} lecciones
+                        </p>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <form method="POST" novalidate id="quizForm">
+                        {% csrf_token %}
+
+                        <!-- DATOS DEL CUESTIONARIO -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold">
+                                Título del cuestionario
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   name="title"
+                                   id="title"
+                                   class="form-control form-control-lg"
+                                   placeholder="Ej: Cuestionario Módulo 1"
+                                   required
+                                   autofocus
+                                   value="{{ form_data.title|default:'' }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Descripción</label>
+                            <textarea name="description"
+                                      id="description"
+                                      class="form-control"
+                                      rows="2"
+                                      placeholder="Describe el cuestionario">{{ form_data.description|default:'' }}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="duration" class="form-label fw-semibold">Duración (minutos)</label>
+                                <input type="number"
+                                       name="duration"
+                                       id="duration"
+                                       class="form-control"
+                                       placeholder="30"
+                                       min="0"
+                                       max="999"
+                                       value="{{ form_data.duration|default:'' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="quiz_time_limit" class="form-label fw-semibold">
+                                    Tiempo límite (min)
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       name="quiz_time_limit"
+                                       id="quiz_time_limit"
+                                       class="form-control"
+                                       placeholder="30"
+                                       min="1"
+                                       max="180"
+                                       value="{{ form_data.quiz_time_limit|default:30 }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="quiz_passing_score" class="form-label fw-semibold">
+                                    Aprobación (%)
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="number"
+                                       name="quiz_passing_score"
+                                       id="quiz_passing_score"
+                                       class="form-control"
+                                       placeholder="70"
+                                       min="0"
+                                       max="100"
+                                       value="{{ form_data.quiz_passing_score|default:70 }}">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="quiz_max_attempts" class="form-label fw-semibold">
+                                Intentos permitidos
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="number"
+                                   name="quiz_max_attempts"
+                                   id="quiz_max_attempts"
+                                   class="form-control"
+                                   placeholder="1"
+                                   min="1"
+                                   max="10"
+                                   style="max-width: 150px;"
+                                   value="{{ form_data.quiz_max_attempts|default:1 }}">
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-semibold">
+                                Instrucciones del cuestionario
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea name="content"
+                                      id="content"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Escribe las instrucciones para los estudiantes...">{{ form_data.content|default:'' }}</textarea>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <!-- PREGUNTAS -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold mb-0">
+                                    <i class="fas fa-question-circle" style="color: #0033a0;"></i>
+                                    Preguntas
+                                    <span class="badge bg-secondary ms-2" id="questionCount">0</span>
+                                </h5>
+                                <button type="button" class="btn btn-primary btn-sm" id="addQuestionBtn">
+                                    <i class="fas fa-plus-circle"></i> Agregar pregunta
+                                </button>
+                            </div>
+
+                            <div id="questionsContainer">
+                                <!-- Las preguntas se agregan aquí dinámicamente -->
+                            </div>
+                        </div>
+
+                        <div class="mb-3 p-3 rounded" style="background: #e8edf5; border: 1px solid #1a4db8;">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="fas fa-info-circle" style="color: #0033a0;"></i>
+                                <span class="fw-semibold" style="color: #002277;">Nota:</span>
+                                <span class="text-muted small">Las preguntas se guardan al crear el cuestionario.</span>
+                            </div>
+                        </div>
+
+                        <!-- LECCIÓN GRATUITA -->
+                        <div class="mb-4 p-3 rounded" style="background: #f5f7fa; border: 1px solid #e2e8f0;">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div class="form-check form-switch mb-0">
+                                    <input type="checkbox"
+                                           name="is_free"
+                                           id="is_free"
+                                           class="form-check-input"
+                                           style="width: 44px; height: 22px; cursor: pointer;"
+                                           {% if form_data.is_free %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="is_free" style="cursor: pointer;">
+                                        <i class="fas fa-star" style="color: #f7c600;"></i>
+                                        Lección gratuita
+                                    </label>
+                                </div>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary small">
+                                    <i class="fas fa-info-circle"></i> Visible sin comprar
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary flex-grow-1" id="submitBtn">
+                                <i class="fas fa-save"></i> Crear cuestionario
+                            </button>
+                            <a href="{% url 'manage_course' module.course.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function() {
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        let questionCounter = 0;
+        const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'];
+
+        // ============================================
+        // FUNCIÓN PARA AGREGAR PREGUNTA
+        // ============================================
+        window.addQuestion = function() {
+            questionCounter++;
+            const container = document.getElementById('questionsContainer');
+            
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-item';
+            questionDiv.id = 'question-' + questionCounter;
+
+            questionDiv.innerHTML = `
+                <div class="question-number">Pregunta ${questionCounter}</div>
+                <button type="button" class="question-remove" onclick="removeQuestion(${questionCounter})" title="Eliminar pregunta">
+                    <i class="fas fa-times"></i>
+                </button>
+
+                <div class="mb-2">
+                    <input type="text"
+                           name="question_${questionCounter}_text"
+                           class="form-control question-text-input"
+                           placeholder="Escribe la pregunta..."
+                           required>
+                </div>
+
+                <div class="mb-2">
+                    <label class="fw-semibold" style="font-size: 13px; color: #4a5568;">
+                        <i class="fas fa-check-square"></i> Opciones (marca las correctas)
+                    </label>
+                    <div id="options-${questionCounter}">
+                        <div class="option-item">
+                            <span class="option-letter">A</span>
+                            <input type="text" name="question_${questionCounter}_option_0" placeholder="Opción A" required>
+                            <input type="checkbox" name="question_${questionCounter}_correct_0" class="option-correct">
+                            <span class="correct-label">Correcta</span>
+                            <button type="button" class="option-remove" onclick="removeOption(${questionCounter}, 0)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-letter">B</span>
+                            <input type="text" name="question_${questionCounter}_option_1" placeholder="Opción B" required>
+                            <input type="checkbox" name="question_${questionCounter}_correct_1" class="option-correct">
+                            <span class="correct-label">Correcta</span>
+                            <button type="button" class="option-remove" onclick="removeOption(${questionCounter}, 1)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-letter">C</span>
+                            <input type="text" name="question_${questionCounter}_option_2" placeholder="Opción C" required>
+                            <input type="checkbox" name="question_${questionCounter}_correct_2" class="option-correct">
+                            <span class="correct-label">Correcta</span>
+                            <button type="button" class="option-remove" onclick="removeOption(${questionCounter}, 2)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="option-item">
+                            <span class="option-letter">D</span>
+                            <input type="text" name="question_${questionCounter}_option_3" placeholder="Opción D" required>
+                            <input type="checkbox" name="question_${questionCounter}_correct_3" class="option-correct">
+                            <span class="correct-label">Correcta</span>
+                            <button type="button" class="option-remove" onclick="removeOption(${questionCounter}, 3)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="button" class="btn-add-option" onclick="addOption(${questionCounter})">
+                        <i class="fas fa-plus-circle"></i> Agregar opción
+                    </button>
+                </div>
+
+                <input type="hidden" name="question_${questionCounter}_options_count" value="4" class="options-count">
+            `;
+
+            container.appendChild(questionDiv);
+            updateQuestionCount();
+        };
+
+        // ============================================
+        // FUNCIÓN PARA ELIMINAR PREGUNTA
+        // ============================================
+        window.removeQuestion = function(questionId) {
+            const element = document.getElementById('question-' + questionId);
+            if (element) {
+                const totalQuestions = document.querySelectorAll('.question-item').length;
+                if (totalQuestions <= 1) {
+                    // Usar toast en lugar de alert
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+                    alertDiv.innerHTML = 'Debe haber al menos 1 pregunta. <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    document.querySelector('.container').prepend(alertDiv);
+                    setTimeout(function() { alertDiv.remove(); }, 3000);
+                    return;
+                }
+                element.remove();
+                updateQuestionCount();
+                renumberQuestions();
+            }
+        };
+
+        // ============================================
+        // FUNCIÓN PARA RENUMERAR PREGUNTAS
+        // ============================================
+        function renumberQuestions() {
+            const questions = document.querySelectorAll('.question-item');
+            questions.forEach((q, index) => {
+                const num = index + 1;
+                const numberDiv = q.querySelector('.question-number');
+                if (numberDiv) {
+                    numberDiv.textContent = 'Pregunta ' + num;
+                }
+                q.id = 'question-' + num;
+
+                // Actualizar nombres de inputs
+                const inputs = q.querySelectorAll('input');
+                inputs.forEach(input => {
+                    const name = input.name;
+                    if (name) {
+                        const newName = name.replace(/question_\d+/, 'question_' + num);
+                        input.name = newName;
+                    }
+                });
+
+                // Actualizar onclick en botones
+                const removeBtn = q.querySelector('.question-remove');
+                if (removeBtn) {
+                    removeBtn.setAttribute('onclick', 'removeQuestion(' + num + ')');
+                }
+
+                // Actualizar opciones
+                const optionContainer = q.querySelector('[id^="options-"]');
+                if (optionContainer) {
+                    const oldId = optionContainer.id;
+                    const newId = 'options-' + num;
+                    optionContainer.id = newId;
+                    
+                    const addOptionBtn = q.querySelector('.btn-add-option');
+                    if (addOptionBtn) {
+                        addOptionBtn.setAttribute('onclick', 'addOption(' + num + ')');
+                    }
+
+                    // Actualizar opciones
+                    const options = optionContainer.querySelectorAll('.option-item');
+                    options.forEach((opt, optIdx) => {
+                        const removeOptBtn = opt.querySelector('.option-remove');
+                        if (removeOptBtn) {
+                            removeOptBtn.setAttribute('onclick', 'removeOption(' + num + ', ' + optIdx + ')');
+                        }
+                    });
+                }
+            });
+        }
+
+        // ============================================
+        // FUNCIÓN PARA AGREGAR OPCIÓN
+        // ============================================
+        window.addOption = function(questionId) {
+            const optionsContainer = document.getElementById('options-' + questionId);
+            if (!optionsContainer) return;
+            
+            const currentOptions = optionsContainer.querySelectorAll('.option-item');
+            const optionCount = currentOptions.length;
+
+            if (optionCount >= 8) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+                alertDiv.innerHTML = 'Máximo 8 opciones por pregunta. <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                document.querySelector('.container').prepend(alertDiv);
+                setTimeout(function() { alertDiv.remove(); }, 3000);
+                return;
+            }
+
+            const letter = letters[optionCount] || '?';
+            const optionDiv = document.createElement('div');
+            optionDiv.className = 'option-item';
+            optionDiv.innerHTML = `
+                <span class="option-letter">${letter}</span>
+                <input type="text" name="question_${questionId}_option_${optionCount}" placeholder="Opción ${letter}" required>
+                <input type="checkbox" name="question_${questionId}_correct_${optionCount}" class="option-correct">
+                <span class="correct-label">Correcta</span>
+                <button type="button" class="option-remove" onclick="removeOption(${questionId}, ${optionCount})">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            optionsContainer.appendChild(optionDiv);
+
+            // Actualizar contador
+            const countInput = document.querySelector(`#question-${questionId} .options-count`);
+            if (countInput) {
+                countInput.value = optionCount + 1;
+            }
+        };
+
+        // ============================================
+        // FUNCIÓN PARA ELIMINAR OPCIÓN
+        // ============================================
+        window.removeOption = function(questionId, optionIndex) {
+            const optionsContainer = document.getElementById('options-' + questionId);
+            if (!optionsContainer) return;
+            
+            const options = optionsContainer.querySelectorAll('.option-item');
+
+            if (options.length <= 2) {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-warning alert-dismissible fade show';
+                alertDiv.innerHTML = 'Debe haber al menos 2 opciones. <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                document.querySelector('.container').prepend(alertDiv);
+                setTimeout(function() { alertDiv.remove(); }, 3000);
+                return;
+            }
+
+            const optionToRemove = options[optionIndex];
+            if (optionToRemove) {
+                optionToRemove.remove();
+                // Actualizar contador
+                const countInput = document.querySelector(`#question-${questionId} .options-count`);
+                if (countInput) {
+                    countInput.value = optionsContainer.querySelectorAll('.option-item').length;
+                }
+                // Renumerar letras
+                const remainingOptions = optionsContainer.querySelectorAll('.option-item');
+                remainingOptions.forEach((opt, idx) => {
+                    const letterSpan = opt.querySelector('.option-letter');
+                    if (letterSpan) {
+                        letterSpan.textContent = letters[idx] || '?';
+                    }
+                });
+            }
+        };
+
+        // ============================================
+        // FUNCIÓN PARA ACTUALIZAR CONTADOR
+        // ============================================
+        function updateQuestionCount() {
+            const count = document.querySelectorAll('.question-item').length;
+            document.getElementById('questionCount').textContent = count;
+        }
+
+        // ============================================
+        // INICIALIZAR
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Agregar 2 preguntas por defecto
+            addQuestion();
+            addQuestion();
+
+            // Botón agregar pregunta
+            document.getElementById('addQuestionBtn').addEventListener('click', addQuestion);
+
+            // VALIDAR FORMULARIO
+            const form = document.getElementById('quizForm');
+            const submitBtn = document.getElementById('submitBtn');
+
+            form.addEventListener('submit', function(e) {
+                let valid = true;
+                const questions = document.querySelectorAll('.question-item');
+
+                if (questions.length === 0) {
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = 'Debes agregar al menos una pregunta. <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    document.querySelector('.container').prepend(alertDiv);
+                    e.preventDefault();
+                    return false;
+                }
+
+                let errorMessages = [];
+
+                questions.forEach((q, index) => {
+                    const qText = q.querySelector('input[name*="_text"]');
+                    if (qText && !qText.value.trim()) {
+                        errorMessages.push('La pregunta ' + (index + 1) + ' no tiene texto.');
+                        qText.focus();
+                        valid = false;
+                    }
+
+                    const options = q.querySelectorAll('.option-item input[type="text"]');
+                    const corrects = q.querySelectorAll('.option-correct:checked');
+
+                    options.forEach(opt => {
+                        if (!opt.value.trim()) {
+                            errorMessages.push('La pregunta ' + (index + 1) + ' tiene una opción vacía.');
+                            opt.focus();
+                            valid = false;
+                        }
+                    });
+
+                    if (corrects.length === 0) {
+                        errorMessages.push('La pregunta ' + (index + 1) + ' no tiene ninguna opción correcta marcada.');
+                        valid = false;
+                    }
+                });
+
+                if (!valid) {
+                    e.preventDefault();
+                    // Mostrar errores
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
+                    alertDiv.innerHTML = errorMessages.join('<br>') + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+                    document.querySelector('.container').prepend(alertDiv);
+                    setTimeout(function() { alertDiv.remove(); }, 5000);
+                    return false;
+                }
+
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+                submitBtn.disabled = true;
+                return true;
+            });
+        });
+
+    })();
+</script>
+{% endblock %}

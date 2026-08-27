@@ -1,0 +1,87 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Editar curso - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-edit fa-2x" style="color: var(--primary);"></i>
+                        <h4 class="mt-2 fw-bold">Editar curso</h4>
+                        <p class="text-muted">{{ course.title }}</p>
+                    </div>
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Título del curso <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" value="{{ course.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descripción <span class="text-danger">*</span></label>
+                            <textarea name="description" class="form-control" rows="5" required>{{ course.description }}</textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Categoría</label>
+                                <select name="category" class="form-control">
+                                    <option value="">Selecciona una categoría</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if course.category.id == category.id %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Nivel</label>
+                                <select name="level" class="form-control">
+                                    <option value="beginner" {% if course.level == 'beginner' %}selected{% endif %}>Principiante</option>
+                                    <option value="intermediate" {% if course.level == 'intermediate' %}selected{% endif %}>Intermedio</option>
+                                    <option value="advanced" {% if course.level == 'advanced' %}selected{% endif %}>Avanzado</option>
+                                    <option value="expert" {% if course.level == 'expert' %}selected{% endif %}>Experto</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Precio (Bs.)</label>
+                                <input type="number" name="price" class="form-control" value="{{ course.price }}" step="0.01" min="0">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Imagen del curso</label>
+                                {% if course.image %}
+                                <div class="mb-2">
+                                    <img src="{{ course.image.url }}" alt="{{ course.title }}" style="max-height: 100px;">
+                                </div>
+                                {% endif %}
+                                <input type="file" name="image" class="form-control" accept="image/*">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3 form-check">
+                                <input type="checkbox" name="is_free" class="form-check-input" id="is_free" {% if course.is_free %}checked{% endif %}>
+                                <label class="form-check-label" for="is_free">Curso gratuito</label>
+                            </div>
+                            <div class="col-md-6 mb-3 form-check">
+                                <input type="checkbox" name="is_featured" class="form-check-input" id="is_featured" {% if course.is_featured %}checked{% endif %}>
+                                <label class="form-check-label" for="is_featured">Destacar curso</label>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-save"></i> Guardar cambios
+                            </button>
+                            <a href="{% url 'manage_course' course.id %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

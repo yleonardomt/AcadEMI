@@ -1,0 +1,42 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Mis cupones - AcadEMI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold"><i class="fas fa-ticket-alt" style="color: var(--secondary);"></i> Mis cupones</h2>
+        <button class="btn btn-primary">
+            <i class="fas fa-plus-circle"></i> Crear cupón
+        </button>
+    </div>
+    
+    <div class="card shadow-lg border-0">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Código</th>
+                            <th>Descuento</th>
+                            <th>Curso</th>
+                            <th>Usos</th>
+                            <th>Estado</th>
+                            <th>Expira</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="fas fa-ticket-alt fa-2x d-block mb-2"></i>
+                                No tienes cupones creados
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

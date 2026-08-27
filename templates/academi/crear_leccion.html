@@ -1,0 +1,652 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Crear lección - {{ module.title }}{% endblock %}
+
+{% block extra_css %}
+<link href="https://unpkg.com/filepond@4.30.4/dist/filepond.css" rel="stylesheet">
+<link href="https://unpkg.com/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.css" rel="stylesheet">
+<style>
+    .field-group {
+        display: none;
+        animation: fadeIn 0.3s ease;
+    }
+    .field-group.active {
+        display: block;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .filepond--root {
+        font-family: 'Inter', sans-serif;
+    }
+    .filepond--panel-root {
+        background: var(--white-smoke);
+        border: 2px dashed var(--gray-light);
+        border-radius: var(--radius-sm);
+    }
+    .filepond--drop-label {
+        color: var(--gray-dark);
+        font-weight: 500;
+    }
+    .filepond--drop-label label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+    }
+    .filepond--drop-label label i {
+        font-size: 32px;
+        color: var(--primary);
+        opacity: 0.5;
+    }
+    .filepond--file-action-button {
+        background: var(--primary);
+    }
+    .type-selector {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+    }
+    .type-btn {
+        flex: 1;
+        min-width: 100px;
+        padding: 10px 16px;
+        border: 2px solid var(--gray-light);
+        border-radius: var(--radius-sm);
+        background: var(--white);
+        color: var(--gray-dark);
+        font-weight: 500;
+        transition: var(--transition);
+        cursor: pointer;
+        text-align: center;
+        font-size: 13px;
+    }
+    .type-btn:hover {
+        border-color: var(--primary-light);
+        background: var(--primary-lighter);
+    }
+    .type-btn.active {
+        border-color: var(--primary);
+        background: var(--primary);
+        color: var(--white);
+    }
+    .type-btn i {
+        display: block;
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+    .type-btn.active i {
+        color: var(--white);
+    }
+    .preview-container {
+        margin-top: 12px;
+        padding: 16px;
+        background: var(--white-smoke);
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--gray-light);
+    }
+    .preview-container video {
+        max-width: 100%;
+        border-radius: var(--radius-sm);
+        background: #000;
+    }
+    .preview-container img {
+        max-width: 100%;
+        border-radius: var(--radius-sm);
+    }
+    .form-check-input:checked {
+        background-color: var(--primary);
+        border-color: var(--primary);
+    }
+    .form-check-input:focus {
+        box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.15);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+
+            <div class="card border-0 shadow-lg">
+                <div class="card-header bg-white py-3 border-0">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="rounded-circle p-2" style="background: var(--primary-lighter);">
+                            <i class="fas fa-plus-circle" style="color: var(--primary); font-size: 24px;"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold mb-0">Crear lección</h4>
+                            <p class="text-muted mb-0">
+                                <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
+                                <span class="mx-1">|</span>
+                                <i class="far fa-file-alt"></i> {{ module.lessons.count }} lecciones
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-lg-5">
+                    <form method="POST" id="lessonForm" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- TÍTULO -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label fw-semibold">
+                                Título de la lección
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   name="title"
+                                   id="title"
+                                   class="form-control form-control-lg"
+                                   placeholder="Ej: Introducción a Python"
+                                   required
+                                   autofocus>
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label fw-semibold">Descripción</label>
+                            <textarea name="description"
+                                      id="description"
+                                      class="form-control"
+                                      rows="2"
+                                      placeholder="Describe el contenido de esta lección"></textarea>
+                        </div>
+
+                        <!-- DURACIÓN -->
+                        <div class="mb-3">
+                            <label for="duration" class="form-label fw-semibold">Duración (minutos)</label>
+                            <input type="number"
+                                   name="duration"
+                                   id="duration"
+                                   class="form-control"
+                                   placeholder="30"
+                                   min="0"
+                                   max="999"
+                                   style="max-width: 200px;">
+                        </div>
+
+                        <!-- SELECTOR DE TIPO -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">
+                                Tipo de lección
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="type-selector" id="typeSelector">
+                                <button type="button" class="type-btn active" data-type="text">
+                                    <i class="fas fa-file-alt"></i>
+                                    Texto
+                                </button>
+                                <button type="button" class="type-btn" data-type="video">
+                                    <i class="fas fa-video"></i>
+                                    Video
+                                </button>
+                                <button type="button" class="type-btn" data-type="document">
+                                    <i class="fas fa-file-pdf"></i>
+                                    Documento
+                                </button>
+                                <button type="button" class="type-btn" data-type="quiz">
+                                    <i class="fas fa-tasks"></i>
+                                    Cuestionario
+                                </button>
+                                <button type="button" class="type-btn" data-type="assignment">
+                                    <i class="fas fa-pencil-alt"></i>
+                                    Tarea
+                                </button>
+                            </div>
+                            <input type="hidden" name="lesson_type" id="lessonType" value="text">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> Selecciona el tipo de contenido de la lección.
+                            </div>
+                        </div>
+
+                        <!-- CONTENIDO (siempre visible) -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label fw-semibold">Contenido / Instrucciones</label>
+                            <textarea name="content"
+                                      id="content"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Escribe el contenido o instrucciones de la lección..."></textarea>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- CAMPO: VIDEO (URL) -->
+                        <!-- ============================================ -->
+                        <div class="field-group" id="videoUrlGroup">
+                            <div class="mb-3">
+                                <label for="video_url" class="form-label fw-semibold">URL del video</label>
+                                <input type="url"
+                                       name="video_url"
+                                       id="video_url"
+                                       class="form-control"
+                                       placeholder="https://www.youtube.com/watch?v=...">
+                                <div class="form-text">
+                                    <i class="fas fa-link"></i> YouTube, Vimeo, o cualquier plataforma de video.
+                                </div>
+                            </div>
+                            <div id="videoUrlPreview"></div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- CAMPO: VIDEO (ARCHIVO) - FilePond -->
+                        <!-- ============================================ -->
+                        <div class="field-group" id="videoFileGroup">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Subir archivo de video</label>
+                                <input type="file"
+                                       name="video_file"
+                                       id="videoFile"
+                                       accept="video/*"
+                                       class="filepond">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> MP4, AVI, MOV, WMV, MKV. Máximo 500MB.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- CAMPO: DOCUMENTO - FilePond -->
+                        <!-- ============================================ -->
+                        <div class="field-group" id="documentGroup">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Subir documento</label>
+                                <input type="file"
+                                       name="document_file"
+                                       id="documentFile"
+                                       accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip"
+                                       class="filepond">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> PDF, Word, PowerPoint, Excel, ZIP. Máximo 50MB.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- CAMPO: CUESTIONARIO -->
+                        <!-- ============================================ -->
+                        <div class="field-group" id="quizGroup">
+                            <div class="mb-3 p-3 rounded" style="background: var(--primary-lighter); border: 1px solid var(--primary-light);">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fas fa-tasks" style="color: var(--primary);"></i>
+                                    <span class="fw-semibold">Configuración del cuestionario</span>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-semibold small">Tiempo límite (minutos)</label>
+                                        <input type="number"
+                                               name="quiz_time_limit"
+                                               id="quiz_time_limit"
+                                               class="form-control"
+                                               placeholder="30"
+                                               min="1"
+                                               max="180">
+                                    </div>
+                                    <div class="col-md-6 mb-2">
+                                        <label class="form-label fw-semibold small">Puntaje mínimo para aprobar (%)</label>
+                                        <input type="number"
+                                               name="quiz_passing_score"
+                                               id="quiz_passing_score"
+                                               class="form-control"
+                                               placeholder="70"
+                                               min="0"
+                                               max="100">
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label fw-semibold small">Intentos permitidos</label>
+                                    <input type="number"
+                                           name="quiz_max_attempts"
+                                           id="quiz_max_attempts"
+                                           class="form-control"
+                                           placeholder="1"
+                                           min="1"
+                                           max="10"
+                                           style="max-width: 150px;">
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> Estas opciones se aplicarán al cuestionario.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ============================================ -->
+                        <!-- CAMPO: TAREA -->
+                        <!-- ============================================ -->
+                        <div class="field-group" id="assignmentGroup">
+                            <div class="mb-3 p-3 rounded" style="background: var(--primary-lighter); border: 1px solid var(--primary-light);">
+                                <div class="d-flex align-items-center gap-2 mb-2">
+                                    <i class="fas fa-pencil-alt" style="color: var(--primary);"></i>
+                                    <span class="fw-semibold">Configuración de la tarea</span>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label fw-semibold small">Fecha de entrega</label>
+                                    <input type="datetime-local"
+                                           name="assignment_deadline"
+                                           id="assignment_deadline"
+                                           class="form-control"
+                                           style="max-width: 250px;">
+                                </div>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> Fecha y hora límite para entregar la tarea.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LECCIÓN GRATUITA -->
+                        <div class="mb-4 p-3 rounded" style="background: var(--white-smoke); border: 1px solid var(--gray-light);">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div class="form-check form-switch mb-0">
+                                    <input type="checkbox"
+                                           name="is_free"
+                                           id="is_free"
+                                           class="form-check-input"
+                                           style="width: 44px; height: 22px; cursor: pointer;">
+                                    <label class="form-check-label fw-semibold" for="is_free" style="cursor: pointer;">
+                                        <i class="fas fa-star" style="color: var(--secondary);"></i>
+                                        Lección gratuita
+                                    </label>
+                                </div>
+                                <span class="badge bg-secondary bg-opacity-10 text-secondary small">
+                                    <i class="fas fa-info-circle"></i> Visible sin comprar
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary flex-grow-1" id="submitBtn">
+                                <i class="fas fa-save"></i> Crear lección
+                            </button>
+                            <a href="{% url 'manage_course' module.course.id %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FilePond -->
+<script src="https://unpkg.com/filepond@4.30.4/dist/filepond.min.js"></script>
+<script src="https://unpkg.com/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.min.js"></script>
+
+<script>
+    (function() {
+        // ============================================
+        // REGISTRAR PLUGINS DE FILEPOND
+        // ============================================
+        FilePond.registerPlugin(FilePondPluginImagePreview);
+
+        // ============================================
+        // INICIALIZAR FILEPOND
+        // ============================================
+        const videoFileInput = document.getElementById('videoFile');
+        const documentFileInput = document.getElementById('documentFile');
+
+        const videoPond = FilePond.create(videoFileInput, {
+            allowMultiple: false,
+            maxFileSize: '500MB',
+            labelIdle: `
+                <i class="fas fa-cloud-upload-alt" style="font-size: 32px; color: var(--primary);"></i>
+                <span style="font-weight: 500;">Arrastra o selecciona un video</span>
+                <span style="font-size: 12px; color: var(--gray);">MP4, AVI, MOV, WMV, MKV</span>
+            `,
+            labelFileLoading: 'Cargando...',
+            labelFileProcessing: 'Procesando...',
+            labelTapToCancel: 'toca para cancelar',
+            labelTapToRetry: 'toca para reintentar',
+            labelTapToUndo: 'toca para deshacer',
+            labelButtonRemoveItem: 'Eliminar',
+            labelButtonAbortItemLoad: 'Cancelar',
+            labelButtonRetryItemLoad: 'Reintentar',
+        });
+
+        const documentPond = FilePond.create(documentFileInput, {
+            allowMultiple: false,
+            maxFileSize: '50MB',
+            acceptedFileTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'text/plain', 'application/zip'],
+            labelIdle: `
+                <i class="fas fa-file-upload" style="font-size: 32px; color: var(--primary);"></i>
+                <span style="font-weight: 500;">Arrastra o selecciona un documento</span>
+                <span style="font-size: 12px; color: var(--gray);">PDF, Word, PowerPoint, Excel, ZIP</span>
+            `,
+            labelFileLoading: 'Cargando...',
+            labelFileProcessing: 'Procesando...',
+            labelTapToCancel: 'toca para cancelar',
+            labelTapToRetry: 'toca para reintentar',
+            labelTapToUndo: 'toca para deshacer',
+            labelButtonRemoveItem: 'Eliminar',
+            labelButtonAbortItemLoad: 'Cancelar',
+            labelButtonRetryItemLoad: 'Reintentar',
+        });
+
+        // ============================================
+        // SELECTOR DE TIPO - DINÁMICO
+        // ============================================
+        const typeBtns = document.querySelectorAll('.type-btn');
+        const typeHidden = document.getElementById('lessonType');
+        const groups = {
+            videoUrl: document.getElementById('videoUrlGroup'),
+            videoFile: document.getElementById('videoFileGroup'),
+            document: document.getElementById('documentGroup'),
+            quiz: document.getElementById('quizGroup'),
+            assignment: document.getElementById('assignmentGroup'),
+        };
+
+        // Ocultar todos los grupos
+        function hideAllGroups() {
+            Object.values(groups).forEach(g => g.classList.remove('active'));
+        }
+
+        // Mostrar grupos según tipo
+        function showGroupsByType(type) {
+            hideAllGroups();
+            if (type === 'video') {
+                groups.videoUrl.classList.add('active');
+                groups.videoFile.classList.add('active');
+            } else if (type === 'document') {
+                groups.document.classList.add('active');
+            } else if (type === 'quiz') {
+                groups.quiz.classList.add('active');
+            } else if (type === 'assignment') {
+                groups.assignment.classList.add('active');
+            }
+            // text no muestra grupos adicionales
+        }
+
+        typeBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const type = this.dataset.type;
+                // Actualizar botones
+                typeBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                // Actualizar hidden
+                typeHidden.value = type;
+                // Mostrar grupos
+                showGroupsByType(type);
+            });
+        });
+
+        // Inicializar con el tipo seleccionado por defecto
+        const defaultType = 'text';
+        typeHidden.value = defaultType;
+        showGroupsByType(defaultType);
+
+        // ============================================
+        // PREVIEW DE URL DE VIDEO (YouTube)
+        // ============================================
+        const videoUrlInput = document.getElementById('video_url');
+        const videoUrlPreview = document.getElementById('videoUrlPreview');
+
+        videoUrlInput.addEventListener('input', function() {
+            const url = this.value.trim();
+            if (!url) {
+                videoUrlPreview.innerHTML = '';
+                return;
+            }
+
+            // Detectar YouTube
+            const youtubeRegex = /(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&]+)/;
+            const match = url.match(youtubeRegex);
+
+            if (match) {
+                const videoId = match[1];
+                videoUrlPreview.innerHTML = `
+                    <div class="preview-container">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <i class="fas fa-check-circle" style="color: #38a169;"></i>
+                            <span class="fw-semibold">Vista previa del video</span>
+                        </div>
+                        <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: var(--radius-sm);">
+                            <iframe src="https://www.youtube.com/embed/${videoId}"
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                            </iframe>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Si no es YouTube, mostrar mensaje
+                videoUrlPreview.innerHTML = `
+                    <div class="preview-container">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-link" style="color: var(--primary);"></i>
+                            <span>URL de video configurada: <a href="${url}" target="_blank" style="color: var(--primary);">${url}</a></span>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+
+        // ============================================
+        // VALIDACIÓN DEL FORMULARIO
+        // ============================================
+        const form = document.getElementById('lessonForm');
+        const titleInput = document.getElementById('title');
+
+        form.addEventListener('submit', function(e) {
+            let valid = true;
+            const type = typeHidden.value;
+
+            // Limpiar errores
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+            function showError(input, message) {
+                input.classList.add('is-invalid');
+                let feedback = input.parentNode.querySelector('.invalid-feedback');
+                if (!feedback) {
+                    feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    input.parentNode.insertBefore(feedback, input.nextSibling);
+                }
+                feedback.textContent = message;
+                valid = false;
+            }
+
+            // Validar título
+            const title = titleInput.value.trim();
+            if (!title) {
+                showError(titleInput, 'El título es obligatorio.');
+            } else if (title.length < 3) {
+                showError(titleInput, 'El título debe tener al menos 3 caracteres.');
+            }
+
+            // Validar según tipo
+            if (type === 'video') {
+                const hasUrl = videoUrlInput.value.trim() !== '';
+                const hasFile = videoPond.getFiles().length > 0;
+                if (!hasUrl && !hasFile) {
+                    showError(videoUrlInput, 'Debes proporcionar una URL de video o subir un archivo.');
+                }
+            }
+
+            if (type === 'document') {
+                if (documentPond.getFiles().length === 0) {
+                    const input = documentFileInput;
+                    input.classList.add('is-invalid');
+                    let feedback = input.parentNode.querySelector('.invalid-feedback');
+                    if (!feedback) {
+                        feedback = document.createElement('div');
+                        feedback.className = 'invalid-feedback';
+                        input.parentNode.insertBefore(feedback, input.nextSibling);
+                    }
+                    feedback.textContent = 'Debes subir un archivo de documento.';
+                    valid = false;
+                }
+            }
+
+            if (type === 'quiz') {
+                const timeLimit = document.getElementById('quiz_time_limit').value;
+                const passingScore = document.getElementById('quiz_passing_score').value;
+                if (timeLimit && (isNaN(timeLimit) || parseInt(timeLimit) < 1)) {
+                    showError(document.getElementById('quiz_time_limit'), 'Ingresa un tiempo válido.');
+                }
+                if (passingScore && (isNaN(passingScore) || parseInt(passingScore) < 0 || parseInt(passingScore) > 100)) {
+                    showError(document.getElementById('quiz_passing_score'), 'Ingresa un puntaje entre 0 y 100.');
+                }
+            }
+
+            if (!valid) {
+                e.preventDefault();
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) firstError.focus();
+                return false;
+            }
+
+            // Mostrar loading
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
+            submitBtn.disabled = true;
+            return true;
+        });
+
+        // ============================================
+        // MENSAJES DE DJANGO
+        // ============================================
+        {% if messages %}
+            {% for message in messages %}
+                // Ya se muestran en base.html
+            {% endfor %}
+        {% endif %}
+
+        // ============================================
+        // RECUPERAR VALORES SI HAY ERROR
+        // ============================================
+        document.addEventListener('DOMContentLoaded', function() {
+            {% if form_data %}
+                document.getElementById('title').value = '{{ form_data.title|escapejs }}';
+                document.getElementById('description').value = '{{ form_data.description|escapejs }}';
+                document.getElementById('content').value = '{{ form_data.content|escapejs }}';
+                document.getElementById('duration').value = '{{ form_data.duration|escapejs }}';
+                document.getElementById('video_url').value = '{{ form_data.video_url|escapejs }}';
+                if ('{{ form_data.is_free|escapejs }}' === 'on') {
+                    document.getElementById('is_free').checked = true;
+                }
+                // Seleccionar tipo
+                const type = '{{ form_data.lesson_type|escapejs }}';
+                if (type) {
+                    typeBtns.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.type === type);
+                    });
+                    typeHidden.value = type;
+                    showGroupsByType(type);
+                }
+            {% endif %}
+        });
+    })();
+</script>
+{% endblock %}

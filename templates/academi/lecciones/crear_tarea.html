@@ -1,0 +1,61 @@
+{% extends 'academi/lecciones/base_lesson.html' %}
+{% load static %}
+
+{% block title %}Crear tarea - {{ module.title }}{% endblock %}
+
+{% block page_title %}Crear tarea{% endblock %}
+{% block icon_class %}fas fa-pencil-alt{% endblock %}
+
+{% block lesson_fields %}
+<div class="mb-3">
+    <label for="content" class="form-label">
+        Descripción de la tarea
+        <span class="required">*</span>
+    </label>
+    <textarea name="content"
+              id="content"
+              class="form-control"
+              rows="6"
+              placeholder="Describe detalladamente lo que los estudiantes deben hacer...">{{ form_data.content|default:'' }}</textarea>
+</div>
+
+<div class="mb-3">
+    <label for="assignment_deadline" class="form-label">
+        Fecha de entrega
+        <span class="required">*</span>
+    </label>
+    <input type="datetime-local"
+           name="assignment_deadline"
+           id="assignment_deadline"
+           class="form-control"
+           style="max-width: 280px;"
+           value="{{ form_data.assignment_deadline|default:'' }}">
+    <div class="form-text">
+        <i class="fas fa-calendar-alt"></i> Fecha y hora límite para entregar la tarea.
+    </div>
+</div>
+
+<div class="mb-3 p-3 rounded" style="background: var(--primary-lighter); border: 1px solid var(--primary-light);">
+    <div class="d-flex align-items-center gap-2">
+        <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+        <span class="fw-semibold" style="color: var(--primary-dark);">Recomendación:</span>
+        <span class="text-muted small">Los estudiantes podrán subir archivos como evidencia de la tarea.</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block lesson_validation %}
+const deadline = document.getElementById('assignment_deadline').value;
+if (!deadline) {
+    const input = document.getElementById('assignment_deadline');
+    input.classList.add('is-invalid');
+    let feedback = input.parentNode.querySelector('.invalid-feedback');
+    if (!feedback) {
+        feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        input.parentNode.insertBefore(feedback, input.nextSibling);
+    }
+    feedback.textContent = 'Debes establecer una fecha de entrega.';
+    valid = false;
+}
+{% endblock %}

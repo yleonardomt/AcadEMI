@@ -1,0 +1,270 @@
+<footer class="footer">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Columna 1: Logo y descripción -->
+            <div class="col-lg-4 col-md-6">
+                <div class="footer-brand">
+                    <i class="fas fa-graduation-cap"></i> 
+                    <span>AcadEMI</span>
+                    <small class="footer-badge">🇧🇴</small>
+                </div>
+                <p class="footer-description">
+                    Transformando vidas a través de la educación online en Bolivia. 
+                    Aprende de los mejores expertos y alcanza tus metas profesionales.
+                </p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-youtube"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+
+            <!-- Columna 2: Enlaces rápidos -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="footer-title">Plataforma</h6>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Cursos</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Instructores</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Precios</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Blog</a></li>
+                </ul>
+            </div>
+
+            <!-- Columna 3: Soporte -->
+            <div class="col-lg-3 col-md-6">
+                <h6 class="footer-title">Soporte</h6>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Ayuda</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Contacto</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> FAQ</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Términos</a></li>
+                </ul>
+            </div>
+
+            <!-- Columna 4: AcadEMI info -->
+            <div class="col-lg-2 col-md-6">
+                <h6 class="footer-title">AcadEMI</h6>
+                <ul class="footer-links">
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Nosotros</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Carreras</a></li>
+                    <li><a href="#"><i class="fas fa-chevron-right"></i> Prensa</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <hr class="footer-divider">
+
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <p class="copyright">
+                    &copy; 2024 <strong>AcadEMI</strong>. Todos los derechos reservados.
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="copyright-text">
+                    Hecho con <i class="fas fa-heart"></i> en Bolivia
+                    <span class="mx-2">|</span>
+                    <span class="badge-version">v1.0.0</span>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+/* ============================================
+   FOOTER ESTILOS - SIN SUSCRIPCIÓN
+   ============================================ */
+.footer {
+    background: var(--primary-dark);
+    color: var(--white);
+    padding: 60px 0 25px;
+    border-top: 5px solid var(--secondary);
+    margin-top: 60px;
+}
+
+.footer-brand {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--white);
+    margin-bottom: 12px;
+}
+
+.footer-brand i {
+    color: var(--secondary);
+    margin-right: 8px;
+}
+
+.footer-badge {
+    font-size: 14px;
+}
+
+.footer-description {
+    color: rgba(255,255,255,0.7);
+    font-size: 14px;
+    line-height: 1.8;
+    max-width: 320px;
+}
+
+.footer-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 16px;
+    position: relative;
+    padding-bottom: 10px;
+}
+
+.footer-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 30px;
+    height: 3px;
+    background: var(--secondary);
+    border-radius: 10px;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 8px;
+}
+
+.footer-links a {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.footer-links a i {
+    font-size: 10px;
+    color: var(--secondary);
+    transition: var(--transition);
+}
+
+.footer-links a:hover {
+    color: var(--white);
+    padding-left: 6px;
+}
+
+.footer-links a:hover i {
+    transform: translateX(4px);
+}
+
+.social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.7);
+    transition: var(--transition);
+    font-size: 16px;
+    border: 1px solid rgba(255,255,255,0.04);
+}
+
+.social-icons a:hover {
+    background: var(--secondary);
+    color: var(--primary);
+    transform: translateY(-4px);
+    box-shadow: 0 4px 15px rgba(247, 198, 0, 0.3);
+}
+
+.social-icons a:nth-child(1):hover { background: #1877f2; color: white; }
+.social-icons a:nth-child(2):hover { background: #1da1f2; color: white; }
+.social-icons a:nth-child(3):hover { background: #ff0000; color: white; }
+.social-icons a:nth-child(4):hover { background: #e4405f; color: white; }
+.social-icons a:nth-child(5):hover { background: #0a66c2; color: white; }
+
+.footer-divider {
+    border: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin: 30px 0 20px;
+}
+
+.copyright {
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+    margin: 0;
+}
+
+.copyright strong {
+    color: var(--white);
+}
+
+.copyright-text {
+    color: rgba(255,255,255,0.4);
+    font-size: 14px;
+    margin: 0;
+}
+
+.copyright-text i {
+    color: var(--secondary);
+}
+
+.badge-version {
+    display: inline-block;
+    padding: 2px 12px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 50px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer {
+        padding: 40px 0 20px;
+        text-align: center;
+    }
+    
+    .footer-description {
+        max-width: 100%;
+        margin: 0 auto;
+    }
+    
+    .footer-title::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    .footer-links a {
+        justify-content: center;
+    }
+    
+    .social-icons {
+        justify-content: center;
+    }
+    
+    .copyright {
+        text-align: center;
+    }
+    
+    .copyright-text {
+        text-align: center;
+        margin-top: 6px;
+    }
+}
+</style>

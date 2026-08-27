@@ -1,0 +1,264 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Gestionar curso - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold">
+                <i class="fas fa-cog" style="color: var(--primary);"></i> 
+                {{ course.title }}
+            </h4>
+            <p class="text-muted mb-0">
+                <span class="badge {% if course.status == 'published' %}bg-success{% elif course.status == 'draft' %}bg-warning{% else %}bg-secondary{% endif %}">
+                    {{ course.get_status_display }}
+                </span>
+                - {{ course.total_lessons }} lecciones - {{ course.total_modules }} módulos
+            </p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="{% url 'edit_course' course.id %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-edit"></i> Editar curso
+            </a>
+            <a href="{% url 'course_stats' course.id %}" class="btn btn-outline-info btn-sm">
+                <i class="fas fa-chart-bar"></i> Estadísticas
+            </a>
+            <a href="{% url 'course_students' course.id %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-users"></i> Estudiantes
+            </a>
+            {% if course.status == 'draft' %}
+            <a href="{% url 'publish_course' course.id %}" class="btn btn-success btn-sm">
+                <i class="fas fa-rocket"></i> Publicar
+            </a>
+            {% endif %}
+            <a href="{% url 'my_courses' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- MÓDULOS Y LECCIONES -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h6 class="fw-bold mb-0"><i class="fas fa-list-ul"></i> Módulos y lecciones</h6>
+            <a href="{% url 'add_module' course.id %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus-circle"></i> Agregar módulo
+            </a>
+        </div>
+        <div class="card-body">
+            {% if modules %}
+                {% for module in modules %}
+                <div class="module-item mb-3 p-3 rounded" style="background: var(--white-smoke); border: 1px solid var(--gray-light);">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="fw-bold mb-0">
+                                <i class="fas fa-folder-open" style="color: var(--primary);"></i> 
+                                {{ module.title }}
+                            </h6>
+                            {% if module.description %}
+                            <small class="text-muted">{{ module.description }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="d-flex gap-1">
+                            <a href="{% url 'reorder_module' module.id 'up' %}" 
+                               class="btn btn-sm btn-outline-secondary" 
+                               title="Subir módulo"
+                               onclick="event.preventDefault(); reorderModule({{ module.id }}, 'up');">
+                                <i class="fas fa-arrow-up"></i>
+                            </a>
+                            <a href="{% url 'reorder_module' module.id 'down' %}" 
+                               class="btn btn-sm btn-outline-secondary" 
+                               title="Bajar módulo"
+                               onclick="event.preventDefault(); reorderModule({{ module.id }}, 'down');">
+                                <i class="fas fa-arrow-down"></i>
+                            </a>
+                            <a href="{% url 'edit_module' module.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'delete_module' module.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar este módulo?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- LECCIONES DEL MÓDULO -->
+                    <div class="ms-4 mt-2">
+                        {% for lesson in module.lessons.all %}
+                        <div class="lesson-item d-flex justify-content-between align-items-center p-2 mb-1 rounded" style="background: var(--white); border: 1px solid var(--gray-light);">
+                            <div>
+                                <span class="badge {% if lesson.lesson_type == 'video' %}bg-danger{% elif lesson.lesson_type == 'document' %}bg-info{% elif lesson.lesson_type == 'quiz' %}bg-warning{% elif lesson.lesson_type == 'exam' %}bg-purple{% elif lesson.lesson_type == 'assignment' %}bg-primary{% else %}bg-secondary{% endif %} me-2">
+                                    {% if lesson.lesson_type == 'video' %}
+                                        <i class="fas fa-video"></i>
+                                    {% elif lesson.lesson_type == 'document' %}
+                                        <i class="fas fa-file-pdf"></i>
+                                    {% elif lesson.lesson_type == 'quiz' %}
+                                        <i class="fas fa-tasks"></i>
+                                    {% elif lesson.lesson_type == 'exam' %}
+                                        <i class="fas fa-clipboard-list"></i>
+                                    {% elif lesson.lesson_type == 'assignment' %}
+                                        <i class="fas fa-pencil-alt"></i>
+                                    {% else %}
+                                        <i class="fas fa-file-alt"></i>
+                                    {% endif %}
+                                    {{ lesson.get_lesson_type_display }}
+                                </span>
+                                {{ lesson.title }}
+                                {% if lesson.is_free %}
+                                <span class="badge bg-success">Gratis</span>
+                                {% endif %}
+                                {% if lesson.video_file %}
+                                <span class="badge bg-danger"><i class="fas fa-video"></i> Video</span>
+                                {% endif %}
+                                {% if lesson.document_file %}
+                                <span class="badge bg-info"><i class="fas fa-file"></i> Documento</span>
+                                {% endif %}
+                            </div>
+                            <div class="d-flex gap-1">
+                                <a href="{% url 'reorder_lesson' lesson.id 'up' %}" 
+                                   class="btn btn-sm btn-outline-secondary" 
+                                   title="Subir lección"
+                                   onclick="event.preventDefault(); reorderLesson({{ lesson.id }}, 'up');">
+                                    <i class="fas fa-arrow-up"></i>
+                                </a>
+                                <a href="{% url 'reorder_lesson' lesson.id 'down' %}" 
+                                   class="btn btn-sm btn-outline-secondary" 
+                                   title="Bajar lección"
+                                   onclick="event.preventDefault(); reorderLesson({{ lesson.id }}, 'down');">
+                                    <i class="fas fa-arrow-down"></i>
+                                </a>
+                                <a href="{% url 'upload_video' lesson.id %}" class="btn btn-sm btn-outline-danger" title="Subir video">
+                                    <i class="fas fa-video"></i>
+                                </a>
+                                <a href="{% url 'upload_document' lesson.id %}" class="btn btn-sm btn-outline-info" title="Subir documento">
+                                    <i class="fas fa-file-pdf"></i>
+                                </a>
+                                <a href="{% url 'edit_lesson' lesson.id %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'delete_lesson' lesson.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar esta lección?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center text-muted py-2">
+                            <small>No hay lecciones en este módulo</small>
+                        </div>
+                        {% endfor %}
+                        
+                        <!-- DROPDOWN: AGREGAR LECCIÓN POR TIPO -->
+                        <div class="mt-2">
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-plus-circle"></i> Agregar lección
+                                </button>
+                                <ul class="dropdown-menu shadow-lg border-0">
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'create_lesson_text' module.id %}">
+                                            <i class="fas fa-file-alt"></i> Texto
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'create_lesson_video' module.id %}">
+                                            <i class="fas fa-video"></i> Video
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'create_lesson_document' module.id %}">
+                                            <i class="fas fa-file-pdf"></i> Documento
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'create_lesson_quiz' module.id %}">
+                                            <i class="fas fa-tasks"></i> Cuestionario
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'create_lesson_exam' module.id %}">
+                                            <i class="fas fa-clipboard-list"></i> Examen
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="{% url 'create_lesson_assignment' module.id %}">
+                                            <i class="fas fa-pencil-alt"></i> Tarea
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-folder-open fa-3x" style="color: var(--gray-light);"></i>
+                    <p class="text-muted mt-3">No hay módulos creados</p>
+                    <a href="{% url 'add_module' course.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus-circle"></i> Crear primer módulo
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- JAVASCRIPT PARA REORDENAR -->
+<script>
+function reorderModule(moduleId, direction) {
+    fetch(`/module/reorder/${moduleId}/${direction}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                showMessage('Error al reordenar el módulo', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error de conexión', 'error');
+        });
+}
+
+function reorderLesson(lessonId, direction) {
+    fetch(`/lesson/reorder/${lessonId}/${direction}/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                showMessage('Error al reordenar la lección', 'error');
+            }
+        })
+        .catch(error => {
+            showMessage('Error de conexión', 'error');
+        });
+}
+
+function showMessage(message, type) {
+    var messageDiv = document.createElement('div');
+    messageDiv.className = 'alert alert-' + type + ' alert-dismissible fade show';
+    messageDiv.innerHTML = message + '<button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+    document.querySelector('.container').prepend(messageDiv);
+    setTimeout(function() {
+        messageDiv.remove();
+    }, 3000);
+}
+</script>
+
+<style>
+.bg-purple {
+    background-color: #6b46c1;
+    color: white;
+}
+.dropdown-item i {
+    width: 20px;
+    color: var(--primary);
+}
+.dropdown-item:hover i {
+    color: var(--primary);
+}
+</style>
+{% endblock %}

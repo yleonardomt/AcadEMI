@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificación de correo - AcadEMI</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 580px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #0033a0 0%, #1a4db8 100%);
+            padding: 32px 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f7c600, #fad633, #f7c600);
+        }
+        
+        .header h1 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            margin: 0;
+        }
+        
+        .header h1 span {
+            color: #f7c600;
+        }
+        
+        .header .subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            margin-top: 6px;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 40px 35px 30px;
+        }
+        
+        .greeting {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1a202c;
+            margin-bottom: 16px;
+        }
+        
+        .greeting span {
+            color: #0033a0;
+        }
+        
+        .text {
+            color: #4a5568;
+            font-size: 16px;
+            line-height: 1.7;
+            margin-bottom: 12px;
+        }
+        
+        .text strong {
+            color: #0033a0;
+        }
+        
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #e2e8f0, transparent);
+            margin: 24px 0;
+        }
+        
+        .btn-container {
+            text-align: center;
+            margin: 30px 0 24px;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 14px 44px;
+            background: linear-gradient(135deg, #0033a0 0%, #1a4db8 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 51, 160, 0.25);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 28px rgba(0, 51, 160, 0.35);
+        }
+        
+        .btn i {
+            margin-right: 8px;
+        }
+        
+        .warning-box {
+            background: #fef3c7;
+            border-radius: 10px;
+            padding: 14px 18px;
+            margin: 20px 0;
+            border: 1px solid #fde68a;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .warning-box i {
+            color: #d97706;
+            font-size: 20px;
+            margin-top: 2px;
+        }
+        
+        .warning-box p {
+            color: #92400e;
+            font-size: 14px;
+            margin: 0;
+            line-height: 1.5;
+        }
+        
+        .footer {
+            background: #f8fafc;
+            padding: 25px 35px;
+            text-align: center;
+            border-top: 1px solid #e2e8f0;
+        }
+        
+        .footer p {
+            color: #a0aec0;
+            font-size: 13px;
+            margin: 0;
+        }
+        
+        .footer .heart {
+            color: #e53e3e;
+        }
+        
+        .footer .bolivia {
+            color: #f7c600;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+        
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #0033a0;
+        }
+        
+        @media (max-width: 480px) {
+            body {
+                padding: 20px 10px;
+            }
+            
+            .content {
+                padding: 28px 20px 20px;
+            }
+            
+            .header {
+                padding: 24px 20px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .btn {
+                padding: 12px 32px;
+                font-size: 15px;
+                width: 100%;
+            }
+            
+            .footer {
+                padding: 20px;
+            }
+            
+            .warning-box {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- HEADER -->
+    <div class="header">
+        <h1><span>Acad</span>EMI</h1>
+        <p class="subtitle">Verificación de correo</p>
+    </div>
+
+    <!-- CONTENIDO -->
+    <div class="content">
+        <div class="greeting">
+            Hola, <span>{{ user.username }}</span>
+        </div>
+
+        <p class="text">
+            Gracias por registrarte en <strong>AcadEMI</strong>, la plataforma educativa de Bolivia.
+        </p>
+
+        <div class="divider"></div>
+
+        <p class="text">
+            Para comenzar a disfrutar de todos nuestros cursos, solo necesitamos que confirmes tu correo electrónico.
+        </p>
+
+        <div class="btn-container">
+            <a href="{{ verify_link }}" class="btn">
+                <i class="fas fa-check-circle"></i> Confirmar correo
+            </a>
+        </div>
+
+        <div class="warning-box">
+            <i class="fas fa-clock"></i>
+            <p>
+                <strong>Este enlace expirará en 24 horas.</strong><br>
+                Si no solicitaste este registro, ignora este correo.
+            </p>
+        </div>
+
+        <p class="text" style="font-size: 14px; color: #718096; margin-top: 16px; text-align: center;">
+            ¿Tienes preguntas? Escríbenos a 
+            <a href="mailto:soporte@academi.com" style="color: #0033a0; text-decoration: none; font-weight: 500;">
+                soporte@academi.com
+            </a>
+        </p>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        <p>
+            &copy; 2024 <strong>AcadEMI</strong> — Transformando vidas a través de la educación
+        </p>
+        <p style="margin-top: 4px; font-size: 12px;">
+            Hecho con <span class="heart">❤️</span> en <span class="bolivia">🇧🇴</span> Bolivia
+        </p>
+        <div class="footer-links">
+            <a href="#">Términos</a>
+            <a href="#">Privacidad</a>
+            <a href="#">Ayuda</a>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</body>
+</html>

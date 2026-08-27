@@ -1,0 +1,64 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Estudiantes - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold">
+            <i class="fas fa-users" style="color: var(--primary);"></i> 
+            Estudiantes de "{{ course.title }}"
+        </h4>
+        <a href="{% url 'manage_course' course.id %}" class="btn btn-outline-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Volver
+        </a>
+    </div>
+
+    <div class="card shadow-lg border-0">
+        <div class="card-body">
+            {% if enrollments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Estudiante</th>
+                            <th>Email</th>
+                            <th>Progreso</th>
+                            <th>Estado</th>
+                            <th>Inscrito</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for enrollment in enrollments %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ enrollment.student.first_name|default:enrollment.student.username }}</td>
+                            <td>{{ enrollment.student.email }}</td>
+                            <td>
+                                <div class="progress" style="height: 8px; width: 100px;">
+                                    <div class="progress-bar" style="width: {{ enrollment.progress_percentage }}%; background: var(--primary-gradient);"></div>
+                                </div>
+                                <small>{{ enrollment.progress_percentage }}%</small>
+                            </td>
+                            <td>
+                                <span class="badge {% if enrollment.status == 'completed' %}bg-success{% elif enrollment.status == 'in_progress' %}bg-warning{% else %}bg-secondary{% endif %}">
+                                    {{ enrollment.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ enrollment.enrollment_date|date:"d/m/Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-users fa-3x" style="color: var(--gray-light);"></i>
+                <p class="text-muted mt-3">No hay estudiantes inscritos en este curso</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

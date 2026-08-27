@@ -1,0 +1,603 @@
+/* ============================================
+   VARIABLES DE COLORES - ACADEMI
+   ============================================ */
+:root {
+    --primary: #0033a0;
+    --primary-dark: #002277;
+    --primary-light: #1a4db8;
+    --primary-lighter: #e8edf5;
+    --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
+    --secondary: #f7c600;
+    --secondary-dark: #d4a800;
+    --white: #ffffff;
+    --white-smoke: #f5f7fa;
+    --gray-light: #e2e8f0;
+    --gray: #718096;
+    --gray-dark: #2d3748;
+    --dark: #1a202c;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --font: 'Inter', sans-serif;
+    --shadow: 0 4px 20px rgba(0,51,160,0.08);
+    --shadow-hover: 0 8px 40px rgba(0,51,160,0.15);
+    --radius: 16px;
+    --radius-sm: 8px;
+    --transition: all 0.3s ease;
+}
+
+/* ============================================
+   RESET Y BASE
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font);
+    font-size: 16px;
+    line-height: 1.7;
+    background: var(--white-smoke);
+    color: var(--gray-dark);
+}
+
+/* ============================================
+   NAVBAR
+   ============================================ */
+.navbar {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(20px);
+    padding: 12px 0;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.04);
+    border-bottom: 3px solid var(--primary);
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+}
+
+.navbar-brand {
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.navbar-brand i {
+    color: var(--secondary);
+    font-size: 28px;
+}
+
+.brand-badge {
+    font-size: 10px;
+    font-weight: 700;
+    background: var(--secondary);
+    color: var(--primary);
+    padding: 2px 10px;
+    border-radius: 50px;
+}
+
+/* ============================================
+   CONTENIDO PRINCIPAL
+   ============================================ */
+main {
+    margin-top: 76px;
+    min-height: calc(100vh - 300px);
+    padding: 20px 0;
+}
+
+/* ============================================
+   TARJETAS Y CARDS
+   ============================================ */
+.card {
+    border-radius: var(--radius);
+    border: none;
+    background: var(--white);
+    transition: var(--transition);
+    margin-bottom: 20px;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-hover);
+}
+
+.card-body {
+    padding: 24px;
+}
+
+/* ============================================
+   ESTADÍSTICAS
+   ============================================ */
+.stat-card {
+    background: var(--white);
+    padding: 16px;
+    border-radius: var(--radius-sm);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.stat-card h4 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0;
+}
+
+/* ============================================
+   AVATAR Y PERFIL
+   ============================================ */
+.avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: var(--primary-lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 50px;
+    color: var(--primary);
+    border: 4px solid var(--primary);
+}
+
+.status-dot {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 3px solid white;
+    background: #10b981;
+}
+
+/* ============================================
+   BOTONES
+   ============================================ */
+.btn {
+    border-radius: 50px;
+    padding: 10px 24px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(0,51,160,0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,51,160,0.3);
+    color: var(--white);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary);
+    color: var(--primary);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.btn.w-100 {
+    border-radius: var(--radius-sm);
+    padding: 12px;
+}
+
+.btn.w-100 i {
+    font-size: 20px !important;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+.footer {
+    background: var(--primary-dark);
+    color: var(--white);
+    padding: 40px 0 20px;
+    border-top: 5px solid var(--secondary);
+    margin-top: 40px;
+}
+
+.footer h5 {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.footer h5 i {
+    color: var(--secondary);
+    margin-right: 8px;
+}
+
+.footer h6 {
+    color: var(--secondary);
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+
+.footer p {
+    color: rgba(255,255,255,0.6);
+    font-size: 14px;
+}
+
+.footer ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer ul li {
+    margin-bottom: 8px;
+}
+
+.footer ul li a {
+    color: rgba(255,255,255,0.5);
+    transition: var(--transition);
+}
+
+.footer ul li a:hover {
+    color: var(--secondary);
+    padding-left: 4px;
+}
+
+.social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.6);
+    transition: var(--transition);
+}
+
+.social-icons a:hover {
+    background: var(--secondary);
+    color: var(--primary);
+    transform: translateY(-3px);
+}
+
+.subscribe-form {
+    display: flex;
+    gap: 8px;
+}
+
+.subscribe-form input {
+    flex: 1;
+    padding: 10px 16px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: 50px;
+    background: rgba(255,255,255,0.04);
+    color: var(--white);
+    font-family: var(--font);
+    font-size: 14px;
+    outline: none;
+}
+
+.subscribe-form input::placeholder {
+    color: rgba(255,255,255,0.4);
+}
+
+.subscribe-form input:focus {
+    border-color: var(--secondary);
+}
+
+.subscribe-form button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 50px;
+    background: var(--secondary);
+    color: var(--primary);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.subscribe-form button:hover {
+    background: var(--white);
+}
+
+.footer hr {
+    border-color: rgba(255,255,255,0.06);
+    margin: 30px 0 20px;
+}
+
+.copyright {
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+    font-size: 13px;
+}
+
+.copyright i {
+    color: var(--secondary);
+}
+
+/* ============================================
+   CHATBOT FLOTANTE
+   ============================================ */
+.chatbot-float {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 9999;
+}
+
+.chatbot-toggle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--primary-gradient);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,51,160,0.4);
+    transition: all 0.3s ease;
+}
+
+.chatbot-toggle:hover {
+    transform: scale(1.08);
+}
+
+.chatbot-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    background: var(--danger);
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 50px;
+}
+
+.chatbot-window {
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    width: 350px;
+    height: 450px;
+    background: white;
+    border-radius: var(--radius);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+    display: none;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.chatbot-window.active {
+    display: flex;
+}
+
+.chatbot-header {
+    background: var(--primary-gradient);
+    color: white;
+    padding: 14px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 3px solid var(--secondary);
+}
+
+.chatbot-header-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.chatbot-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+}
+
+.chatbot-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    opacity: 0.7;
+}
+
+.chatbot-close:hover {
+    opacity: 1;
+}
+
+.chatbot-body {
+    flex: 1;
+    padding: 14px 18px;
+    overflow-y: auto;
+    background: #f8fafc;
+}
+
+.chatbot-message {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+}
+
+.chatbot-message.bot {
+    align-items: flex-start;
+}
+
+.chatbot-message.user {
+    align-items: flex-end;
+}
+
+.message-content {
+    max-width: 85%;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.chatbot-message.bot .message-content {
+    background: white;
+    color: var(--gray-dark);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.chatbot-message.user .message-content {
+    background: var(--primary-gradient);
+    color: white;
+}
+
+.message-time {
+    font-size: 10px;
+    color: #a0aec0;
+    margin-top: 4px;
+}
+
+.chatbot-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.chatbot-option {
+    padding: 6px 12px;
+    border: 2px solid var(--gray-light);
+    border-radius: 50px;
+    background: white;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.chatbot-option:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-lighter);
+}
+
+.chatbot-footer {
+    padding: 10px 14px;
+    background: white;
+    border-top: 1px solid var(--gray-light);
+    display: flex;
+    gap: 8px;
+}
+
+.chatbot-input {
+    flex: 1;
+    padding: 8px 14px;
+    border: 2px solid var(--gray-light);
+    border-radius: 50px;
+    font-size: 14px;
+    outline: none;
+    font-family: var(--font);
+}
+
+.chatbot-input:focus {
+    border-color: var(--primary);
+}
+
+.chatbot-send {
+    padding: 8px 14px;
+    border: none;
+    border-radius: 50px;
+    background: var(--primary-gradient);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.chatbot-send:hover {
+    transform: scale(1.05);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    main {
+        margin-top: 60px;
+        padding: 10px 0;
+    }
+    
+    .navbar-brand {
+        font-size: 18px;
+    }
+    
+    .navbar-brand i {
+        font-size: 20px;
+    }
+    
+    .chatbot-window {
+        width: calc(100vw - 40px);
+        right: 0;
+    }
+    
+    .chatbot-float {
+        bottom: 20px;
+        right: 20px;
+    }
+    
+    .chatbot-toggle {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+    }
+    
+    .stat-card h4 {
+        font-size: 22px;
+    }
+    
+    .card-body {
+        padding: 16px !important;
+    }
+    
+    .footer {
+        text-align: center;
+        padding: 30px 0 15px;
+    }
+    
+    .social-icons {
+        justify-content: center;
+    }
+    
+    .subscribe-form {
+        flex-direction: column;
+    }
+    
+    .btn.w-100 {
+        padding: 8px;
+    }
+}

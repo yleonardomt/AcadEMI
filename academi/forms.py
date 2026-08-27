@@ -1,5 +1,5 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from captcha.fields import CaptchaField
@@ -12,6 +12,10 @@ ROLES_CHOICES = (
     ('teacher', 'Docente'),
 )
 
+
+# ============================================
+# RF-01: REGISTRARSE (COMPLETO)
+# ============================================
 class RegisterForm(UserCreationForm):
     # Datos básicos
     username = forms.CharField(required=True, widget=forms.TextInput(attrs={
@@ -31,14 +35,12 @@ class RegisterForm(UserCreationForm):
         'class': 'form-control',
         'placeholder': 'Confirma tu contraseña'
     }))
-    
-    # Rol
     role = forms.ChoiceField(choices=ROLES_CHOICES, required=True, widget=forms.Select(attrs={
         'class': 'form-control',
         'id': 'id_role'
     }))
     
-    # Campos para estudiante
+    # ===== CAMPOS PARA ESTUDIANTE =====
     full_name = forms.CharField(required=False, widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Tu nombre completo'
@@ -88,7 +90,7 @@ class RegisterForm(UserCreationForm):
         ('fotografia', 'Fotografía'),
     ), widget=forms.CheckboxSelectMultiple(attrs={'class': 'form-check-input'}))
     
-    # Campos para docente
+    # ===== CAMPOS PARA DOCENTE =====
     teacher_full_name = forms.CharField(required=False, widget=forms.TextInput(attrs={
         'class': 'form-control',
         'placeholder': 'Tu nombre completo'
@@ -146,7 +148,7 @@ class RegisterForm(UserCreationForm):
         'placeholder': 'https://tu-sitio-web.com'
     }))
     
-    # CAPTCHA
+    # ===== CAPTCHA =====
     captcha = CaptchaField(label='Código de seguridad')
 
     class Meta:
@@ -155,6 +157,7 @@ class RegisterForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Hacer todos los campos extra opcionales
         for field_name in self.fields:
             if field_name not in ['username', 'email', 'password1', 'password2', 'role', 'captcha']:
                 self.fields[field_name].required = False
@@ -232,7 +235,7 @@ class RegisterForm(UserCreationForm):
 
 
 # ============================================
-# LOGIN FORM CON CAPTCHA
+# RF-02: INICIAR SESIÓN
 # ============================================
 class LoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={
@@ -246,13 +249,80 @@ class LoginForm(AuthenticationForm):
     captcha = CaptchaField(label='Código de seguridad')
 
 
+# ============================================
+# RF-05: CAMBIAR CONTRASEÑA
+# ============================================
+class CustomPasswordChangeForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Contraseña actual'
+    }))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Nueva contraseña'
+    }))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Confirmar nueva contraseña'
+    }))
+
+
+# ============================================
+# RF-03: RECUPERAR CONTRASEÑA
+# ============================================
+class PasswordResetRequestForm(forms.Form):
+    email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Ingresa tu email registrado'
+    }))
+    captcha = CaptchaField(label='Código de seguridad')
+
+
+class PasswordResetConfirmForm(forms.Form):
+    new_password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Nueva contraseña (mínimo 8 caracteres)'
+    }))
+    confirm_password = forms.CharField(required=True, widget=forms.PasswordInput(attrs={
+        'class': 'form-control',
+        'placeholder': 'Confirmar nueva contraseña'
+    }))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        new_password = cleaned_data.get('new_password')
+        confirm_password = cleaned_data.get('confirm_password')
+        
+        if new_password and confirm_password and new_password != confirm_password:
+            raise ValidationError('Las contraseñas no coinciden')
+        
+        if new_password and len(new_password) < 8:
+            raise ValidationError('La contraseña debe tener al menos 8 caracteres')
+        
+        if new_password and not re.search(r'[A-Z]', new_password):
+            raise ValidationError('Debe tener al menos una mayúscula')
+        
+        if new_password and not re.search(r'[a-z]', new_password):
+            raise ValidationError('Debe tener al menos una minúscula')
+        
+        if new_password and not re.search(r'[0-9]', new_password):
+            raise ValidationError('Debe tener al menos un número')
+        
+        return cleaned_data
+
+
+# ============================================
+# PERFIL (RF-08, RF-09)
+# ============================================
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'email', 'phone', 'bio', 'profile_picture']
+        fields = ['username', 'email', 'phone', 'bio', 'profile_picture', 'first_name', 'last_name']
         widgets = {
             'username': forms.TextInput(attrs={'class': 'form-control'}),
             'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Nombre'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Apellido'}),
             'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Ej: 79123456'}),
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Cuéntanos sobre ti...'}),
             'profile_picture': forms.FileInput(attrs={'class': 'form-control'}),
