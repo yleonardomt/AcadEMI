@@ -1,0 +1,640 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Catálogo de cursos - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .filter-section {
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        position: sticky;
+        top: 90px;
+    }
+    .filter-section .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 13px;
+    }
+    .filter-section .form-control,
+    .filter-section .form-select {
+        border-radius: 8px;
+        border: 1.5px solid #e2e8f0;
+        padding: 8px 12px;
+        font-size: 14px;
+        transition: all 0.3s ease;
+    }
+    .filter-section .form-control:focus,
+    .filter-section .form-select:focus {
+        border-color: #0033a0;
+        box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+    }
+    .filter-section .btn-filter {
+        background: #0033a0;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .filter-section .btn-filter:hover {
+        background: #002277;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 51, 160, 0.2);
+    }
+    .filter-section .btn-clear {
+        background: transparent;
+        color: #718096;
+        border: 1.5px solid #e2e8f0;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    .filter-section .btn-clear:hover {
+        background: #f5f7fa;
+        border-color: #718096;
+    }
+    .course-card-catalog {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+        background: #ffffff;
+        height: 100%;
+    }
+    .course-card-catalog:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 40px rgba(0, 51, 160, 0.10);
+        border-color: #0033a0;
+    }
+    .course-card-catalog .card-img-top {
+        height: 180px;
+        object-fit: cover;
+        background: #e8edf5;
+    }
+    .course-card-catalog .card-img-placeholder {
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0033a0, #1a4db8);
+        color: white;
+        font-size: 48px;
+    }
+    .course-card-catalog .card-body {
+        padding: 18px 20px;
+    }
+    .course-card-catalog .card-footer {
+        background: transparent;
+        border-top: 1px solid #e2e8f0;
+        padding: 12px 20px;
+    }
+    .course-price {
+        font-weight: 700;
+        color: #0033a0;
+        font-size: 18px;
+    }
+    .course-price.free {
+        color: #10b981;
+    }
+    .course-rating {
+        color: #f7c600;
+        font-size: 14px;
+    }
+    .course-rating .count {
+        color: #718096;
+        font-size: 13px;
+    }
+    .course-meta {
+        font-size: 13px;
+        color: #718096;
+    }
+    .course-meta i {
+        width: 16px;
+        color: #0033a0;
+    }
+    .badge-level {
+        font-size: 11px;
+        padding: 3px 12px;
+        border-radius: 50px;
+        font-weight: 600;
+    }
+    .badge-level.beginner { background: #d4edda; color: #155724; }
+    .badge-level.intermediate { background: #fff3cd; color: #856404; }
+    .badge-level.advanced { background: #f8d7da; color: #721c24; }
+    .badge-level.expert { background: #d1ecf1; color: #0c5460; }
+    .badge-featured {
+        background: #f7c600;
+        color: #002277;
+        font-size: 10px;
+        padding: 2px 10px;
+        border-radius: 50px;
+        font-weight: 700;
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 1;
+    }
+    .badge-owned {
+        background: #10b981;
+        color: white;
+        font-size: 10px;
+        padding: 2px 10px;
+        border-radius: 50px;
+        font-weight: 700;
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 1;
+    }
+    .results-count {
+        font-size: 14px;
+        color: #718096;
+    }
+    .results-count strong {
+        color: #2d3748;
+    }
+    .empty-catalog {
+        padding: 80px 20px;
+        text-align: center;
+    }
+    .empty-catalog i {
+        font-size: 64px;
+        color: #cbd5e0;
+        margin-bottom: 20px;
+    }
+    .empty-catalog h4 {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+    .empty-catalog p {
+        color: #718096;
+        max-width: 400px;
+        margin: 0 auto;
+    }
+    .btn-add-cart {
+        background: transparent;
+        border: 2px solid #0033a0;
+        color: #0033a0;
+        font-weight: 600;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        white-space: nowrap;
+    }
+    .btn-add-cart:hover {
+        background: #0033a0;
+        color: white;
+    }
+    .btn-add-cart.in-cart {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
+    .btn-add-cart.in-cart:hover {
+        background: #059669;
+        border-color: #059669;
+    }
+    .btn-add-cart .btn-text {
+        font-size: 12px;
+    }
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    .toast-custom {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border-left: 4px solid #0033a0;
+        min-width: 260px;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+    .toast-custom.success {
+        border-left-color: #10b981;
+    }
+    .toast-custom.error {
+        border-left-color: #e53e3e;
+    }
+    .toast-custom i {
+        font-size: 18px;
+    }
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #718096;
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    .toast-custom .toast-close:hover {
+        color: #1a202c;
+    }
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-custom.removing {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+    .footer-actions {
+        display: flex;
+        gap: 8px;
+    }
+    .footer-actions .btn {
+        font-size: 13px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        flex: 1;
+    }
+    @media (max-width: 768px) {
+        .filter-section {
+            position: static;
+            margin-bottom: 20px;
+        }
+        .course-card-catalog .card-img-top,
+        .course-card-catalog .card-img-placeholder {
+            height: 140px;
+        }
+        .footer-actions .btn {
+            font-size: 12px;
+            padding: 5px 10px;
+        }
+        .btn-add-cart {
+            padding: 5px 10px;
+            font-size: 12px;
+        }
+        .btn-add-cart .btn-text {
+            display: none;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-book-open" style="color: #0033a0;"></i> Catálogo de cursos
+            </h2>
+            <p class="text-muted mb-0">Descubre y aprende con los mejores cursos</p>
+        </div>
+        <div class="results-count">
+            <strong>{{ courses.count }}</strong> cursos disponibles
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- FILTROS - SIDEBAR -->
+        <div class="col-lg-3">
+            <div class="filter-section">
+                <form method="GET" action="{% url 'catalog' %}" id="filterForm">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-search"></i> Buscar</label>
+                        <input type="text" name="q" class="form-control" placeholder="Buscar cursos..." value="{{ request.GET.q|default:'' }}">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-tags"></i> Categoría</label>
+                        <select name="category" class="form-select">
+                            <option value="">Todas las categorías</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.id }}" {% if request.GET.category|add:'0' == cat.id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-signal"></i> Nivel</label>
+                        <select name="level" class="form-select">
+                            <option value="">Todos los niveles</option>
+                            <option value="beginner" {% if request.GET.level == 'beginner' %}selected{% endif %}>Principiante</option>
+                            <option value="intermediate" {% if request.GET.level == 'intermediate' %}selected{% endif %}>Intermedio</option>
+                            <option value="advanced" {% if request.GET.level == 'advanced' %}selected{% endif %}>Avanzado</option>
+                            <option value="expert" {% if request.GET.level == 'expert' %}selected{% endif %}>Experto</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-dollar-sign"></i> Precio</label>
+                        <select name="price" class="form-select">
+                            <option value="">Todos los precios</option>
+                            <option value="free" {% if request.GET.price == 'free' %}selected{% endif %}>Gratis</option>
+                            <option value="paid" {% if request.GET.price == 'paid' %}selected{% endif %}>Pagos</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label"><i class="fas fa-sort"></i> Ordenar por</label>
+                        <select name="sort" class="form-select">
+                            <option value="newest" {% if request.GET.sort == 'newest' %}selected{% endif %}>Más recientes</option>
+                            <option value="popular" {% if request.GET.sort == 'popular' %}selected{% endif %}>Más populares</option>
+                            <option value="price_low" {% if request.GET.sort == 'price_low' %}selected{% endif %}>Precio: menor a mayor</option>
+                            <option value="price_high" {% if request.GET.sort == 'price_high' %}selected{% endif %}>Precio: mayor a menor</option>
+                            <option value="rating" {% if request.GET.sort == 'rating' %}selected{% endif %}>Mejor valorados</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn-filter">
+                            <i class="fas fa-filter"></i> Aplicar filtros
+                        </button>
+                        <a href="{% url 'catalog' %}" class="btn-clear text-center">
+                            <i class="fas fa-times"></i> Limpiar filtros
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- CURSOS -->
+        <div class="col-lg-9">
+            <div class="row g-4">
+                {% if courses %}
+                    {% for course in courses %}
+                    <div class="col-md-6 col-xl-4">
+                        <div class="course-card-catalog card h-100 position-relative">
+
+                            {% if course.is_featured %}
+                            <span class="badge-featured"><i class="fas fa-star"></i> Destacado</span>
+                            {% endif %}
+
+                            {% if user.is_authenticated and user.role == 'student' and course.id in user_enrolled_courses %}
+                            <span class="badge-owned"><i class="fas fa-check-circle"></i> Adquirido</span>
+                            {% endif %}
+
+                            <!-- IMAGEN -->
+                            {% if course.image %}
+                                <img src="{{ course.image.url }}" alt="{{ course.title }}" class="card-img-top">
+                            {% else %}
+                                <div class="card-img-placeholder">
+                                    <i class="fas fa-book-open"></i>
+                                </div>
+                            {% endif %}
+
+                            <!-- CUERPO -->
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <span class="badge-level {{ course.level }}">
+                                        {{ course.get_level_display }}
+                                    </span>
+                                    <span class="course-price {% if course.is_free %}free{% endif %}">
+                                        {% if course.is_free %}
+                                            <i class="fas fa-gift"></i> Gratis
+                                        {% else %}
+                                            Bs. {{ course.price }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <h5 class="fw-bold mb-1">{{ course.title }}</h5>
+                                <p class="text-muted small mb-2">{{ course.description|truncatechars:60 }}</p>
+
+                                <div class="course-rating mb-2">
+                                    {% with avg=course.average_rating|default:0 %}
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= avg|add:"0" %}
+                                                <i class="fas fa-star"></i>
+                                            {% elif forloop.counter <= avg|add:"0.5" %}
+                                                <i class="fas fa-star-half-alt"></i>
+                                            {% else %}
+                                                <i class="far fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endwith %}
+                                    <span class="count">({{ course.total_reviews }})</span>
+                                </div>
+
+                                <div class="course-meta">
+                                    <span><i class="fas fa-user"></i> {{ course.total_students }} estudiantes</span>
+                                    <span class="ms-2"><i class="fas fa-book"></i> {{ course.total_lessons }} lecciones</span>
+                                </div>
+                            </div>
+
+                            <!-- FOOTER -->
+                            <div class="card-footer">
+                                {% if user.is_authenticated and user.role == 'student' and course.id in user_enrolled_courses %}
+                                    <!-- CURSO ADQUIRIDO -->
+                                    <a href="{% url 'course_learn' course.id %}" class="btn btn-success w-100">
+                                        <i class="fas fa-play"></i> Continuar aprendiendo
+                                    </a>
+                                {% else %}
+                                    <div class="footer-actions">
+                                        <!-- VER CURSO -->
+                                        <a href="{% url 'course_detail' course.id %}" class="btn btn-primary flex-grow-1">
+                                            <i class="fas fa-eye"></i> Ver curso
+                                        </a>
+
+                                        <!-- AGREGAR AL CARRITO -->
+                                        {% if user.is_authenticated %}
+                                        <button class="btn-add-cart" onclick="addToCart({{ course.id }}, '{{ course.title|escapejs }}')" id="cartBtn{{ course.id }}" title="Agregar al carrito">
+                                            <i class="fas fa-shopping-cart"></i>
+                                            <span class="btn-text" id="cartText{{ course.id }}">Carrito</span>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="empty-catalog">
+                            <i class="fas fa-search"></i>
+                            <h4>No se encontraron cursos</h4>
+                            <p>Intenta con otros filtros o palabras clave diferentes.</p>
+                            <a href="{% url 'catalog' %}" class="btn btn-primary mt-3">
+                                <i class="fas fa-times"></i> Limpiar filtros
+                            </a>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ============================================
+    // TOAST NOTIFICATIONS
+    // ============================================
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + type;
+
+        var icon = type === 'error' ? 'fas fa-times-circle' :
+                   type === 'success' ? 'fas fa-check-circle' :
+                   'fas fa-info-circle';
+        var iconColor = type === 'error' ? '#e53e3e' :
+                        type === 'success' ? '#10b981' :
+                        '#0033a0';
+
+        toast.innerHTML = `
+            <i class="${icon}" style="color: ${iconColor};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // ============================================
+    // CARRITO - VARIABLES GLOBALES
+    // ============================================
+    var cartItems = [];
+
+    // ============================================
+    // AGREGAR AL CARRITO
+    // ============================================
+    function addToCart(courseId, courseTitle) {
+        var btn = document.getElementById('cartBtn' + courseId);
+
+        if (!btn) return;
+
+        // Verificar si ya está en el carrito
+        if (cartItems.includes(courseId)) {
+            // Quitar del carrito
+            cartItems = cartItems.filter(function(id) { return id !== courseId; });
+            btn.classList.remove('in-cart');
+            btn.innerHTML = '<i class="fas fa-shopping-cart"></i><span class="btn-text" id="cartText' + courseId + '">Carrito</span>';
+            showToast('Curso "' + courseTitle + '" eliminado del carrito', 'error');
+            updateCartCount();
+            return;
+        }
+
+        // Agregar al carrito (vía AJAX)
+        fetch('/cart/add/' + courseId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ course_id: courseId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                cartItems.push(courseId);
+                btn.classList.add('in-cart');
+                btn.innerHTML = '<i class="fas fa-check"></i><span class="btn-text" id="cartText' + courseId + '">En carrito</span>';
+                showToast('Curso "' + courseTitle + '" agregado al carrito', 'success');
+                updateCartCount();
+            } else {
+                showToast(data.message || 'Error al agregar al carrito', 'error');
+            }
+        })
+        .catch(function() {
+            showToast('Error de conexión al servidor', 'error');
+        });
+    }
+
+    // ============================================
+    // ACTUALIZAR CONTADOR DEL CARRITO
+    // ============================================
+    function updateCartCount() {
+        var count = cartItems.length;
+        var badge = document.querySelector('.badge-cart');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    // ============================================
+    // INICIALIZAR CARRITO
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Obtener items del carrito desde el servidor
+        fetch('/cart/items/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cartItems = data.items || [];
+                    // Actualizar botones
+                    cartItems.forEach(function(id) {
+                        var btn = document.getElementById('cartBtn' + id);
+                        if (btn) {
+                            btn.classList.add('in-cart');
+                            btn.innerHTML = '<i class="fas fa-check"></i><span class="btn-text" id="cartText' + id + '">En carrito</span>';
+                        }
+                    });
+                    updateCartCount();
+                }
+            })
+            .catch(function() {});
+    });
+
+    // ============================================
+    // CIERRE AUTOMÁTICO DE TOAST
+    // ============================================
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.toast-close')) {
+            var toast = e.target.closest('.toast-custom');
+            if (toast) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }
+        }
+    });
+</script>
+{% endblock %}

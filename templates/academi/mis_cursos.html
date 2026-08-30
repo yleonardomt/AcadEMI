@@ -1,14 +1,351 @@
 {% extends 'partials/base.html' %}
+{% load static %}
 
 {% block title %}Mis cursos - AcadEMI{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* ============================================
+       CARD DE CURSO
+       ============================================ */
+    .course-card {
+        border-radius: 16px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        border: none;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+        background: #ffffff;
+        height: 100%;
+    }
+    .course-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 40px rgba(0, 51, 160, 0.10);
+    }
+    .course-card .card-img-top {
+        height: 180px;
+        object-fit: cover;
+        background: #e8edf5;
+    }
+    .course-card .card-img-placeholder {
+        height: 180px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #0033a0, #1a4db8);
+        color: white;
+        font-size: 48px;
+    }
+    .course-card .card-body {
+        padding: 20px;
+    }
+    .course-card .card-footer {
+        background: transparent;
+        border-top: 1px solid #e2e8f0;
+        padding: 16px 20px;
+    }
+
+    /* ============================================
+       ESTADÍSTICAS DEL CURSO
+       ============================================ */
+    .course-stats {
+        display: flex;
+        gap: 16px;
+        font-size: 13px;
+        color: #718096;
+        margin-top: 8px;
+    }
+    .course-stats i {
+        width: 16px;
+        color: #0033a0;
+    }
+
+    /* ============================================
+       BARRA DE PROGRESO
+       ============================================ */
+    .course-progress {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 10px;
+        margin-top: 12px;
+        overflow: hidden;
+    }
+    .course-progress .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #0033a0, #1a4db8);
+        border-radius: 10px;
+        transition: width 0.8s ease;
+    }
+
+    /* ============================================
+       PRECIO
+       ============================================ */
+    .price-tag {
+        font-weight: 700;
+        color: #0033a0;
+        font-size: 18px;
+    }
+    .price-tag.free {
+        color: #10b981;
+    }
+
+    /* ============================================
+       BADGES
+       ============================================ */
+    .badge-status {
+        font-size: 11px;
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+    .badge-status.published {
+        background: #10b981;
+        color: white;
+    }
+    .badge-status.draft {
+        background: #f59e0b;
+        color: white;
+    }
+    .badge-status.pending {
+        background: #3b82f6;
+        color: white;
+    }
+    .badge-status.rejected {
+        background: #ef4444;
+        color: white;
+    }
+    .badge-status.archived {
+        background: #6b7280;
+        color: white;
+    }
+
+    /* ============================================
+       BOTONES DE ACCIÓN
+       ============================================ */
+    .action-btns {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+    }
+    .action-btns .btn {
+        font-size: 13px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    .action-btns .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* ============================================
+       ESTADO VACÍO
+       ============================================ */
+    .empty-state {
+        padding: 80px 20px;
+        text-align: center;
+    }
+    .empty-state i {
+        font-size: 64px;
+        color: #cbd5e0;
+        margin-bottom: 20px;
+    }
+    .empty-state h4 {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+    .empty-state p {
+        color: #718096;
+        max-width: 400px;
+        margin: 0 auto 20px;
+    }
+
+    /* ============================================
+       TOAST
+       ============================================ */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    .toast-custom {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border-left: 4px solid #0033a0;
+        min-width: 260px;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+    .toast-custom.success {
+        border-left-color: #10b981;
+    }
+    .toast-custom.error {
+        border-left-color: #ef4444;
+    }
+    .toast-custom.warning {
+        border-left-color: #f59e0b;
+    }
+    .toast-custom i {
+        font-size: 18px;
+    }
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #718096;
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    .toast-custom .toast-close:hover {
+        color: #1a202c;
+    }
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0%); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0%); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-custom.removing {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+
+    /* ============================================
+       MODAL DE CONFIRMACIÓN
+       ============================================ */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active {
+        display: flex;
+    }
+    .modal-box {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+        animation: modalIn 0.3s ease;
+    }
+    .modal-box .modal-icon {
+        font-size: 48px;
+        color: #ef4444;
+        margin-bottom: 16px;
+    }
+    .modal-box h4 {
+        font-weight: 700;
+        color: #2d3748;
+        margin-bottom: 8px;
+    }
+    .modal-box p {
+        color: #718096;
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+    .modal-box .modal-buttons {
+        display: flex;
+        gap: 12px;
+    }
+    .modal-box .modal-buttons .btn {
+        flex: 1;
+        border-radius: 50px;
+        padding: 10px;
+    }
+    @keyframes modalIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 576px) {
+        .course-card .card-img-top,
+        .course-card .card-img-placeholder {
+            height: 140px;
+        }
+        .action-btns .btn {
+            font-size: 12px;
+            padding: 4px 10px;
+        }
+        .price-tag {
+            font-size: 15px;
+        }
+        .empty-state {
+            padding: 40px 20px;
+        }
+        .modal-box {
+            padding: 24px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">
-            <i class="fas fa-list" style="color: var(--primary);"></i> 
-            {% if user.role == 'teacher' %}Mis cursos{% else %}Cursos adquiridos{% endif %}
-        </h2>
+<div class="container py-4">
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
+    <div class="modal-overlay" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-icon">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h4>¿Eliminar curso?</h4>
+            <p>Estás a punto de eliminar "<span id="deleteCourseTitle"></span>". Esta acción no se puede deshacer.</p>
+            <div class="modal-buttons">
+                <button class="btn btn-outline-secondary" onclick="closeDeleteModal()">
+                    Cancelar
+                </button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-1">
+                <i class="fas fa-graduation-cap" style="color: #0033a0;"></i> 
+                {% if user.role == 'teacher' %}
+                    Mis cursos
+                {% else %}
+                    Mis cursos adquiridos
+                {% endif %}
+            </h2>
+            <p class="text-muted mb-0">
+                {% if user.role == 'teacher' %}
+                    Administra tus cursos y comparte tu conocimiento
+                {% else %}
+                    Continúa aprendiendo desde donde lo dejaste
+                {% endif %}
+            </p>
+        </div>
         {% if user.role == 'teacher' %}
         <a href="{% url 'create_course' %}" class="btn btn-primary">
             <i class="fas fa-plus-circle"></i> Crear curso
@@ -16,64 +353,111 @@
         {% endif %}
     </div>
 
+    <!-- CURSOS -->
     <div class="row g-4">
         {% if courses %}
             {% for course in courses %}
-            <div class="col-md-4">
-                <div class="card shadow-lg border-0 h-100">
+            <div class="col-lg-4 col-md-6">
+                <div class="course-card card h-100">
+
+                    <!-- IMAGEN -->
                     {% if course.image %}
-                        <img src="{{ course.image.url }}" alt="{{ course.title }}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                        <img src="{{ course.image.url }}" alt="{{ course.title }}" class="card-img-top">
                     {% else %}
-                        <div class="card-img-top d-flex align-items-center justify-content-center" style="height: 200px; background: var(--primary-gradient); color: white; font-size: 48px;">
+                        <div class="card-img-placeholder">
                             <i class="fas fa-book-open"></i>
                         </div>
                     {% endif %}
+
+                    <!-- CUERPO -->
                     <div class="card-body">
-                        <span class="badge {% if course.status == 'published' %}bg-success{% elif course.status == 'draft' %}bg-warning{% else %}bg-secondary{% endif %} mb-2">
-                            {{ course.get_status_display }}
-                        </span>
-                        <h5 class="fw-bold">{{ course.title }}</h5>
-                        <p class="text-muted small">{{ course.description|truncatechars:80 }}</p>
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <span class="fw-bold text-primary">{% if course.is_free %}Gratis{% else %}Bs. {{ course.price }}{% endif %}</span>
-                            <span class="text-muted small">{{ course.total_students }} estudiantes</span>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge-status {{ course.status }}">
+                                {{ course.get_status_display }}
+                            </span>
+                            {% if user.role != 'teacher' %}
+                                <span class="price-tag {% if course.is_free %}free{% endif %}">
+                                    {% if course.is_free %}
+                                        <i class="fas fa-gift"></i> Gratis
+                                    {% else %}
+                                        Bs. {{ course.price }}
+                                    {% endif %}
+                                </span>
+                            {% endif %}
                         </div>
-                    </div>
-                    <div class="card-footer bg-transparent border-0">
-                        {% if user.role == 'teacher' %}
-                        <div class="d-flex gap-2 flex-wrap">
-                            <a href="{% url 'manage_course' course.id %}" class="btn btn-sm btn-primary flex-grow-1">
-                                <i class="fas fa-cog"></i> Gestionar
-                            </a>
-                            <a href="{% url 'edit_course' course.id %}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                            <a href="{% url 'delete_course' course.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar este curso?')">
-                                <i class="fas fa-trash"></i>
-                            </a>
-                        </div>
+
+                        <h5 class="fw-bold mb-1">{{ course.title }}</h5>
+                        <p class="text-muted small mb-2">{{ course.description|truncatechars:80 }}</p>
+
+                        <!-- PROGRESO (si es estudiante) -->
+                        {% if user.role != 'teacher' %}
+                            {% with enrollment=course.enrollments.first %}
+                                <div class="course-stats">
+                                    <span><i class="fas fa-users"></i> {{ course.total_students }} estudiantes</span>
+                                    <span><i class="fas fa-book"></i> {{ course.total_lessons }} lecciones</span>
+                                </div>
+                                <div class="course-progress">
+                                    <div class="progress-bar" style="width: {{ enrollment.progress_percentage|default:0 }}%;"></div>
+                                </div>
+                                <div class="d-flex justify-content-between mt-1">
+                                    <small class="text-muted">Progreso</small>
+                                    <small class="fw-semibold">{{ enrollment.progress_percentage|default:0 }}%</small>
+                                </div>
+                            {% endwith %}
                         {% else %}
-                        <a href="#" class="btn btn-primary w-100 btn-sm">
-                            <i class="fas fa-play"></i> Continuar
-                        </a>
+                            <div class="course-stats">
+                                <span><i class="fas fa-users"></i> {{ course.total_students }} estudiantes</span>
+                                <span><i class="fas fa-book"></i> {{ course.total_lessons }} lecciones</span>
+                            </div>
                         {% endif %}
                     </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer">
+                        {% if user.role == 'teacher' %}
+                        <div class="action-btns">
+                            <a href="{% url 'manage_course' course.id %}" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-cog"></i> Gestionar
+                            </a>
+                            <a href="{% url 'edit_course' course.id %}" class="btn btn-outline-primary" title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <button class="btn btn-outline-danger" title="Eliminar" onclick="openDeleteModal('{{ course.title }}', {{ course.id }})">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        {% else %}
+                            {% with enrollment=course.enrollments.first %}
+                                <a href="{% url 'course_learn' course.id %}" class="btn btn-primary w-100">
+    {% if enrollment.progress_percentage == 100 %}
+        <i class="fas fa-check-circle"></i> Ver certificado
+    {% elif enrollment.progress_percentage > 0 %}
+        <i class="fas fa-play"></i> Continuar aprendiendo
+    {% else %}
+        <i class="fas fa-play"></i> Comenzar curso
+    {% endif %}
+</a>
+                            {% endwith %}
+                        {% endif %}
+                    </div>
+
                 </div>
             </div>
             {% endfor %}
         {% else %}
+            <!-- ESTADO VACÍO -->
             <div class="col-12">
-                <div class="text-center py-5">
-                    <i class="fas fa-book-open fa-4x" style="color: var(--gray-light);"></i>
-                    <h4 class="mt-3">No tienes cursos</h4>
-                    <p class="text-muted">
+                <div class="empty-state">
+                    <i class="fas fa-book-open"></i>
+                    <h4>No tienes cursos</h4>
+                    <p>
                         {% if user.role == 'teacher' %}
-                        Comienza a compartir tu conocimiento
+                            Comienza a compartir tu conocimiento creando tu primer curso.
                         {% else %}
-                        Explora el catálogo y adquiere tu primer curso
+                            Explora el catálogo y adquiere tu primer curso para comenzar a aprender.
                         {% endif %}
                     </p>
-                    <a href="{% if user.role == 'teacher' %}{% url 'create_course' %}{% else %}{% url 'catalog' %}{% endif %}" class="btn btn-primary mt-3">
+                    <a href="{% if user.role == 'teacher' %}{% url 'create_course' %}{% else %}{% url 'catalog' %}{% endif %}" class="btn btn-primary">
                         <i class="fas fa-plus-circle"></i> 
                         {% if user.role == 'teacher' %}Crear mi primer curso{% else %}Explorar cursos{% endif %}
                     </a>
@@ -82,4 +466,121 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ============================================
+    // TOAST
+    // ============================================
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + type;
+
+        var icon = type === 'error' ? 'fas fa-times-circle' :
+                   type === 'success' ? 'fas fa-check-circle' :
+                   type === 'warning' ? 'fas fa-exclamation-circle' :
+                   'fas fa-info-circle';
+        var iconColor = type === 'error' ? '#ef4444' :
+                        type === 'success' ? '#10b981' :
+                        type === 'warning' ? '#f59e0b' :
+                        '#0033a0';
+
+        toast.innerHTML = `
+            <i class="${icon}" style="color: ${iconColor};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // ============================================
+    // MODAL DE ELIMINAR
+    // ============================================
+    var deleteCourseId = null;
+
+    function openDeleteModal(courseTitle, courseId) {
+        document.getElementById('deleteCourseTitle').textContent = courseTitle;
+        deleteCourseId = courseId;
+        document.getElementById('deleteModal').classList.add('active');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        deleteCourseId = null;
+    }
+
+    // Confirmar eliminación
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (deleteCourseId) {
+            deleteCourse(deleteCourseId);
+        }
+    });
+
+    // Cerrar modal al hacer clic fuera
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeDeleteModal();
+        }
+    });
+
+    // ============================================
+    // ELIMINAR CURSO (vía AJAX)
+    // ============================================
+    function deleteCourse(courseId) {
+        fetch('/course/delete/' + courseId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            closeDeleteModal();
+            if (data.success) {
+                showToast(data.message, 'success');
+                setTimeout(function() {
+                    location.reload();
+                }, 1000);
+            } else {
+                showToast(data.message || 'Error al eliminar el curso', 'error');
+            }
+        })
+        .catch(function() {
+            closeDeleteModal();
+            showToast('Error de conexión al servidor', 'error');
+        });
+    }
+
+    // ============================================
+    // FUNCIÓN PARA ELIMINAR CON CONFIRMACIÓN (alternativa sin AJAX)
+    // ============================================
+    function deleteCourseWithConfirm(courseId) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/course/delete/' + courseId + '/';
+        var csrf = document.createElement('input');
+        csrf.type = 'hidden';
+        csrf.name = 'csrfmiddlewaretoken';
+        csrf.value = '{{ csrf_token }}';
+        form.appendChild(csrf);
+        document.body.appendChild(form);
+        form.submit();
+    }
+</script>
 {% endblock %}

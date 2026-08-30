@@ -20,25 +20,13 @@ urlpatterns = [
     path('notifications/', views.notifications_view, name='notifications'),
     
     # ============================================
-    # GESTIÓN DE CURSOS - COMPLETO
+    # GESTIÓN DE CURSOS
     # ============================================
-    
-    # Mis cursos
     path('my-courses/', views.my_courses_view, name='my_courses'),
-    
-    # Crear curso
     path('create-course/', views.create_course_view, name='create_course'),
-    
-    # Editar curso
     path('course/edit/<int:course_id>/', views.edit_course_view, name='edit_course'),
-    
-    # Eliminar curso
     path('course/delete/<int:course_id>/', views.delete_course_view, name='delete_course'),
-    
-    # Publicar curso
     path('course/publish/<int:course_id>/', views.publish_course_view, name='publish_course'),
-    
-    # Gestionar curso (módulos y lecciones)
     path('manage-course/<int:course_id>/', views.manage_course_view, name='manage_course'),
     
     # Módulos
@@ -52,8 +40,6 @@ urlpatterns = [
     path('lesson/edit/<int:lesson_id>/', views.edit_lesson_view, name='edit_lesson'),
     path('lesson/delete/<int:lesson_id>/', views.delete_lesson_view, name='delete_lesson'),
     path('lesson/reorder/<int:lesson_id>/<str:direction>/', views.reorder_lesson_view, name='reorder_lesson'),
-    
-    # Subir videos y documentos
     path('lesson/<int:lesson_id>/upload-video/', views.upload_video_view, name='upload_video'),
     path('lesson/<int:lesson_id>/upload-document/', views.upload_document_view, name='upload_document'),
     
@@ -67,12 +53,23 @@ urlpatterns = [
     path('my-certificates/', views.my_certificates_view, name='my_certificates'),
     path('my-favorites/', views.my_favorites_view, name='my_favorites'),
     path('purchase-history/', views.purchase_history_view, name='purchase_history'),
-    path('cart/', views.cart_view, name='cart'),
     
-    # Catálogo
+    # ============================================
+    # CARRITO DE COMPRAS (AGREGAR ESTO)
+    # ============================================
+    path('cart/', views.cart_view, name='cart'),
+    path('cart/add/<int:course_id>/', views.cart_add_view, name='cart_add'),
+    path('cart/remove/<int:course_id>/', views.cart_remove_view, name='cart_remove'),
+    path('cart/items/', views.cart_items_view, name='cart_items'),
+    path('checkout/', views.checkout_view, name='checkout'),
+    
+    # ============================================
+    # CATÁLOGO
+    # ============================================
     path('catalog/', views.catalog_view, name='catalog'),
     path('search/', views.search_courses_view, name='search_courses'),
     path('categories/', views.categories_view, name='categories'),
+    path('course/<int:course_id>/', views.course_detail_view, name='course_detail'),
     
     # Chatbot
     path('chatbot/', views.chatbot_view, name='chatbot'),
@@ -92,13 +89,21 @@ urlpatterns = [
     path('admin/payments/', views.admin_payments_view, name='admin_payments'),
     path('admin/certificates/', views.admin_certificates_view, name='admin_certificates'),
     path('admin/reports-generate/', views.admin_reports_generate_view, name='admin_reports_generate'),
-     # ============================================
+    
+    # ============================================
     # CREAR LECCIONES POR TIPO
     # ============================================
     path('module/<int:module_id>/lesson/create/text/', views.create_lesson_text_view, name='create_lesson_text'),
     path('module/<int:module_id>/lesson/create/video/', views.create_lesson_video_view, name='create_lesson_video'),
     path('module/<int:module_id>/lesson/create/document/', views.create_lesson_document_view, name='create_lesson_document'),
     path('module/<int:module_id>/lesson/create/quiz/', views.create_lesson_quiz_view, name='create_lesson_quiz'),
-    path('module/<int:module_id>/lesson/create/exam/', views.create_lesson_exam_view, name='create_lesson_exam'),
     path('module/<int:module_id>/lesson/create/assignment/', views.create_lesson_assignment_view, name='create_lesson_assignment'),
+    # En la sección de URLs
+path('course/learn/<int:course_id>/', views.course_learn_view, name='course_learn'),
+path('lesson/<int:lesson_id>/', views.lesson_view, name='lesson_view'),
+path('lesson/<int:lesson_id>/complete/', views.mark_lesson_complete, name='mark_lesson_complete'),
+path('quiz/<int:lesson_id>/', views.quiz_view, name='quiz_view'),
+path('quiz/result/<int:result_id>/', views.quiz_result_view, name='quiz_result'),
+# urls.py
+path('quiz/alert/tab-switch/', views.quiz_tab_switch_alert, name='quiz_tab_switch_alert'),
 ]

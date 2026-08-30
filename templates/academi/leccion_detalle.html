@@ -1,0 +1,473 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ lesson.title }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #0033a0;
+        --primary-dark: #002277;
+        --primary-light: #1a4db8;
+        --primary-lighter: #e8edf5;
+        --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
+        --secondary: #f7c600;
+        --secondary-dark: #d4a800;
+        --white: #ffffff;
+        --white-smoke: #f5f7fa;
+        --gray-light: #e2e8f0;
+        --gray: #718096;
+        --gray-dark: #2d3748;
+        --dark: #1a202c;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --info: #3b82f6;
+        --font: 'Inter', sans-serif;
+        --shadow: 0 4px 20px rgba(0,51,160,0.08);
+        --shadow-hover: 0 8px 40px rgba(0,51,160,0.15);
+        --radius: 16px;
+        --radius-sm: 8px;
+        --transition: all 0.3s ease;
+    }
+
+    .lesson-container {
+        background: var(--white);
+        border-radius: var(--radius);
+        padding: 30px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-light);
+    }
+    .lesson-header {
+        border-bottom: 2px solid var(--primary-lighter);
+        padding-bottom: 20px;
+        margin-bottom: 24px;
+    }
+    .lesson-header .breadcrumb {
+        background: none;
+        padding: 0;
+        margin: 0 0 8px 0;
+    }
+    .lesson-header .breadcrumb a {
+        color: var(--primary);
+        text-decoration: none;
+    }
+    .lesson-header .breadcrumb a:hover {
+        text-decoration: underline;
+    }
+    .lesson-header h2 {
+        font-weight: 700;
+        color: var(--gray-dark);
+    }
+    .lesson-header .lesson-meta {
+        color: var(--gray);
+        font-size: 14px;
+    }
+    .lesson-header .lesson-meta i {
+        color: var(--primary);
+    }
+    .lesson-content {
+        font-size: 16px;
+        line-height: 1.8;
+        color: var(--gray-dark);
+        min-height: 200px;
+    }
+    .lesson-content img {
+        max-width: 100%;
+        border-radius: var(--radius-sm);
+    }
+    .lesson-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 20px;
+        border-top: 2px solid var(--primary-lighter);
+        flex-wrap: wrap;
+    }
+    .lesson-actions .btn {
+        border-radius: 50px;
+        padding: 10px 24px;
+    }
+    .progress-mini {
+        background: var(--white-smoke);
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-top: 20px;
+        border: 1px solid var(--gray-light);
+    }
+    .progress-mini .progress {
+        height: 6px;
+        border-radius: 10px;
+        background: var(--gray-light);
+    }
+    .progress-mini .progress .progress-bar {
+        background: var(--primary-gradient);
+        border-radius: 10px;
+    }
+    .badge-lesson-type {
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .badge-lesson-type.video { background: #dbeafe; color: #1e40af; }
+    .badge-lesson-type.text { background: #fef3c7; color: #92400e; }
+    .badge-lesson-type.document { background: #d1fae5; color: #065f46; }
+    .badge-lesson-type.quiz { background: #fce4ec; color: #c62828; }
+    .badge-lesson-type.exam { background: #f3e5f5; color: #6a1b9a; }
+    .badge-lesson-type.assignment { background: #e0f7fa; color: #00695c; }
+    
+    .video-wrapper {
+        position: relative;
+        padding-bottom: 56.25%;
+        height: 0;
+        overflow: hidden;
+        max-width: 100%;
+        background: #000;
+        border-radius: 12px;
+    }
+    .video-wrapper iframe,
+    .video-wrapper video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    .toast-custom {
+        background: var(--white);
+        border-radius: var(--radius-sm);
+        box-shadow: var(--shadow-hover);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--primary);
+        min-width: 260px;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+    .toast-custom.success { border-left-color: var(--success); }
+    .toast-custom.error { border-left-color: var(--danger); }
+    .toast-custom i { font-size: 18px; }
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: var(--gray);
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    .toast-custom .toast-close:hover { color: var(--dark); }
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0%); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0%); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-custom.removing { animation: slideOutRight 0.3s ease forwards; }
+    
+    @media (max-width: 768px) {
+        .lesson-container { padding: 16px; }
+        .lesson-actions { flex-direction: column; }
+        .lesson-actions .btn { width: 100%; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <div class="lesson-container">
+                <!-- HEADER -->
+                <div class="lesson-header">
+                    <nav class="breadcrumb">
+                        <a href="{% url 'my_courses' %}"><i class="fas fa-home"></i> Mis cursos</a>
+                        <span class="mx-2">/</span>
+                        <a href="{% url 'course_learn' course.id %}">{{ course.title|truncatechars:30 }}</a>
+                        <span class="mx-2">/</span>
+                        <span class="text-muted">{{ lesson.title|truncatechars:40 }}</span>
+                    </nav>
+
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                        <div>
+                            <h2>
+                                {% if lesson.lesson_type == 'video' %}
+                                    <i class="fas fa-play-circle" style="color: var(--primary);"></i>
+                                {% elif lesson.lesson_type == 'text' %}
+                                    <i class="fas fa-align-left" style="color: var(--primary);"></i>
+                                {% elif lesson.lesson_type == 'document' %}
+                                    <i class="fas fa-file-alt" style="color: var(--primary);"></i>
+                                {% elif lesson.lesson_type == 'quiz' %}
+                                    <i class="fas fa-tasks" style="color: var(--primary);"></i>
+                                {% elif lesson.lesson_type == 'exam' %}
+                                    <i class="fas fa-clipboard-list" style="color: var(--primary);"></i>
+                                {% elif lesson.lesson_type == 'assignment' %}
+                                    <i class="fas fa-pencil-alt" style="color: var(--primary);"></i>
+                                {% endif %}
+                                {{ lesson.title }}
+                            </h2>
+                            <div class="lesson-meta">
+                                <span><i class="fas fa-folder"></i> {{ lesson.module.title }}</span>
+                                <span class="ms-3"><i class="fas fa-tag"></i> 
+                                    <span class="badge-lesson-type {{ lesson.lesson_type }}">
+                                        {{ lesson.get_lesson_type_display }}
+                                    </span>
+                                </span>
+                                {% if lesson.duration_minutes %}
+                                    <span class="ms-3"><i class="fas fa-clock"></i> {{ lesson.duration_minutes }} min</span>
+                                {% endif %}
+                                {% if lesson.is_free %}
+                                    <span class="ms-3 badge bg-success"><i class="fas fa-gift"></i> Gratis</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTENIDO -->
+                <div class="lesson-content">
+                    {% if lesson.lesson_type == 'video' %}
+                        {% if youtube_embed_url %}
+                            <div class="video-wrapper mb-3">
+                                <iframe 
+                                    src="{{ youtube_embed_url }}"
+                                    title="{{ lesson.title }}"
+                                    frameborder="0"
+                                    referrerpolicy="strict-origin-when-cross-origin"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+                                    allowfullscreen
+                                    loading="lazy"
+                                ></iframe>
+                            </div>
+                        {% elif lesson.video_file %}
+                            <div class="video-wrapper mb-3">
+                                <video controls preload="metadata">
+                                    <source src="{{ lesson.video_file.url }}" type="video/mp4">
+                                    <source src="{{ lesson.video_file.url }}" type="video/webm">
+                                    Tu navegador no soporta la reproducci&oacute;n de videos.
+                                </video>
+                            </div>
+                        {% elif lesson.video_url %}
+                            <div class="text-center p-5" style="background: var(--white-smoke); border-radius: 12px; border: 2px dashed var(--gray-light);">
+                                <i class="fab fa-youtube" style="font-size: 64px; color: #ff0000;"></i>
+                                <p class="mt-3 fs-5 fw-semibold">Este video no se puede reproducir dentro de la plataforma.</p>
+                                <p class="text-muted">El due&ntilde;o del video no permite incrustarlo en sitios externos.</p>
+                                <a href="{{ lesson.video_url }}" target="_blank" class="btn btn-danger btn-lg mt-2">
+                                    <i class="fab fa-youtube"></i> Ver en YouTube
+                                </a>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle"></i> No hay video disponible para esta lecci&oacute;n.
+                            </div>
+                        {% endif %}
+                        
+                        {{ lesson.content|safe }}
+                        
+                    {% elif lesson.lesson_type == 'document' %}
+                        {% if lesson.document_file %}
+                            <div class="text-center mb-4 p-4" style="background: var(--white-smoke); border-radius: 12px; border: 2px dashed var(--gray-light);">
+                                <i class="fas fa-file-pdf" style="font-size: 64px; color: #ef4444;"></i>
+                                <p class="mt-2 fw-semibold">{{ lesson.document_file.name|cut:"documents/" }}</p>
+                                <a href="{{ lesson.document_file.url }}" target="_blank" class="btn btn-primary">
+                                    <i class="fas fa-download"></i> Descargar documento
+                                </a>
+                            </div>
+                        {% endif %}
+                        {{ lesson.content|safe }}
+                        
+                    {% elif lesson.lesson_type == 'text' %}
+                        {{ lesson.content|safe }}
+                        
+                    {% elif lesson.lesson_type == 'quiz' or lesson.lesson_type == 'exam' %}
+                        <div class="alert alert-info" style="border-radius: 12px; border-left: 4px solid var(--info);">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>{{ lesson.get_lesson_type_display }}:</strong>
+                            {{ lesson.content|safe }}
+                        </div>
+                        <div class="text-center p-4" style="background: var(--white-smoke); border-radius: 12px;">
+                            <i class="fas fa-pencil-alt" style="font-size: 48px; color: var(--primary);"></i>
+                            <p class="mt-2 text-muted">Completa el cuestionario para evaluar tu conocimiento.</p>
+                            <a href="{% url 'quiz_view' lesson.id %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-play"></i> Iniciar {{ lesson.get_lesson_type_display|lower }}
+                            </a>
+                        </div>
+                        
+                    {% elif lesson.lesson_type == 'assignment' %}
+                        <div class="alert alert-warning" style="border-radius: 12px; border-left: 4px solid var(--warning);">
+                            <i class="fas fa-tasks"></i> 
+                            <strong>Tarea:</strong>
+                            {{ lesson.content|safe }}
+                        </div>
+                        <div class="text-center p-4" style="background: var(--white-smoke); border-radius: 12px;">
+                            <i class="fas fa-upload" style="font-size: 48px; color: var(--warning);"></i>
+                            <p class="mt-2 text-muted">Sube tu tarea para recibir retroalimentaci&oacute;n.</p>
+                            <button class="btn btn-primary btn-lg" onclick="showToast('Funci&oacute;n de tarea en desarrollo', 'info')">
+                                <i class="fas fa-upload"></i> Subir tarea
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- PROGRESO MINI -->
+                <div class="progress-mini">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="fw-semibold"><i class="fas fa-chart-line" style="color: var(--primary);"></i> Progreso del curso</span>
+                        <span style="font-weight: 700; color: var(--primary);">{{ progress }}%</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar" style="width: {{ progress }}%;"></div>
+                    </div>
+                    <small class="text-muted">
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i> 
+                        {{ completed_count }} de {{ total_lessons }} lecciones completadas
+                        {% if progress == 100 %}
+                            <span class="badge bg-success ms-2"><i class="fas fa-award"></i> Completado</span>
+                        {% endif %}
+                    </small>
+                </div>
+
+                <!-- ACCIONES -->
+                <div class="lesson-actions">
+                    <a href="{% url 'course_learn' course.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver al curso
+                    </a>
+                    
+                    <button class="btn btn-success" onclick="markComplete({{ lesson.id }})" id="completeBtn">
+                        <i class="fas fa-check"></i> Marcar como completada
+                    </button>
+                    
+                    {% if next_lesson %}
+                        <a href="{% url 'lesson_view' next_lesson.id %}" class="btn btn-primary">
+                            Siguiente lecci&oacute;n <i class="fas fa-arrow-right"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'course_learn' course.id %}" class="btn btn-primary">
+                            <i class="fas fa-award"></i> Ver curso completado
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function showToast(message, type) {
+        type = type || 'info';
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + type;
+
+        var icons = {
+            error: 'fas fa-times-circle',
+            success: 'fas fa-check-circle',
+            warning: 'fas fa-exclamation-triangle',
+            info: 'fas fa-info-circle'
+        };
+        var colors = {
+            error: '#ef4444',
+            success: '#10b981',
+            warning: '#f59e0b',
+            info: '#3b82f6'
+        };
+
+        toast.innerHTML = `
+            <i class="${icons[type]}" style="color: ${colors[type]};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    function markComplete(lessonId) {
+        var btn = document.getElementById('completeBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+        fetch('/lesson/' + lessonId + '/complete/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(data.message || 'Lecci&oacute;n completada correctamente', 'success');
+                
+                var progressBar = document.querySelector('.progress-bar');
+                var progressText = document.querySelector('.progress-mini .fw-semibold + span');
+                var progressSmall = document.querySelector('.progress-mini small');
+                
+                if (progressBar) {
+                    progressBar.style.width = data.progress + '%';
+                }
+                if (progressText) {
+                    progressText.textContent = data.progress + '%';
+                }
+                if (progressSmall) {
+                    progressSmall.innerHTML = `
+                        <i class="fas fa-check-circle" style="color: #10b981;"></i> 
+                        ${data.completed_count} de ${data.total_lessons} lecciones completadas
+                        ${data.progress == 100 ? '<span class="badge bg-success ms-2"><i class="fas fa-award"></i> Completado</span>' : ''}
+                    `;
+                }
+                
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Completada';
+                btn.className = 'btn btn-secondary';
+                btn.disabled = true;
+                
+                if (data.progress == 100) {
+                    setTimeout(function() {
+                        showToast('Felicidades, has completado el curso', 'success');
+                    }, 500);
+                }
+                
+            } else {
+                showToast(data.message || 'Error al marcar como completada', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Marcar como completada';
+            }
+        })
+        .catch(function() {
+            showToast('Error de conexi&oacute;n al servidor', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Marcar como completada';
+        });
+    }
+</script>
+{% endblock %}

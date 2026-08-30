@@ -1,0 +1,100 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Resultado - {{ evaluation.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body text-center p-5">
+                    <!-- ICONO -->
+                    {% if result.passed %}
+                        <div class="mb-4">
+                            <i class="fas fa-check-circle" style="font-size: 80px; color: #10b981;"></i>
+                        </div>
+                        <h2 class="fw-bold" style="color: #10b981;">¡Aprobaste!</h2>
+                        <p class="text-muted">Has superado el cuestionario exitosamente.</p>
+                    {% else %}
+                        <div class="mb-4">
+                            <i class="fas fa-times-circle" style="font-size: 80px; color: #ef4444;"></i>
+                        </div>
+                        <h2 class="fw-bold" style="color: #ef4444;">No aprobaste</h2>
+                        <p class="text-muted">No alcanzaste la nota mínima requerida.</p>
+                    {% endif %}
+
+                    <!-- PUNTAJE -->
+                    <div class="row mt-4">
+                        <div class="col-md-4">
+                            <div class="p-3" style="background: #f8fafc; border-radius: 12px;">
+                                <h5 class="text-muted">Puntaje</h5>
+                                <h3 class="fw-bold">{{ result.score }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3" style="background: #f8fafc; border-radius: 12px;">
+                                <h5 class="text-muted">Total</h5>
+                                <h3 class="fw-bold">{{ result.total_points }}</h3>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3" style="background: #f8fafc; border-radius: 12px;">
+                                <h5 class="text-muted">Porcentaje</h5>
+                                <h3 class="fw-bold">{{ percentage }}%</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ============================================ -->
+                    <!-- 🔥 INTENTOS RESTANTES -->
+                    <!-- ============================================ -->
+                    <div class="mt-4 p-3 rounded" style="background: #f0f4ff; border: 1px solid #0033a0;">
+                        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+                            <span class="fw-semibold">
+                                <i class="fas fa-redo" style="color: #0033a0;"></i>
+                                Intentos realizados:
+                            </span>
+                            <span class="badge bg-primary fs-6">{{ attempts_used }}</span>
+                            <span class="fw-semibold">
+                                <i class="fas fa-clock" style="color: #0033a0;"></i>
+                                Intentos restantes:
+                            </span>
+                            <span class="badge {% if remaining_attempts > 0 %}bg-success{% else %}bg-danger{% endif %} fs-6">
+                                {{ remaining_attempts }}
+                            </span>
+                        </div>
+                        {% if remaining_attempts > 0 %}
+                            <p class="text-muted mt-2 mb-0" style="font-size: 14px;">
+                                <i class="fas fa-info-circle"></i>
+                                Tienes <strong>{{ remaining_attempts }}</strong> intento{% if remaining_attempts > 1 %}s{% endif %} disponible{% if remaining_attempts > 1 %}s{% endif %}.
+                                {% if not result.passed %}
+                                    Puedes volver a intentarlo.
+                                {% endif %}
+                            </p>
+                        {% else %}
+                            <p class="text-danger mt-2 mb-0" style="font-size: 14px;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>Has agotado todos tus intentos.</strong>
+                                No puedes volver a realizar este cuestionario.
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- BOTONES -->
+                    <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="{% url 'course_learn' course.id %}" class="btn btn-primary">
+                            <i class="fas fa-arrow-left"></i> Volver al curso
+                        </a>
+                        {% if remaining_attempts > 0 and not result.passed %}
+                            <a href="{% url 'quiz_view' lesson.id %}" class="btn btn-warning">
+                                <i class="fas fa-redo"></i> Reintentar
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

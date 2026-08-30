@@ -1,0 +1,527 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Cuestionario - {{ lesson.title }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .quiz-container {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        border: 1px solid #e2e8f0;
+    }
+    .question-card {
+        background: #f8fafc;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        border: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    .question-card:hover {
+        border-color: #0033a0;
+    }
+    .question-card .question-number {
+        font-weight: 700;
+        color: #0033a0;
+        font-size: 14px;
+    }
+    .question-card .question-text {
+        font-weight: 600;
+        margin: 8px 0 12px 0;
+        font-size: 16px;
+    }
+    .question-card .options {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .question-card .options .option {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .question-card .options .option:hover {
+        border-color: #0033a0;
+        background: #e8edf5;
+    }
+    .question-card .options .option input[type="radio"] {
+        accent-color: #0033a0;
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+    .question-card .options .option label {
+        cursor: pointer;
+        margin: 0;
+        flex: 1;
+    }
+    .timer {
+        background: #0033a0;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 50px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .timer i {
+        color: #f7c600;
+    }
+    .timer.warning {
+        background: #ef4444;
+        animation: pulse 1s ease-in-out infinite;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+    .security-badge {
+        font-size: 12px;
+        color: #718096;
+        padding: 4px 12px;
+        border-radius: 50px;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+    }
+    .security-badge i {
+        color: #10b981;
+    }
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    .toast-custom {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        padding: 12px 16px;
+        margin-bottom: 8px;
+        border-left: 4px solid #0033a0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 14px;
+        animation: slideIn 0.3s ease;
+        min-width: 280px;
+    }
+    .toast-custom.success { border-left-color: #10b981; }
+    .toast-custom.error { border-left-color: #ef4444; }
+    .toast-custom.warning { border-left-color: #f59e0b; }
+    .toast-custom i { font-size: 18px; }
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #718096;
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    .toast-custom .toast-close:hover { color: #1a202c; }
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-custom.removing { animation: slideOut 0.3s ease forwards; }
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-box {
+        background: white;
+        border-radius: 16px;
+        padding: 32px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        animation: modalIn 0.3s ease;
+    }
+    .modal-box .modal-icon { font-size: 48px; margin-bottom: 16px; }
+    .modal-box h4 { font-weight: 700; color: #2d3748; margin-bottom: 8px; }
+    .modal-box p { color: #718096; font-size: 14px; margin-bottom: 24px; }
+    .modal-box .modal-buttons { display: flex; gap: 12px; }
+    .modal-box .modal-buttons .btn { flex: 1; border-radius: 50px; padding: 10px; }
+    @keyframes modalIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+    }
+    @media (max-width: 768px) {
+        .quiz-container { padding: 16px; }
+        .toast-custom { min-width: auto; max-width: 90vw; }
+        .modal-box { padding: 24px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-box">
+        <div class="modal-icon" id="modalIcon">
+            <i class="fas fa-exclamation-triangle" style="color: #f59e0b;"></i>
+        </div>
+        <h4 id="modalTitle">Tiempo agotado</h4>
+        <p id="modalMessage">Se acabó el tiempo. El cuestionario se enviará automáticamente.</p>
+        <div class="modal-buttons">
+            <button class="btn btn-primary" onclick="closeModal()">
+                <i class="fas fa-check"></i> Entendido
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <div class="quiz-container">
+                <!-- HEADER -->
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                    <div>
+                        <h3><i class="fas fa-tasks" style="color: #0033a0;"></i> {{ evaluation.title }}</h3>
+                        <p class="text-muted mb-0">{{ lesson.title }}</p>
+                        <div class="mt-2">
+                            <span class="security-badge">
+                                <i class="fas fa-shield-alt"></i> Conexion segura
+                            </span>
+                            <span class="security-badge ms-2">
+                                <i class="fas fa-clock"></i> {{ time_limit }} min
+                            </span>
+                            <span class="security-badge ms-2">
+                                <i class="fas fa-redo"></i> Intento {{ attempts_used|add:1 }} de {{ max_attempts }}
+                            </span>
+                            <span class="security-badge ms-2">
+                                <i class="fas fa-check-circle"></i> Minimo {{ passing_score }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="timer" id="timerContainer">
+                        <i class="fas fa-clock"></i>
+                        <span id="timerDisplay">{{ time_limit }}:00</span>
+                    </div>
+                </div>
+
+                <!-- ADVERTENCIA -->
+                <div class="alert alert-warning" style="border-radius: 12px; border-left: 4px solid #f59e0b;">
+                    <i class="fas fa-shield-alt" style="color: #f59e0b;"></i>
+                    <strong>Medidas de seguridad activas:</strong>
+                    <ul class="mb-0 mt-1" style="font-size: 13px; color: #718096;">
+                        <li>No puedes cambiar de pestaña o ventana</li>
+                        <li>Copiar y pegar esta bloqueado</li>
+                        <li>Tiempo limite: {{ time_limit }} minutos</li>
+                        <li>Maximo {{ max_attempts }} intentos</li>
+                    </ul>
+                </div>
+
+                <!-- FORMULARIO -->
+                <form id="quizForm" method="POST" action="{% url 'quiz_view' lesson.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="token" value="{{ token }}" id="quizToken">
+                    <input type="hidden" name="answers" id="answersInput">
+                    
+                    {% for question in questions %}
+                    <div class="question-card" data-q="{{ question.id }}">
+                        <div class="question-number">Pregunta {{ forloop.counter }}</div>
+                        <div class="question-text">{{ question.text }}</div>
+                        <div class="options">
+                            {% for option in question.options.all %}
+                            <div class="option">
+                                <input type="radio" name="q_{{ question.id }}" value="{{ option.id }}" id="opt_{{ option.id }}" required>
+                                <label for="opt_{{ option.id }}">{{ option.text }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-info-circle" style="font-size: 48px; color: #cbd5e0;"></i>
+                        <p class="mt-3">No hay preguntas configuradas para este cuestionario.</p>
+                    </div>
+                    {% endfor %}
+
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-primary btn-lg" id="submitBtn" onclick="submitQuiz()">
+                            <i class="fas fa-check"></i> Enviar respuestas
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // TOAST
+    // ============================================
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + (type || 'info');
+        
+        var icons = {
+            warning: 'fas fa-exclamation-triangle',
+            error: 'fas fa-times-circle',
+            success: 'fas fa-check-circle',
+            info: 'fas fa-info-circle'
+        };
+        var colors = {
+            warning: '#f59e0b',
+            error: '#ef4444',
+            success: '#10b981',
+            info: '#3b82f6'
+        };
+        
+        toast.innerHTML = `
+            <i class="${icons[type] || icons.info}" style="color: ${colors[type] || colors.info};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+        
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() { toast.remove(); }, 300);
+            }
+        }, 4000);
+    }
+
+    // ============================================
+    // MODAL
+    // ============================================
+    function showModal(icon, title, message) {
+        document.getElementById('modalIcon').innerHTML = icon;
+        document.getElementById('modalTitle').textContent = title;
+        document.getElementById('modalMessage').textContent = message;
+        document.getElementById('modalOverlay').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('active');
+    }
+
+    // ============================================
+    // TEMPORIZADOR
+    // ============================================
+    var timeLimit = {{ time_limit }} * 60;
+    var timerDisplay = document.getElementById('timerDisplay');
+    var timerContainer = document.getElementById('timerContainer');
+    var timer = null;
+    var timeExceeded = false;
+    
+    function startTimer() {
+        timer = setInterval(function() {
+            var minutes = Math.floor(timeLimit / 60);
+            var seconds = timeLimit % 60;
+            timerDisplay.textContent = minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+            timeLimit--;
+            
+            if (timeLimit <= 60 && timeLimit > 0) {
+                timerContainer.classList.add('warning');
+            }
+            
+            if (timeLimit < 0) {
+                clearInterval(timer);
+                timeExceeded = true;
+                timerDisplay.textContent = '00:00';
+                timerContainer.classList.add('warning');
+                showModal(
+                    '<i class="fas fa-clock" style="color: #ef4444; font-size: 48px;"></i>',
+                    'Tiempo agotado',
+                    'Se acabó el tiempo. El cuestionario se enviará automáticamente.'
+                );
+                setTimeout(function() {
+                    closeModal();
+                    submitQuiz();
+                }, 2000);
+            }
+        }, 1000);
+    }
+
+    // ============================================
+    // BLOQUEAR COPIA Y PEGA
+    // ============================================
+    document.addEventListener('copy', function(e) {
+        e.preventDefault();
+        showToast('Copiar no esta permitido durante el cuestionario', 'warning');
+    });
+    
+    document.addEventListener('paste', function(e) {
+        e.preventDefault();
+        showToast('Pegar no esta permitido durante el cuestionario', 'warning');
+    });
+
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        showToast('Clic derecho no permitido', 'warning');
+    });
+
+    // ============================================
+    // BLOQUEAR TECLAS
+    // ============================================
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey && ['c', 'v', 'x', 'u'].includes(e.key.toLowerCase())) || e.key === 'F12') {
+            e.preventDefault();
+            showToast('Accion no permitida', 'warning');
+            return false;
+        }
+        if (e.ctrlKey && e.shiftKey && e.key === 'I') {
+            e.preventDefault();
+            showToast('Inspeccionar no permitido', 'warning');
+            return false;
+        }
+        if (e.key === 'F11') {
+            e.preventDefault();
+            showToast('Pantalla completa no permitida', 'warning');
+            return false;
+        }
+    });
+
+    // ============================================
+    // DETECTAR CAMBIO DE PESTAÑA
+    // ============================================
+    var tabSwitchCount = 0;
+    
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            tabSwitchCount++;
+            showToast('Cambio de pestaña detectado', 'warning');
+            
+            fetch('/quiz/alert/tab-switch/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    lesson_id: {{ lesson.id }},
+                    count: tabSwitchCount
+                })
+            });
+            
+            if (tabSwitchCount >= 3) {
+                showModal(
+                    '<i class="fas fa-ban" style="color: #ef4444; font-size: 48px;"></i>',
+                    'Cuestionario bloqueado',
+                    'Has cambiado de pestaña varias veces. El cuestionario ha sido bloqueado por seguridad.'
+                );
+                document.getElementById('submitBtn').disabled = true;
+            }
+        }
+    });
+
+    // ============================================
+    // ✅ ENVIAR CUESTIONARIO - CORREGIDO
+    // ============================================
+    function submitQuiz() {
+        var answers = {};
+        var totalQuestions = 0;
+        var answeredQuestions = 0;
+        
+        // Recopilar respuestas
+        document.querySelectorAll('.question-card').forEach(function(card) {
+            totalQuestions++;
+            var radio = card.querySelector('input[type="radio"]:checked');
+            if (radio) {
+                var qId = radio.name.split('_')[1];
+                answers['q_' + qId] = radio.value;
+                answeredQuestions++;
+            }
+        });
+        
+        // Verificar si hay respuestas
+        if (Object.keys(answers).length === 0) {
+            showToast('No has seleccionado ninguna respuesta', 'warning');
+            return;
+        }
+        
+        // Verificar si todas las preguntas están respondidas
+        if (answeredQuestions < totalQuestions) {
+            if (!confirm('Faltan ' + (totalQuestions - answeredQuestions) + ' preguntas por responder. ¿Deseas enviar de todos modos?')) {
+                return;
+            }
+        }
+        
+        // Obtener el token del campo oculto
+        var token = document.getElementById('quizToken').value;
+        console.log('📝 Token a enviar:', token);
+        
+        // Deshabilitar botón
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+        
+        // ✅ Enviar con fetch
+        fetch(window.location.href, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                token: token,
+                answers: answers
+            })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(data) {
+            if (data.success) {
+                // ✅ Redirigir al resultado
+                window.location.href = '/quiz/result/' + data.result_id + '/';
+            } else {
+                showToast(data.error || 'Error al enviar el cuestionario', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check"></i> Enviar respuestas';
+            }
+        })
+        .catch(function() {
+            showToast('Error de conexión al servidor', 'error');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check"></i> Enviar respuestas';
+        });
+    }
+
+    // ============================================
+    // INICIALIZAR
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        startTimer();
+    });
+</script>
+{% endblock %}

@@ -28,11 +28,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'categories' %}">
-                        <i class="fas fa-tags"></i> Categorías
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="{% url 'chatbot' %}">
                         <i class="fas fa-robot"></i> Asistente
                     </a>
@@ -156,6 +151,36 @@
                                     <i class="fas fa-users-cog"></i> Gestionar usuarios
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin_courses' %}">
+                                    <i class="fas fa-book"></i> Gestionar cursos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin_categories' %}">
+                                    <i class="fas fa-tags"></i> Categorías
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin_reports' %}">
+                                    <i class="fas fa-flag"></i> Reportes
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin_coupons' %}">
+                                    <i class="fas fa-ticket-alt"></i> Cupones
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin_payments' %}">
+                                    <i class="fas fa-credit-card"></i> Pagos
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin_certificates' %}">
+                                    <i class="fas fa-certificate"></i> Certificados
+                                </a>
+                            </li>
                         {% endif %}
                         
                         <li><hr class="dropdown-divider"></li>
@@ -197,40 +222,40 @@
     -webkit-backdrop-filter: blur(20px);
     padding: 12px 0;
     box-shadow: 0 2px 20px rgba(0,0,0,0.04);
-    border-bottom: 3px solid var(--primary);
+    border-bottom: 3px solid var(--primary, #0033a0);
     transition: all 0.3s ease;
 }
 
 .navbar-brand {
     font-weight: 800;
     font-size: 24px;
-    color: var(--primary);
+    color: var(--primary, #0033a0);
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .navbar-brand i {
-    color: var(--secondary);
+    color: var(--secondary, #f7c600);
     font-size: 28px;
 }
 
 .brand-badge {
     font-size: 10px;
     font-weight: 700;
-    background: var(--secondary);
-    color: var(--primary);
+    background: var(--secondary, #f7c600);
+    color: var(--primary, #0033a0);
     padding: 2px 10px;
     border-radius: 50px;
 }
 
 .nav-link {
-    color: var(--gray-dark);
+    color: var(--gray-dark, #2d3748);
     font-weight: 500;
     font-size: 14px;
     padding: 8px 14px;
-    border-radius: var(--radius-sm);
-    transition: var(--transition);
+    border-radius: var(--radius-sm, 8px);
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -239,13 +264,13 @@
 
 .nav-link i {
     font-size: 14px;
-    color: var(--primary);
+    color: var(--primary, #0033a0);
     opacity: 0.6;
 }
 
 .nav-link:hover {
-    color: var(--primary);
-    background: var(--primary-lighter);
+    color: var(--primary, #0033a0);
+    background: var(--primary-lighter, #e8edf5);
 }
 
 .nav-link:hover i {
@@ -256,7 +281,7 @@
     position: absolute;
     top: -4px;
     right: -6px;
-    background: var(--danger);
+    background: var(--danger, #ef4444);
     color: white;
     font-size: 10px;
     font-weight: 700;
@@ -270,8 +295,8 @@
     position: absolute;
     top: -4px;
     right: -6px;
-    background: var(--secondary);
-    color: var(--primary);
+    background: var(--secondary, #f7c600);
+    color: var(--primary, #0033a0);
     font-size: 10px;
     font-weight: 700;
     padding: 2px 6px;
@@ -285,14 +310,14 @@
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--primary-lighter);
+    border: 2px solid var(--primary-lighter, #e8edf5);
 }
 
 .user-avatar-placeholder {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--primary);
+    background: var(--primary, #0033a0);
     color: white;
     display: flex;
     align-items: center;
@@ -304,7 +329,7 @@
 .user-name {
     font-weight: 500;
     font-size: 14px;
-    color: var(--gray-dark);
+    color: var(--gray-dark, #2d3748);
 }
 
 .btn-nav {
@@ -312,40 +337,40 @@
     padding: 8px 22px;
     font-weight: 600;
     font-size: 13px;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 8px;
 }
 
 .btn-outline-primary {
-    border: 2px solid var(--primary);
-    color: var(--primary);
+    border: 2px solid var(--primary, #0033a0);
+    color: var(--primary, #0033a0);
     background: transparent;
 }
 
 .btn-outline-primary:hover {
-    background: var(--primary);
-    color: var(--white);
+    background: var(--primary, #0033a0);
+    color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 51, 160, 0.25);
 }
 
 .btn-primary {
-    background: var(--primary-gradient);
+    background: linear-gradient(135deg, #0033a0, #1a4db8);
     border: none;
-    color: var(--white);
+    color: white;
     box-shadow: 0 4px 15px rgba(0, 51, 160, 0.2);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(0, 51, 160, 0.3);
-    color: var(--white);
+    color: white;
 }
 
 .dropdown-menu {
-    border-radius: var(--radius);
+    border-radius: var(--radius, 16px);
     padding: 8px;
     min-width: 260px;
     margin-top: 10px;
@@ -357,17 +382,17 @@
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--gray);
+    color: var(--gray, #718096);
     padding: 8px 16px;
     font-weight: 700;
 }
 
 .dropdown-item {
-    border-radius: var(--radius-sm);
+    border-radius: var(--radius-sm, 8px);
     padding: 10px 16px;
     font-weight: 500;
     font-size: 14px;
-    transition: var(--transition);
+    transition: all 0.3s ease;
     display: flex;
     align-items: center;
     gap: 10px;
@@ -376,27 +401,27 @@
 .dropdown-item i {
     width: 20px;
     text-align: center;
-    color: var(--gray);
+    color: var(--gray, #718096);
     font-size: 14px;
 }
 
 .dropdown-item:hover {
-    background: var(--primary-lighter);
-    color: var(--primary);
+    background: var(--primary-lighter, #e8edf5);
+    color: var(--primary, #0033a0);
 }
 
 .dropdown-item:hover i {
-    color: var(--primary);
+    color: var(--primary, #0033a0);
 }
 
 .dropdown-item.text-danger:hover {
     background: #fee2e2;
-    color: var(--danger);
+    color: var(--danger, #ef4444);
 }
 
 .dropdown-divider {
     margin: 6px 0;
-    border-color: var(--gray-light);
+    border-color: var(--gray-light, #e2e8f0);
 }
 
 /* ===== RESPONSIVE ===== */
@@ -405,7 +430,7 @@
     .nav-item { width: 100%; }
     .nav-link { padding: 10px 16px; justify-content: center; }
     .btn-nav { width: 100%; justify-content: center; margin: 4px 0; }
-    .dropdown-menu { margin-top: 0; box-shadow: none; border: none; background: var(--white-smoke); }
+    .dropdown-menu { margin-top: 0; box-shadow: none; border: none; background: var(--white-smoke, #f5f7fa); }
     .dropdown-item { padding: 10px 16px; }
     .user-name { display: none; }
 }

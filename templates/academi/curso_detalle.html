@@ -1,0 +1,630 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .course-hero {
+        background: linear-gradient(135deg, #0033a0, #1a4db8);
+        color: white;
+        padding: 40px 0;
+        border-radius: 16px;
+        margin-bottom: 30px;
+    }
+    .course-hero h1 {
+        font-weight: 800;
+        font-size: 2.2rem;
+    }
+    .course-hero .price-tag {
+        font-size: 24px;
+        font-weight: 700;
+        background: #f7c600;
+        color: #002277;
+        padding: 6px 20px;
+        border-radius: 50px;
+        display: inline-block;
+    }
+    .course-hero .price-tag.free {
+        background: #10b981;
+        color: white;
+    }
+    .course-hero .btn-hero {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .course-hero .btn-hero-primary {
+        background: #f7c600;
+        color: #002277;
+    }
+    .course-hero .btn-hero-primary:hover {
+        background: #d4a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(247, 198, 0, 0.3);
+        color: #002277;
+        text-decoration: none;
+    }
+    .course-hero .btn-hero-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+    .course-hero .btn-hero-outline:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: white;
+        color: white;
+        text-decoration: none;
+    }
+    .btn-cart-hero {
+        background: transparent;
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+    .btn-cart-hero:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: white;
+        color: white;
+    }
+    .btn-cart-hero.in-cart {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
+    .btn-cart-hero.in-cart:hover {
+        background: #059669;
+        border-color: #059669;
+        color: white;
+    }
+    .badge-owned-hero {
+        background: #10b981;
+        color: white;
+        padding: 4px 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .course-info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+    }
+    .course-info-card .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f5f7fa;
+    }
+    .course-info-card .info-item:last-child {
+        border-bottom: none;
+    }
+    .course-info-card .info-item i {
+        width: 20px;
+        color: #0033a0;
+        font-size: 14px;
+    }
+    .course-info-card .info-item .label {
+        color: #718096;
+        font-size: 13px;
+    }
+    .course-info-card .info-item .value {
+        font-weight: 600;
+        color: #2d3748;
+        margin-left: auto;
+        font-size: 13px;
+    }
+    .course-modules {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+    }
+    .course-modules .module-header {
+        background: #f8fafc;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .course-modules .module-header .module-title {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 15px;
+    }
+    .course-modules .module-body {
+        padding: 10px 20px;
+    }
+    .course-modules .lesson-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f5f7fa;
+        font-size: 14px;
+    }
+    .course-modules .lesson-item:last-child {
+        border-bottom: none;
+    }
+    .course-modules .lesson-item i {
+        color: #0033a0;
+        width: 18px;
+        font-size: 14px;
+    }
+    .course-modules .lesson-item .lesson-title {
+        color: #2d3748;
+    }
+    .course-modules .lesson-item .lesson-duration {
+        color: #718096;
+        font-size: 12px;
+        margin-left: auto;
+    }
+    .course-modules .lesson-item.locked {
+        opacity: 0.5;
+    }
+    .course-modules .lesson-item.locked i {
+        color: #718096;
+    }
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    .toast-custom {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border-left: 4px solid #0033a0;
+        min-width: 260px;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+    .toast-custom.success {
+        border-left-color: #10b981;
+    }
+    .toast-custom.error {
+        border-left-color: #e53e3e;
+    }
+    .toast-custom i {
+        font-size: 18px;
+    }
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #718096;
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    .toast-custom .toast-close:hover {
+        color: #1a202c;
+    }
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-custom.removing {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+    .hero-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    @media (max-width: 768px) {
+        .course-hero h1 { font-size: 1.6rem; }
+        .course-hero .price-tag { font-size: 20px; padding: 4px 16px; }
+        .course-hero .btn-hero { width: 100%; justify-content: center; padding: 10px 16px; }
+        .btn-cart-hero { width: 100%; justify-content: center; padding: 10px 16px; }
+        .hero-actions { flex-direction: column; width: 100%; }
+        .hero-actions .btn-hero,
+        .hero-actions .btn-cart-hero { width: 100%; justify-content: center; }
+        .course-info-card .info-item { flex-wrap: wrap; }
+        .course-info-card .info-item .value { margin-left: 0; width: 100%; }
+    }
+    @media (min-width: 769px) {
+        .hero-actions { flex-wrap: wrap; }
+        .hero-actions .btn-hero { flex: 0 1 auto; }
+        .hero-actions .btn-cart-hero { flex: 0 1 auto; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- HERO -->
+    <div class="course-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="mb-2">{{ course.title }}</h1>
+                <p class="mb-3" style="opacity: 0.8; font-size: 1.05rem;">{{ course.description }}</p>
+                <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
+                    <span class="badge-level {{ course.level }}" style="background: rgba(255,255,255,0.2); color: white; padding: 3px 14px; border-radius: 50px; font-size: 12px; font-weight: 600;">
+                        {{ course.get_level_display }}
+                    </span>
+                    {% if course.category %}
+                    <span style="opacity: 0.7; font-size: 13px;">| {{ course.category.name }}</span>
+                    {% endif %}
+                </div>
+                <div style="opacity: 0.7; font-size: 13px;">
+                    <span><i class="fas fa-user"></i> {{ course.total_students }} estudiantes</span>
+                    <span class="ms-3"><i class="fas fa-book"></i> {{ course.total_lessons }} lecciones</span>
+                    <span class="ms-3"><i class="fas fa-star" style="color: #f7c600;"></i> {{ course.average_rating|floatformat:1 }} ({{ course.total_reviews }} reseñas)</span>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center text-lg-end mt-4 mt-lg-0">
+                <div class="mb-3">
+                    {% if course.is_free %}
+                        <span class="price-tag free"><i class="fas fa-gift"></i> Gratis</span>
+                    {% else %}
+                        <span class="price-tag">Bs. {{ course.price }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- BOTONES DE ACCIÓN -->
+                {% if user.is_authenticated and user.role == 'student' and course.id in user_enrolled_courses %}
+                    <a href="#" class="btn-hero btn-hero-primary">
+                        <i class="fas fa-play"></i> Continuar aprendiendo
+                    </a>
+                    <span class="badge-owned-hero d-block mt-2" style="justify-content: center;">
+                        <i class="fas fa-check-circle"></i> Curso adquirido
+                    </span>
+                {% else %}
+                    <div class="hero-actions">
+                        <!-- COMPRAR AHORA -->
+                        <button class="btn-hero btn-hero-primary" onclick="openPurchaseModal({{ course.id }}, '{{ course.title|escapejs }}', '{{ course.price }}', {{ course.is_free|lower }})">
+                            <i class="fas fa-bolt"></i> Comprar ahora
+                        </button>
+
+                        <!-- AGREGAR AL CARRITO -->
+                        {% if user.is_authenticated %}
+                        <button class="btn-cart-hero" onclick="addToCart({{ course.id }}, '{{ course.title|escapejs }}')" id="cartBtn{{ course.id }}" title="Agregar al carrito">
+                            <i class="fas fa-shopping-cart"></i> <span id="cartText{{ course.id }}">Agregar al carrito</span>
+                        </button>
+                        {% else %}
+                        <a href="{% url 'login' %}" class="btn-hero btn-hero-outline">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar sesión para comprar
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="col-lg-8">
+            <!-- MÓDULOS Y LECCIONES -->
+            <div class="course-modules">
+                <div class="module-header">
+                    <h5 class="module-title mb-0"><i class="fas fa-list-ul"></i> Contenido del curso</h5>
+                </div>
+                {% if course.modules.all %}
+                    {% for module in course.modules.all %}
+                    <div class="module-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold" style="font-size: 14px;">{{ module.title }}</span>
+                            <span class="text-muted small">{{ module.lessons.count }} lecciones</span>
+                        </div>
+                        {% for lesson in module.lessons.all %}
+                        <div class="lesson-item {% if not lesson.is_free and not user_enrolled_courses %}locked{% endif %}">
+                            <i class="fas {% if lesson.lesson_type == 'video' %}fa-video{% elif lesson.lesson_type == 'document' %}fa-file-pdf{% elif lesson.lesson_type == 'quiz' %}fa-tasks{% elif lesson.lesson_type == 'assignment' %}fa-pencil-alt{% else %}fa-file-alt{% endif %}"></i>
+                            <span class="lesson-title">{{ lesson.title }}</span>
+                            <span class="lesson-duration">
+                                {% if lesson.duration_minutes > 0 %}
+                                    <i class="far fa-clock"></i> {{ lesson.duration_minutes }} min
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="module-body text-center py-4">
+                        <p class="text-muted mb-0">Este curso aún no tiene módulos.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- SIDEBAR - INFORMACIÓN DEL CURSO -->
+        <div class="col-lg-4">
+            <div class="course-info-card">
+                <h6 class="fw-bold mb-3" style="font-size: 14px;"><i class="fas fa-info-circle"></i> Información del curso</h6>
+                <div class="info-item">
+                    <i class="fas fa-user-graduate"></i>
+                    <span class="label">Instructor</span>
+                    <span class="value">{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-tag"></i>
+                    <span class="label">Categoría</span>
+                    <span class="value">{{ course.category.name|default:"Sin categoría" }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-signal"></i>
+                    <span class="label">Nivel</span>
+                    <span class="value">{{ course.get_level_display }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span class="label">Duración total</span>
+                    <span class="value">{{ course.total_duration }} min</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-book"></i>
+                    <span class="label">Lecciones</span>
+                    <span class="value">{{ course.total_lessons }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <span class="label">Estudiantes</span>
+                    <span class="value">{{ course.total_students }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-star" style="color: #f7c600;"></i>
+                    <span class="label">Valoración</span>
+                    <span class="value">{{ course.average_rating|floatformat:1 }} ({{ course.total_reviews }})</span>
+                </div>
+            </div>
+
+            <!-- COMPARTIR -->
+            <div class="course-info-card">
+                <h6 class="fw-bold mb-3" style="font-size: 14px;"><i class="fas fa-share-alt"></i> Compartir</h6>
+                <div class="d-flex gap-2">
+                    <a href="#" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px;"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px;"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px;"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px;"><i class="fab fa-whatsapp"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE COMPRA -->
+<div class="modal fade" id="purchaseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header border-0" style="padding: 16px 20px;">
+                <h5 class="modal-title fw-bold" style="font-size: 16px;">
+                    <i class="fas fa-shopping-cart" style="color: #0033a0;"></i> Confirmar compra
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="font-size: 40px; color: #f7c600; margin-bottom: 12px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h6 class="fw-bold mb-2" style="font-size: 15px;">¿Estás seguro de comprar este curso?</h6>
+                <p class="text-muted" id="purchaseCourseTitle" style="font-size: 14px;">Curso: <strong>Nombre del curso</strong></p>
+                <p class="text-muted" id="purchaseCoursePrice" style="font-size: 14px;">Precio: <strong>Bs. 0.00</strong></p>
+                <input type="hidden" id="purchaseCourseId">
+                <input type="hidden" id="purchaseIsFree" value="false">
+            </div>
+            <div class="modal-footer border-0" style="padding: 12px 20px;">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" style="padding: 6px 16px; font-size: 13px;">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" id="confirmPurchaseBtn" style="padding: 6px 20px; font-size: 13px;">
+                    <i class="fas fa-check"></i> Confirmar compra
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // TOAST
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + type;
+
+        var icon = type === 'error' ? 'fas fa-times-circle' :
+                   type === 'success' ? 'fas fa-check-circle' :
+                   'fas fa-info-circle';
+        var iconColor = type === 'error' ? '#e53e3e' :
+                        type === 'success' ? '#10b981' :
+                        '#0033a0';
+
+        toast.innerHTML = `
+            <i class="${icon}" style="color: ${iconColor};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // CARRITO
+    var cartItems = [];
+
+    function addToCart(courseId, courseTitle) {
+        var btn = document.getElementById('cartBtn' + courseId);
+        var txt = document.getElementById('cartText' + courseId);
+
+        if (!btn) return;
+
+        if (cartItems.includes(courseId)) {
+            cartItems = cartItems.filter(function(id) { return id !== courseId; });
+            btn.classList.remove('in-cart');
+            btn.style.borderColor = 'rgba(255,255,255,0.3)';
+            btn.style.background = 'transparent';
+            if (txt) txt.textContent = 'Agregar al carrito';
+            showToast('Curso "' + courseTitle + '" eliminado del carrito', 'error');
+            updateCartCount();
+            return;
+        }
+
+        fetch('/cart/add/' + courseId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ course_id: courseId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                cartItems.push(courseId);
+                btn.classList.add('in-cart');
+                btn.style.borderColor = '#10b981';
+                btn.style.background = '#10b981';
+                if (txt) txt.textContent = 'En carrito';
+                showToast('Curso "' + courseTitle + '" agregado al carrito', 'success');
+                updateCartCount();
+            } else {
+                showToast(data.message || 'Error al agregar al carrito', 'error');
+            }
+        })
+        .catch(function() {
+            showToast('Error de conexión al servidor', 'error');
+        });
+    }
+
+    function updateCartCount() {
+        var count = cartItems.length;
+        var badge = document.querySelector('.badge-cart');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    // COMPRA
+    function openPurchaseModal(courseId, courseTitle, coursePrice, isFree) {
+        {% if not user.is_authenticated %}
+            window.location.href = "{% url 'login' %}?next={{ request.path }}";
+            return;
+        {% endif %}
+
+        document.getElementById('purchaseCourseId').value = courseId;
+        document.getElementById('purchaseCourseTitle').innerHTML = 'Curso: <strong>' + courseTitle + '</strong>';
+        document.getElementById('purchaseCoursePrice').innerHTML = 'Precio: <strong>' + (isFree ? 'Gratis' : 'Bs. ' + coursePrice) + '</strong>';
+        document.getElementById('purchaseIsFree').value = isFree ? 'true' : 'false';
+        new bootstrap.Modal(document.getElementById('purchaseModal')).show();
+    }
+
+    document.getElementById('confirmPurchaseBtn').addEventListener('click', function() {
+        var courseId = document.getElementById('purchaseCourseId').value;
+        var modal = bootstrap.Modal.getInstance(document.getElementById('purchaseModal'));
+
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+        fetch('/purchase/' + courseId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ course_id: courseId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                modal.hide();
+                showToast('Compra realizada con éxito. ¡Disfruta tu curso!', 'success');
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                showToast(data.message || 'Error al procesar la compra', 'error');
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
+            }
+        })
+        .catch(function() {
+            showToast('Error de conexión al servidor', 'error');
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
+        });
+    });
+
+    // INICIALIZAR
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/cart/items/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cartItems = data.items || [];
+                    cartItems.forEach(function(id) {
+                        var btn = document.getElementById('cartBtn' + id);
+                        var txt = document.getElementById('cartText' + id);
+                        if (btn) {
+                            btn.classList.add('in-cart');
+                            btn.style.borderColor = '#10b981';
+                            btn.style.background = '#10b981';
+                            if (txt) txt.textContent = 'En carrito';
+                        }
+                    });
+                    updateCartCount();
+                }
+            })
+            .catch(function() {});
+    });
+
+    // RESETEAR MODAL
+    document.getElementById('purchaseModal').addEventListener('hidden.bs.modal', function() {
+        var btn = document.getElementById('confirmPurchaseBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
+    });
+</script>
+{% endblock %}

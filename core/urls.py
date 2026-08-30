@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('captcha/', include('captcha.urls')),  # <--- AGREGAR ESTO
     path('', include('academi.urls')),
+    
 ]
 
 if settings.DEBUG:

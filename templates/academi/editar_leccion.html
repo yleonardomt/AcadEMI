@@ -1,0 +1,564 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Editar lección - {{ lesson.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 51, 160, 0.08);
+        border: none;
+        overflow: hidden;
+    }
+    .form-header {
+        background: #e8edf5;
+        padding: 20px 28px;
+        border-bottom: 3px solid #0033a0;
+    }
+    .form-body {
+        padding: 28px 32px;
+    }
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    .form-label .required {
+        color: #dc3545;
+        margin-left: 2px;
+    }
+    .form-control {
+        border-radius: 8px;
+        border: 1.5px solid #e2e8f0;
+        padding: 10px 14px;
+        transition: all 0.3s ease;
+        font-size: 0.95rem;
+        background: #ffffff;
+        color: #1a202c;
+    }
+    .form-control:focus {
+        border-color: #0033a0;
+        box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+        outline: none;
+    }
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    .form-control-sm {
+        max-width: 200px;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.8rem;
+        margin-top: 4px;
+        display: block;
+    }
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #e8edf5;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+    .icon-circle i {
+        font-size: 22px;
+        color: #0033a0;
+    }
+    .btn-primary-custom {
+        background: #0033a0;
+        color: #ffffff;
+        border: none;
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+    }
+    .btn-primary-custom:hover {
+        background: #002277;
+        color: #ffffff;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(0, 51, 160, 0.3);
+    }
+    .btn-outline-custom {
+        background: transparent;
+        color: #2d3748;
+        border: 1.5px solid #e2e8f0;
+        padding: 10px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .btn-outline-custom:hover {
+        background: #f5f7fa;
+        border-color: #718096;
+        color: #2d3748;
+        text-decoration: none;
+    }
+    .form-switch .form-check-input {
+        width: 44px;
+        height: 22px;
+        cursor: pointer;
+    }
+    .form-switch .form-check-input:checked {
+        background-color: #0033a0;
+        border-color: #0033a0;
+    }
+    .free-badge {
+        background: #f7c600;
+        color: #002277;
+        padding: 2px 10px;
+        border-radius: 50px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+    .header-title {
+        color: #002277;
+        font-weight: 700;
+        margin-bottom: 0;
+        font-size: 1.25rem;
+    }
+    .header-subtitle {
+        color: #718096;
+        margin-bottom: 0;
+        font-size: 0.9rem;
+    }
+    .header-subtitle strong {
+        color: #2d3748;
+    }
+    .free-section {
+        background: #f5f7fa;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 16px 20px;
+    }
+    .deadline-section {
+        background: #f0f4ff;
+        border: 1px solid #c5d5f0;
+        border-radius: 8px;
+        padding: 16px 20px;
+    }
+    .d-flex {
+        display: flex;
+    }
+    .align-items-center {
+        align-items: center;
+    }
+    .gap-3 {
+        gap: 12px;
+    }
+    .flex-wrap {
+        flex-wrap: wrap;
+    }
+    .flex-grow-1 {
+        flex-grow: 1;
+    }
+    .mb-0 {
+        margin-bottom: 0;
+    }
+    .mb-3 {
+        margin-bottom: 16px;
+    }
+    .mb-4 {
+        margin-bottom: 24px;
+    }
+    .mt-4 {
+        margin-top: 24px;
+    }
+    .p-3 {
+        padding: 16px;
+    }
+    .py-4 {
+        padding-top: 24px;
+        padding-bottom: 24px;
+    }
+    .fw-bold {
+        font-weight: 700;
+    }
+    .fw-semibold {
+        font-weight: 600;
+    }
+    .text-muted {
+        color: #718096 !important;
+    }
+    .text-danger {
+        color: #dc3545 !important;
+    }
+    .text-primary {
+        color: #0033a0 !important;
+    }
+    .text-success {
+        color: #10b981 !important;
+    }
+    .badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .badge-primary {
+        background: #0033a0;
+        color: #ffffff;
+    }
+    @media (max-width: 576px) {
+        .form-header { padding: 16px 20px; }
+        .form-body { padding: 20px; }
+        .d-flex.gap-3 { flex-direction: column; }
+        .btn-primary-custom, .btn-outline-custom { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="form-container">
+                <div class="form-header d-flex align-items-center gap-3">
+                    <div class="icon-circle">
+                        <i class="fas fa-edit"></i>
+                    </div>
+                    <div>
+                        <h4 class="header-title">Editar lección</h4>
+                        <p class="header-subtitle">
+                            <i class="far fa-folder"></i> Módulo: <strong>{{ lesson.module.title }}</strong>
+                            <span style="margin: 0 4px; color: #718096;">|</span>
+                            <i class="far fa-file-alt"></i> Tipo: <span class="badge badge-primary">{{ lesson.get_lesson_type_display }}</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="form-body">
+                    <form method="POST" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        <input type="hidden" name="es_edicion" value="true">
+                        <input type="hidden" name="lesson_id" value="{{ lesson.id }}">
+
+                        <!-- TÍTULO -->
+                        <div class="mb-3">
+                            <label for="title" class="form-label">
+                                Título de la lección
+                                <span class="required">*</span>
+                            </label>
+                            <input type="text"
+                                   name="title"
+                                   id="title"
+                                   class="form-control form-control-lg"
+                                   placeholder="Ej: Introducción a Python"
+                                   required
+                                   autofocus
+                                   value="{{ lesson.title|default:'' }}">
+                        </div>
+
+                        <!-- DESCRIPCIÓN -->
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Descripción</label>
+                            <textarea name="description"
+                                      id="description"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Describe el contenido de esta lección">{{ lesson.description|default:'' }}</textarea>
+                        </div>
+
+                        <!-- DURACIÓN -->
+                        <div class="mb-3">
+                            <label for="duration" class="form-label">Duración (minutos)</label>
+                            <input type="number"
+                                   name="duration"
+                                   id="duration"
+                                   class="form-control form-control-sm"
+                                   placeholder="30"
+                                   min="0"
+                                   max="999"
+                                   value="{{ lesson.duration_minutes|default:'' }}">
+                        </div>
+
+                        <!-- CONTENIDO -->
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Contenido</label>
+                            <textarea name="content"
+                                      id="content"
+                                      class="form-control"
+                                      rows="5"
+                                      placeholder="Escribe el contenido de la lección">{{ lesson.content|default:'' }}</textarea>
+                        </div>
+
+                        <!-- VIDEO URL (solo para video) -->
+                        {% if lesson.lesson_type == 'video' %}
+                        <div class="mb-3">
+                            <label for="video_url" class="form-label">URL del video</label>
+                            <input type="url"
+                                   name="video_url"
+                                   id="video_url"
+                                   class="form-control"
+                                   placeholder="https://www.youtube.com/watch?v=..."
+                                   value="{{ lesson.video_url|default:'' }}">
+                            <div class="form-text">
+                                <i class="fas fa-link"></i> YouTube, Vimeo, o cualquier plataforma de video.
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="video_file" class="form-label">Archivo de video</label>
+                            <input type="file"
+                                   name="video_file"
+                                   id="video_file"
+                                   class="form-control"
+                                   accept="video/*">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> MP4, AVI, MOV, WMV, MKV. Máximo 500MB.
+                                {% if lesson.video_file %}
+                                <br><span class="text-success"><i class="fas fa-check-circle"></i> Video actual: {{ lesson.video_file.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- DOCUMENTO (solo para document) -->
+                        {% if lesson.lesson_type == 'document' %}
+                        <div class="mb-3">
+                            <label for="document_file" class="form-label">Archivo de documento</label>
+                            <input type="file"
+                                   name="document_file"
+                                   id="document_file"
+                                   class="form-control"
+                                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip">
+                            <div class="form-text">
+                                <i class="fas fa-info-circle"></i> PDF, Word, PowerPoint, Excel, ZIP. Máximo 50MB.
+                                {% if lesson.document_file %}
+                                <br><span class="text-success"><i class="fas fa-check-circle"></i> Documento actual: {{ lesson.document_file.name }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- TIEMPO LÍMITE + APROBACIÓN + INTENTOS (solo para quiz/exam) -->
+                        {% if lesson.lesson_type == 'quiz' or lesson.lesson_type == 'exam' %}
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="time_limit" class="form-label">
+                                    Tiempo límite (minutos)
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number"
+                                       name="time_limit"
+                                       id="time_limit"
+                                       class="form-control"
+                                       placeholder="30"
+                                       min="1"
+                                       max="180"
+                                       value="{{ form_data.time_limit|default:30 }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="passing_score" class="form-label">
+                                    Aprobación (%)
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number"
+                                       name="passing_score"
+                                       id="passing_score"
+                                       class="form-control"
+                                       placeholder="70"
+                                       min="0"
+                                       max="100"
+                                       value="{{ form_data.passing_score|default:70 }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="max_attempts" class="form-label">
+                                    Intentos permitidos
+                                    <span class="required">*</span>
+                                </label>
+                                <input type="number"
+                                       name="max_attempts"
+                                       id="max_attempts"
+                                       class="form-control"
+                                       placeholder="1"
+                                       min="1"
+                                       max="10"
+                                       value="{{ form_data.max_attempts|default:1 }}">
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- PLAZO DE ENTREGA (solo para assignment) -->
+                        {% if lesson.lesson_type == 'assignment' %}
+                        <div class="deadline-section mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="fas fa-hourglass-half text-primary"></i>
+                                Plazo para entregar
+                                <span class="required">*</span>
+                            </label>
+                            <div class="row">
+                                <div class="col-6">
+                                    <input type="number"
+                                           name="assignment_deadline_days"
+                                           id="assignment_deadline_days"
+                                           class="form-control"
+                                           placeholder="7"
+                                           min="1"
+                                           max="30"
+                                           value="{{ form_data.assignment_deadline_days|default:7 }}">
+                                    <div class="form-text">Días</div>
+                                </div>
+                                <div class="col-6">
+                                    <input type="number"
+                                           name="assignment_deadline_hours"
+                                           id="assignment_deadline_hours"
+                                           class="form-control"
+                                           placeholder="0"
+                                           min="0"
+                                           max="23"
+                                           value="{{ form_data.assignment_deadline_hours|default:0 }}">
+                                    <div class="form-text">Horas adicionales</div>
+                                </div>
+                            </div>
+                            <div class="form-text mt-2">
+                                <i class="fas fa-info-circle" style="color: #0033a0;"></i>
+                                El estudiante tendrá este tiempo para entregar <strong>desde que inicia la tarea</strong>.
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- LECCIÓN GRATUITA -->
+                        <div class="free-section mb-4">
+                            <div class="d-flex align-items-center gap-3 flex-wrap">
+                                <div class="form-check form-switch mb-0">
+                                    <input type="checkbox"
+                                           name="is_free"
+                                           id="is_free"
+                                           class="form-check-input"
+                                           style="width: 44px; height: 22px; cursor: pointer;"
+                                           {% if lesson.is_free %}checked{% endif %}>
+                                    <label class="form-check-label fw-semibold" for="is_free" style="cursor: pointer;">
+                                        <i class="fas fa-star" style="color: #f7c600;"></i>
+                                        Lección gratuita
+                                    </label>
+                                </div>
+                                <span class="free-badge">
+                                    <i class="fas fa-info-circle"></i> Visible sin comprar
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- BOTONES -->
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn-primary-custom flex-grow-1" id="submitBtn">
+                                <i class="fas fa-save"></i> Guardar cambios
+                            </button>
+                            <a href="{% url 'manage_course' lesson.module.course.id %}" class="btn-outline-custom">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const titleInput = document.getElementById('title');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', function(e) {
+            let valid = true;
+
+            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+            document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
+
+            function showError(input, message) {
+                input.classList.add('is-invalid');
+                let feedback = input.parentNode.querySelector('.invalid-feedback');
+                if (!feedback) {
+                    feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    input.parentNode.insertBefore(feedback, input.nextSibling);
+                }
+                feedback.textContent = message;
+                valid = false;
+            }
+
+            const title = titleInput.value.trim();
+            if (!title) {
+                showError(titleInput, 'El título es obligatorio.');
+            } else if (title.length < 3) {
+                showError(titleInput, 'El título debe tener al menos 3 caracteres.');
+            }
+
+            // Validar plazo de entrega si es tarea
+            {% if lesson.lesson_type == 'assignment' %}
+            const days = document.getElementById('assignment_deadline_days').value;
+            const hours = document.getElementById('assignment_deadline_hours').value;
+
+            if (!days || parseInt(days) < 1) {
+                const input = document.getElementById('assignment_deadline_days');
+                input.classList.add('is-invalid');
+                let feedback = input.parentNode.querySelector('.invalid-feedback');
+                if (!feedback) {
+                    feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    input.parentNode.insertBefore(feedback, input.nextSibling);
+                }
+                feedback.textContent = 'Debes establecer al menos 1 día para entregar.';
+                valid = false;
+            }
+
+            if (hours && (parseInt(hours) < 0 || parseInt(hours) > 23)) {
+                const input = document.getElementById('assignment_deadline_hours');
+                input.classList.add('is-invalid');
+                let feedback = input.parentNode.querySelector('.invalid-feedback');
+                if (!feedback) {
+                    feedback = document.createElement('div');
+                    feedback.className = 'invalid-feedback';
+                    input.parentNode.insertBefore(feedback, input.nextSibling);
+                }
+                feedback.textContent = 'Las horas deben ser entre 0 y 23.';
+                valid = false;
+            }
+            {% endif %}
+
+            if (!valid) {
+                e.preventDefault();
+                const firstError = form.querySelector('.is-invalid');
+                if (firstError) firstError.focus();
+                return false;
+            }
+
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+            submitBtn.disabled = true;
+            return true;
+        });
+
+        titleInput.addEventListener('input', function() {
+            if (this.value.trim().length >= 3) {
+                this.classList.remove('is-invalid');
+                const feedback = this.parentNode.querySelector('.invalid-feedback');
+                if (feedback) feedback.remove();
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Editar módulo - {{ module.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-lg">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <i class="fas fa-edit fa-2x" style="color: #0033a0;"></i>
+                        <h4 class="mt-2 fw-bold">Editar módulo</h4>
+                        <p class="text-muted">Curso: <strong>{{ module.course.title }}</strong></p>
+                    </div>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Título del módulo <span class="text-danger">*</span></label>
+                            <input type="text" name="title" class="form-control" value="{{ module.title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Descripción</label>
+                            <textarea name="description" class="form-control" rows="3">{{ module.description }}</textarea>
+                        </div>
+                        <div class="d-flex gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary flex-grow-1">
+                                <i class="fas fa-save"></i> Guardar cambios
+                            </button>
+                            <a href="{% url 'manage_course' module.course.id %}" class="btn btn-outline-secondary">
+                                Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

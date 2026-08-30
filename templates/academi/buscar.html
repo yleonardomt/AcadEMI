@@ -1,0 +1,691 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Resultados de búsqueda - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #0033a0;
+        --primary-dark: #002277;
+        --primary-light: #1a4db8;
+        --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
+        --secondary: #f7c600;
+        --gray-light: #e2e8f0;
+        --gray: #718096;
+        --gray-dark: #2d3748;
+        --success: #10b981;
+        --shadow: 0 4px 20px rgba(0,51,160,0.08);
+        --shadow-hover: 0 12px 40px rgba(0,51,160,0.12);
+        --radius: 16px;
+        --radius-sm: 8px;
+        --transition: all 0.3s ease;
+    }
+
+    /* ============================================
+       HEADER DE BÚSQUEDA
+       ============================================ */
+    .search-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 35px 0 30px;
+        margin-bottom: 30px;
+        border-radius: 0 0 24px 24px;
+        position: relative;
+        overflow: hidden;
+    }
+    .search-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 50%;
+    }
+    .search-header::after {
+        content: '';
+        position: absolute;
+        bottom: -30%;
+        left: 20%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 50%;
+    }
+    .search-header h2 {
+        font-weight: 800;
+        font-size: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+    .search-header h2 i {
+        color: var(--secondary);
+        margin-right: 10px;
+    }
+    .search-header p {
+        color: rgba(255,255,255,0.85);
+        margin-bottom: 0;
+        font-size: 1.05rem;
+        position: relative;
+        z-index: 1;
+    }
+    .search-header .query-highlight {
+        background: rgba(255,255,255,0.15);
+        padding: 4px 16px;
+        border-radius: 50px;
+        font-weight: 600;
+        display: inline-block;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+    .results-count {
+        background: rgba(255,255,255,0.12);
+        padding: 8px 20px;
+        border-radius: 50px;
+        font-size: 0.95rem;
+        backdrop-filter: blur(4px);
+        border: 1px solid rgba(255,255,255,0.08);
+        position: relative;
+        z-index: 1;
+        display: inline-block;
+    }
+    .results-count strong {
+        font-weight: 700;
+        color: var(--secondary);
+    }
+
+    /* ============================================
+       FORMULARIO DE BÚSQUEDA
+       ============================================ */
+    .search-form-wrapper {
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 20px 24px;
+        margin-top: -20px;
+        margin-bottom: 30px;
+        position: relative;
+        z-index: 2;
+        border: 1px solid var(--gray-light);
+    }
+    .search-form-wrapper .input-group {
+        border-radius: 50px;
+        overflow: hidden;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+    .search-form-wrapper .input-group .form-control {
+        border: 2px solid var(--gray-light);
+        border-right: none;
+        padding: 12px 20px;
+        font-size: 1rem;
+        border-radius: 50px 0 0 50px;
+        transition: var(--transition);
+        background: #f8fafc;
+    }
+    .search-form-wrapper .input-group .form-control:focus {
+        border-color: var(--primary);
+        box-shadow: none;
+        background: white;
+    }
+    .search-form-wrapper .input-group .form-control::placeholder {
+        color: #a0aec0;
+        font-size: 0.95rem;
+    }
+    .search-form-wrapper .input-group .btn-search {
+        border: 2px solid var(--gray-light);
+        border-left: none;
+        padding: 12px 28px;
+        background: var(--primary-gradient);
+        color: white;
+        font-weight: 600;
+        border-radius: 0 50px 50px 0;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    .search-form-wrapper .input-group .btn-search:hover {
+        background: var(--primary-dark);
+        transform: scale(1.02);
+    }
+    .search-form-wrapper .input-group .btn-search i {
+        margin-right: 6px;
+    }
+    .search-form-wrapper .input-group .btn-clear {
+        border: 2px solid var(--gray-light);
+        border-left: none;
+        padding: 12px 20px;
+        background: #f8fafc;
+        color: var(--gray);
+        border-radius: 0 50px 50px 0;
+        transition: var(--transition);
+        cursor: pointer;
+    }
+    .search-form-wrapper .input-group .btn-clear:hover {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+    /* ============================================
+       TARJETAS DE CURSOS
+       ============================================ */
+    .course-card {
+        border-radius: var(--radius);
+        overflow: hidden;
+        transition: var(--transition);
+        border: 1px solid var(--gray-light);
+        background: #ffffff;
+        height: 100%;
+        position: relative;
+    }
+    .course-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--primary);
+    }
+    .course-card .card-img-top {
+        height: 170px;
+        object-fit: cover;
+        background: #e8edf5;
+        width: 100%;
+    }
+    .course-card .card-img-placeholder {
+        height: 170px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--primary-gradient);
+        color: white;
+        font-size: 48px;
+    }
+    .course-card .card-body {
+        padding: 18px 20px 12px;
+    }
+    .course-card .card-footer {
+        background: transparent;
+        border-top: 1px solid var(--gray-light);
+        padding: 12px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .course-title {
+        font-weight: 700;
+        font-size: 1.05rem;
+        color: var(--gray-dark);
+        margin-bottom: 4px;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .course-description {
+        font-size: 0.85rem;
+        color: var(--gray);
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 38px;
+    }
+    .course-price {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: var(--primary);
+    }
+    .course-price.free {
+        color: var(--success);
+    }
+    .course-price.free i {
+        font-size: 0.9rem;
+    }
+    .badge-level {
+        font-size: 10px;
+        padding: 3px 12px;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+    .badge-level.beginner { background: #d4edda; color: #155724; }
+    .badge-level.intermediate { background: #fff3cd; color: #856404; }
+    .badge-level.advanced { background: #f8d7da; color: #721c24; }
+    .badge-level.expert { background: #d1ecf1; color: #0c5460; }
+    .course-meta {
+        font-size: 12px;
+        color: var(--gray);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 6px;
+    }
+    .course-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .course-meta i {
+        color: var(--primary);
+        font-size: 12px;
+        width: 14px;
+        text-align: center;
+    }
+    .btn-view {
+        font-size: 13px;
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: var(--transition);
+    }
+    .btn-view i {
+        margin-right: 4px;
+    }
+    .btn-add-cart {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border: 1.5px solid var(--gray-light);
+        background: transparent;
+        color: var(--primary);
+        transition: var(--transition);
+        cursor: pointer;
+        font-size: 14px;
+    }
+    .btn-add-cart:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+        transform: scale(1.05);
+    }
+
+    /* ============================================
+       VACÍO
+       ============================================ */
+    .empty-search {
+        padding: 80px 20px;
+        text-align: center;
+        background: white;
+        border-radius: var(--radius);
+        border: 1px solid var(--gray-light);
+    }
+    .empty-search i {
+        font-size: 72px;
+        color: #cbd5e0;
+        margin-bottom: 20px;
+        display: block;
+    }
+    .empty-search h4 {
+        font-weight: 700;
+        color: var(--gray-dark);
+        font-size: 1.5rem;
+        margin-bottom: 8px;
+    }
+    .empty-search p {
+        color: var(--gray);
+        max-width: 450px;
+        margin: 0 auto 24px;
+        font-size: 1.05rem;
+    }
+    .empty-search .btn {
+        border-radius: 50px;
+        padding: 10px 32px;
+        font-weight: 600;
+    }
+
+    /* ============================================
+       TOAST
+       ============================================ */
+    .toast-custom {
+        background: white;
+        border-radius: var(--radius-sm);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        padding: 14px 20px;
+        margin-bottom: 10px;
+        border-left: 4px solid var(--success);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+        min-width: 280px;
+        animation: slideInRight 0.3s ease;
+    }
+    .toast-custom i { font-size: 18px; }
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: var(--gray);
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    .toast-custom .toast-close:hover { color: var(--gray-dark); }
+    .toast-custom.error { border-left-color: #ef4444; }
+    .toast-custom.success { border-left-color: var(--success); }
+    .toast-custom.info { border-left-color: var(--primary); }
+
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-custom.removing { animation: slideOutRight 0.3s ease forwards; }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+        .search-header { padding: 24px 0 20px; }
+        .search-header h2 { font-size: 1.5rem; }
+        .search-header p { font-size: 0.9rem; }
+        .search-form-wrapper { padding: 16px; margin-top: -12px; }
+        .search-form-wrapper .input-group .form-control { font-size: 0.9rem; padding: 10px 16px; }
+        .search-form-wrapper .input-group .btn-search { padding: 10px 18px; font-size: 0.9rem; }
+        .course-card .card-img-top,
+        .course-card .card-img-placeholder { height: 140px; }
+        .course-title { font-size: 0.95rem; }
+        .course-description { font-size: 0.8rem; min-height: 32px; }
+        .toast-custom { min-width: auto; max-width: 90vw; }
+        .results-count { font-size: 0.85rem; padding: 6px 14px; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ============================================
+     HEADER DE BÚSQUEDA
+     ============================================ -->
+<div class="search-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2>
+                    <i class="fas fa-search"></i> Buscar cursos
+                </h2>
+                <p>Encuentra el curso perfecto para ti</p>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <div class="results-count">
+                    <i class="fas fa-graduation-cap"></i>
+                    <strong>{{ courses.count }}</strong> cursos encontrados
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     FORMULARIO DE BÚSQUEDA
+     ============================================ -->
+<div class="container">
+    <div class="search-form-wrapper">
+        <form method="GET" action="{% url 'search_courses' %}">
+            <div class="input-group">
+                <input type="text"
+                       name="q"
+                       class="form-control"
+                       placeholder="Buscar cursos por título, descripción o instructor..."
+                       value="{{ query }}"
+                       autofocus>
+                <button type="submit" class="btn-search">
+                    <i class="fas fa-search"></i> Buscar
+                </button>
+                {% if query %}
+                    <a href="{% url 'search_courses' %}" class="btn-clear">
+                        <i class="fas fa-times"></i>
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+        <div class="mt-2 text-muted small">
+            <i class="fas fa-info-circle"></i>
+            Busca por título, descripción, categoría o nombre del instructor
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     LISTA DE CURSOS
+     ============================================ -->
+<div class="container pb-5">
+    <div class="row g-4">
+        {% if courses %}
+            {% for course in courses %}
+            <div class="col-md-6 col-xl-4">
+                <div class="course-card card">
+
+                    <!-- IMAGEN -->
+                    {% if course.image %}
+                        <img src="{{ course.image.url }}" alt="{{ course.title }}" class="card-img-top">
+                    {% else %}
+                        <div class="card-img-placeholder">
+                            <i class="fas fa-graduation-cap"></i>
+                        </div>
+                    {% endif %}
+
+                    <!-- CUERPO -->
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-1">
+                            <span class="badge-level {{ course.level }}">
+                                {{ course.get_level_display }}
+                            </span>
+                            <span class="course-price {% if course.is_free %}free{% endif %}">
+                                {% if course.is_free %}
+                                    <i class="fas fa-gift"></i> Gratis
+                                {% else %}
+                                    Bs. {{ course.price }}
+                                {% endif %}
+                            </span>
+                        </div>
+
+                        <h5 class="course-title">{{ course.title }}</h5>
+                        <p class="course-description">{{ course.description|truncatechars:80 }}</p>
+
+                        <div class="course-meta">
+                            <span>
+                                <i class="fas fa-user"></i>
+                                {{ course.total_students }}
+                            </span>
+                            <span>
+                                <i class="fas fa-book"></i>
+                                {{ course.total_lessons }}
+                            </span>
+                            <span>
+                                <i class="fas fa-star" style="color: #f7c600;"></i>
+                                {{ course.average_rating|floatformat:1 }}
+                            </span>
+                            <span>
+                                <i class="fas fa-clock"></i>
+                                {{ course.total_duration }} min
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- FOOTER -->
+                    <div class="card-footer">
+                        <a href="{% url 'course_detail' course.id %}" class="btn btn-primary btn-view">
+                            <i class="fas fa-eye"></i> Ver curso
+                        </a>
+                        {% if user.is_authenticated and user.role == 'student' %}
+                            <button class="btn-add-cart" onclick="addToCart({{ course.id }}, '{{ course.title|escapejs }}')" title="Agregar al carrito">
+                                <i class="fas fa-shopping-cart"></i>
+                            </button>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <!-- ============================================
+                 VACÍO
+                 ============================================ -->
+            <div class="col-12">
+                <div class="empty-search">
+                    <i class="fas fa-search"></i>
+                    <h4>No se encontraron cursos</h4>
+                    <p>
+                        {% if query %}
+                            No hay cursos que coincidan con <strong>"{{ query }}"</strong>.
+                            Intenta con otras palabras clave o revisa el catálogo completo.
+                        {% else %}
+                            No hay cursos disponibles en este momento.
+                        {% endif %}
+                    </p>
+                    <a href="{% url 'catalog' %}" class="btn btn-primary">
+                        <i class="fas fa-book-open"></i> Ver catálogo completo
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ============================================
+     TOAST
+     ============================================ -->
+<div id="toastContainer" style="position:fixed;top:20px;right:20px;z-index:9999;"></div>
+
+<!-- ============================================
+     SCRIPTS
+     ============================================ -->
+<script>
+    // ============================================
+    // TOAST
+    // ============================================
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + (type || 'info');
+
+        var icons = {
+            error: 'fas fa-times-circle',
+            success: 'fas fa-check-circle',
+            info: 'fas fa-info-circle',
+            warning: 'fas fa-exclamation-triangle'
+        };
+        var colors = {
+            error: '#ef4444',
+            success: '#10b981',
+            info: '#0033a0',
+            warning: '#f59e0b'
+        };
+        var typeFinal = type || 'info';
+
+        toast.innerHTML = `
+            <i class="${icons[typeFinal]}" style="color: ${colors[typeFinal]};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) toast.remove();
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // ============================================
+    // AGREGAR AL CARRITO
+    // ============================================
+    function addToCart(courseId, courseTitle) {
+        showToast('Curso "' + courseTitle + '" agregado al carrito', 'success');
+        
+        // 🔥 Aquí puedes descomentar y usar tu lógica AJAX real
+        /*
+        fetch('/cart/add/' + courseId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Curso "' + courseTitle + '" agregado al carrito', 'success');
+                document.getElementById('cartCount').textContent = data.items_count;
+            } else {
+                showToast(data.message || 'Error al agregar al carrito', 'error');
+            }
+        })
+        .catch(() => {
+            showToast('Error de conexión al servidor', 'error');
+        });
+        */
+    }
+
+    // ============================================
+    // INICIALIZAR
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Si hay un input de búsqueda, enfocarlo
+        var searchInput = document.querySelector('input[name="q"]');
+        if (searchInput) {
+            searchInput.focus();
+            searchInput.setSelectionRange(searchInput.value.length, searchInput.value.length);
+        }
+
+        // Estilos para toasts
+        var style = document.createElement('style');
+        style.textContent = `
+            .toast-custom {
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+                padding: 14px 20px;
+                margin-bottom: 10px;
+                border-left: 4px solid #0033a0;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 14px;
+                min-width: 280px;
+                animation: slideInRight 0.3s ease;
+            }
+            .toast-custom i { font-size: 18px; }
+            .toast-custom .toast-close {
+                margin-left: auto;
+                cursor: pointer;
+                background: none;
+                border: none;
+                color: #718096;
+                font-size: 16px;
+                padding: 0 4px;
+            }
+            .toast-custom .toast-close:hover { color: #2d3748; }
+            .toast-custom.error { border-left-color: #ef4444; }
+            .toast-custom.success { border-left-color: #10b981; }
+            .toast-custom.info { border-left-color: #0033a0; }
+            .toast-custom.warning { border-left-color: #f59e0b; }
+            @keyframes slideInRight {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOutRight {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .toast-custom.removing { animation: slideOutRight 0.3s ease forwards; }
+        `;
+        document.head.appendChild(style);
+    });
+</script>
+
+{% endblock %}

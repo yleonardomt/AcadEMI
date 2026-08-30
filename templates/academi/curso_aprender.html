@@ -1,0 +1,406 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .course-header {
+        background: linear-gradient(135deg, #0033a0, #1a4db8);
+        color: white;
+        padding: 30px 0;
+        margin-bottom: 30px;
+    }
+    .course-header .course-title {
+        font-weight: 800;
+        font-size: 28px;
+    }
+    .course-header .course-meta {
+        color: rgba(255,255,255,0.8);
+        font-size: 14px;
+    }
+    .course-header .course-meta i {
+        margin-right: 4px;
+    }
+    .module-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        margin-bottom: 16px;
+        overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .module-card .module-header {
+        padding: 16px 20px;
+        background: #f8fafc;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid #e2e8f0;
+        transition: all 0.3s ease;
+    }
+    .module-card .module-header:hover {
+        background: #f1f5f9;
+    }
+    .module-card .module-header h5 {
+        font-weight: 600;
+        margin: 0;
+        font-size: 16px;
+    }
+    .module-card .module-header .module-badge {
+        font-size: 12px;
+        color: #718096;
+    }
+    .module-card .module-body {
+        padding: 0;
+    }
+    .lesson-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid #f5f7fa;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: #2d3748;
+        cursor: pointer;
+    }
+    .lesson-item:last-child {
+        border-bottom: none;
+    }
+    .lesson-item:hover {
+        background: #f8fafc;
+        text-decoration: none;
+        color: #2d3748;
+    }
+    .lesson-item .lesson-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 14px;
+        flex-shrink: 0;
+    }
+    .lesson-item .lesson-icon.completed {
+        background: #10b981;
+        color: white;
+    }
+    .lesson-item .lesson-icon.pending {
+        background: #e2e8f0;
+        color: #718096;
+    }
+    .lesson-item .lesson-icon.current {
+        background: #0033a0;
+        color: white;
+    }
+    .lesson-item .lesson-info {
+        flex: 1;
+    }
+    .lesson-item .lesson-info .lesson-title {
+        font-weight: 500;
+        font-size: 14px;
+    }
+    .lesson-item .lesson-info .lesson-type {
+        font-size: 12px;
+        color: #718096;
+    }
+    .lesson-item .lesson-status {
+        font-size: 12px;
+        padding: 2px 10px;
+        border-radius: 50px;
+        white-space: nowrap;
+    }
+    .lesson-item .lesson-status.completed {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    .lesson-item .lesson-status.pending {
+        background: #fef3c7;
+        color: #92400e;
+    }
+    .progress-container {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        margin-bottom: 24px;
+    }
+    .progress-container .progress {
+        height: 8px;
+        border-radius: 10px;
+        background: #e2e8f0;
+    }
+    .progress-container .progress .progress-bar {
+        background: linear-gradient(90deg, #0033a0, #1a4db8);
+        border-radius: 10px;
+        transition: width 0.6s ease;
+    }
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+    .toast-custom {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border-left: 4px solid #0033a0;
+        min-width: 260px;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+    .toast-custom.success {
+        border-left-color: #10b981;
+    }
+    .toast-custom.error {
+        border-left-color: #ef4444;
+    }
+    .toast-custom i {
+        font-size: 18px;
+    }
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #718096;
+        font-size: 16px;
+        padding: 0 4px;
+    }
+    .toast-custom .toast-close:hover {
+        color: #1a202c;
+    }
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0%); opacity: 1; }
+    }
+    @keyframes slideOutRight {
+        from { transform: translateX(0%); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+    .toast-custom.removing {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+    @media (max-width: 768px) {
+        .course-header .course-title {
+            font-size: 20px;
+        }
+        .course-header {
+            padding: 20px 0;
+        }
+        .lesson-item {
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .lesson-item .lesson-status {
+            font-size: 10px;
+            padding: 2px 8px;
+        }
+        .progress-container {
+            padding: 16px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- HEADER DEL CURSO -->
+<div class="course-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="course-title">
+                    <i class="fas fa-graduation-cap"></i> {{ course.title }}
+                </h1>
+                <div class="course-meta mt-2">
+                    <span><i class="fas fa-user"></i> {{ course.teacher.username }}</span>
+                    <span class="ms-3"><i class="fas fa-book"></i> {{ total_lessons }} lecciones</span>
+                    <span class="ms-3"><i class="fas fa-star" style="color: #f7c600;"></i> {{ course.average_rating|floatformat:1 }}</span>
+                    {% if course.is_free %}
+                        <span class="ms-3 badge bg-success"><i class="fas fa-gift"></i> Gratis</span>
+                    {% else %}
+                        <span class="ms-3 badge bg-primary"><i class="fas fa-tag"></i> Bs. {{ course.price }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
+                <a href="{% url 'my_courses' %}" class="btn btn-outline-light">
+                    <i class="fas fa-arrow-left"></i> Mis cursos
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+
+    <!-- PROGRESO -->
+    <div class="progress-container">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="fw-semibold">Progreso del curso</span>
+            <span class="fw-bold" style="color: #0033a0;">{{ progress }}%</span>
+        </div>
+        <div class="progress">
+            <div class="progress-bar" style="width: {{ progress }}%;"></div>
+        </div>
+        <div class="d-flex justify-content-between mt-2">
+            <small class="text-muted">{{ completed_count }} de {{ total_lessons }} lecciones completadas</small>
+            {% if progress == 100 %}
+                <span class="badge bg-success">
+                    <i class="fas fa-check-circle"></i> ¡Curso completado!
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- MÓDULOS Y LECCIONES -->
+    {% for module in modules %}
+    <div class="module-card">
+        <div class="module-header" onclick="toggleModule(this)">
+            <div>
+                <h5>
+                    <i class="fas fa-folder-open" style="color: #0033a0;"></i>
+                    {{ module.title }}
+                </h5>
+                <small class="module-badge">{{ module.lessons.count }} lecciones</small>
+            </div>
+            <i class="fas fa-chevron-down" style="color: #718096; transition: transform 0.3s ease;"></i>
+        </div>
+        <div class="module-body">
+            {% for lesson in module.lessons.all %}
+                {% with lesson.id as lesson_id %}
+                <a href="{% url 'lesson_view' lesson.id %}" class="lesson-item">
+                    <div class="lesson-icon {% if lesson_id in completed_lessons %}completed{% else %}pending{% endif %}">
+                        {% if lesson_id in completed_lessons %}
+                            <i class="fas fa-check"></i>
+                        {% else %}
+                            <i class="fas fa-play"></i>
+                        {% endif %}
+                    </div>
+                    <div class="lesson-info">
+                        <div class="lesson-title">{{ lesson.title }}</div>
+                        <div class="lesson-type">
+                            <i class="fas fa-tag"></i> {{ lesson.get_lesson_type_display }}
+                            {% if lesson.duration_minutes %}
+                                <span class="ms-2"><i class="fas fa-clock"></i> {{ lesson.duration_minutes }} min</span>
+                            {% endif %}
+                            {% if lesson.is_free %}
+                                <span class="ms-2 badge bg-success">Gratis</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <span class="lesson-status {% if lesson_id in completed_lessons %}completed{% else %}pending{% endif %}">
+                        {% if lesson_id in completed_lessons %}
+                            <i class="fas fa-check-circle"></i> Completado
+                        {% else %}
+                            <i class="fas fa-circle"></i> Pendiente
+                        {% endif %}
+                    </span>
+                </a>
+                {% endwith %}
+            {% empty %}
+                <div class="text-center py-3 text-muted">
+                    <i class="fas fa-info-circle"></i> No hay lecciones en este módulo
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="text-center py-5">
+        <i class="fas fa-book-open" style="font-size: 48px; color: #cbd5e0;"></i>
+        <h5 class="mt-3 text-muted">Este curso aún no tiene módulos</h5>
+    </div>
+    {% endfor %}
+
+    <!-- BOTÓN DE VOLVER -->
+    <div class="text-center mt-4">
+        <a href="{% url 'my_courses' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left"></i> Volver a mis cursos
+        </a>
+    </div>
+</div>
+
+<script>
+    // ============================================
+    // TOAST
+    // ============================================
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + type;
+
+        var icon = type === 'error' ? 'fas fa-times-circle' :
+                   type === 'success' ? 'fas fa-check-circle' :
+                   'fas fa-info-circle';
+        var iconColor = type === 'error' ? '#ef4444' :
+                        type === 'success' ? '#10b981' :
+                        '#0033a0';
+
+        toast.innerHTML = `
+            <i class="${icon}" style="color: ${iconColor};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // ============================================
+    // TOGGLE MÓDULOS
+    // ============================================
+    function toggleModule(element) {
+        var body = element.nextElementSibling;
+        var icon = element.querySelector('.fa-chevron-down');
+        if (body.style.display === 'none') {
+            body.style.display = 'block';
+            icon.style.transform = 'rotate(0deg)';
+        } else {
+            body.style.display = 'none';
+            icon.style.transform = 'rotate(-90deg)';
+        }
+    }
+
+    // ============================================
+    // ABRIR LECCIÓN
+    // ============================================
+    function openLesson(lessonId) {
+        showToast('Lección en desarrollo. Próximamente disponible.', 'success');
+        // Aquí puedes redirigir a la página de la lección
+        // window.location.href = '/lesson/' + lessonId + '/';
+    }
+
+    // ============================================
+    // INICIALIZAR
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mostrar todos los módulos abiertos por defecto
+        var bodies = document.querySelectorAll('.module-body');
+        bodies.forEach(function(body) {
+            body.style.display = 'block';
+        });
+    });
+</script>
+{% endblock %}

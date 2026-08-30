@@ -1,0 +1,350 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Historial de Compras - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #0033a0;
+        --primary-dark: #002277;
+        --primary-light: #1a4db8;
+        --primary-lighter: #e8edf5;
+        --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
+        --white: #ffffff;
+        --white-smoke: #f5f7fa;
+        --gray-light: #e2e8f0;
+        --gray: #718096;
+        --gray-dark: #2d3748;
+        --dark: #1a202c;
+        --success: #10b981;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --info: #3b82f6;
+        --font: 'Inter', sans-serif;
+        --shadow: 0 4px 20px rgba(0,51,160,0.08);
+        --shadow-hover: 0 8px 40px rgba(0,51,160,0.15);
+        --radius: 16px;
+        --radius-sm: 8px;
+        --transition: all 0.3s ease;
+    }
+
+    .page-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 40px 0 30px;
+        border-radius: 0 0 30px 30px;
+        margin-bottom: 30px;
+    }
+    .page-header h1 {
+        font-weight: 800;
+        font-size: 2rem;
+        margin: 0;
+    }
+    .page-header p {
+        opacity: 0.8;
+        margin: 5px 0 0;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        margin-bottom: 25px;
+        border: 1px solid var(--gray-light);
+    }
+    .filter-section .form-control,
+    .filter-section .form-select {
+        border-radius: var(--radius-sm);
+        border-color: var(--gray-light);
+    }
+    .filter-section .btn {
+        border-radius: var(--radius-sm);
+        padding: 8px 20px;
+    }
+
+    .payment-card {
+        background: white;
+        border-radius: var(--radius);
+        padding: 20px;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-light);
+        margin-bottom: 16px;
+        transition: var(--transition);
+    }
+    .payment-card:hover {
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-2px);
+    }
+    .payment-card .payment-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+    .payment-card .payment-id {
+        font-weight: 600;
+        color: var(--gray-dark);
+    }
+    .payment-card .payment-date {
+        color: var(--gray);
+        font-size: 14px;
+    }
+    .payment-card .payment-date i {
+        margin-right: 5px;
+    }
+    .payment-card .payment-amount {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: var(--primary);
+    }
+    .payment-card .payment-items {
+        padding: 12px 0;
+        border-top: 1px solid var(--gray-light);
+        margin-top: 10px;
+    }
+    .payment-card .payment-items .item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 14px;
+    }
+    .payment-card .payment-items .item .course-name {
+        color: var(--gray-dark);
+    }
+    .payment-card .payment-items .item .course-price {
+        font-weight: 600;
+    }
+    .payment-card .payment-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid var(--gray-light);
+    }
+    .payment-card .payment-footer .status-badge {
+        padding: 4px 14px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .status-badge.completed { background: #d1fae5; color: #065f46; }
+    .status-badge.pending { background: #fef3c7; color: #92400e; }
+    .status-badge.failed { background: #fce4ec; color: #c62828; }
+    .status-badge.refunded { background: #e0f7fa; color: #00695c; }
+    .status-badge.cancelled { background: #f3e5f5; color: #6a1b9a; }
+
+    .payment-card .btn-invoice {
+        padding: 4px 14px;
+        border-radius: 50px;
+        font-size: 13px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        border: 1px solid var(--gray-light);
+    }
+    .empty-state i {
+        font-size: 64px;
+        color: var(--gray-light);
+        margin-bottom: 20px;
+    }
+    .empty-state h4 {
+        color: var(--gray-dark);
+        margin-bottom: 10px;
+    }
+    .empty-state p {
+        color: var(--gray);
+        max-width: 400px;
+        margin: 0 auto 20px;
+    }
+
+    .pagination-custom {
+        margin-top: 20px;
+    }
+    .pagination-custom .page-link {
+        border-radius: var(--radius-sm);
+        color: var(--primary);
+        border-color: var(--gray-light);
+        margin: 0 3px;
+    }
+    .pagination-custom .page-link:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+    .pagination-custom .page-item.active .page-link {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HEADER -->
+<div class="page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1><i class="fas fa-history"></i> Historial de Compras</h1>
+                <p>Consulta todas tus transacciones realizadas en AcadEMI</p>
+            </div>
+            <div>
+                <span class="badge bg-light text-dark fs-6">
+                    <i class="fas fa-shopping-bag"></i> {{ payments|length }} compras
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- FILTROS -->
+    <div class="filter-section">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold"><i class="fas fa-search"></i> Buscar</label>
+                <input type="text" name="q" class="form-control" placeholder="Buscar por curso..." value="{{ request.GET.q }}">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label fw-semibold"><i class="fas fa-filter"></i> Estado</label>
+                <select name="status" class="form-select">
+                    <option value="">Todos</option>
+                    <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completado</option>
+                    <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pendiente</option>
+                    <option value="failed" {% if request.GET.status == 'failed' %}selected{% endif %}>Fallido</option>
+                    <option value="refunded" {% if request.GET.status == 'refunded' %}selected{% endif %}>Reembolsado</option>
+                    <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelado</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter"></i> Filtrar
+                </button>
+            </div>
+            <div class="col-md-2">
+                <a href="{% url 'purchase_history' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-undo"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- LISTA DE COMPRAS -->
+    {% if payments %}
+        {% for payment in payments %}
+        <div class="payment-card">
+            <div class="payment-header">
+                <div>
+                    <span class="payment-id">
+                        <i class="fas fa-receipt"></i> #{{ payment.id }}
+                    </span>
+                    <span class="payment-date ms-3">
+                        <i class="fas fa-calendar-alt"></i> {{ payment.created_at|date:"d/m/Y H:i" }}
+                    </span>
+                </div>
+                <div class="payment-amount">
+                    Bs. {{ payment.final_amount }}
+                </div>
+            </div>
+
+            <div class="payment-items">
+                {% for item in payment.cart_items.all %}
+                <div class="item">
+                    <span class="course-name">
+                        <i class="fas fa-book-open" style="color: var(--primary);"></i>
+                        {{ item.course.title }}
+                    </span>
+                    <span class="course-price">Bs. {{ item.price }}</span>
+                </div>
+                {% empty %}
+                <div class="item">
+                    <span class="text-muted">Sin cursos asociados</span>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="payment-footer">
+                <div>
+                    <span class="status-badge {{ payment.status }}">
+                        <i class="fas fa-circle" style="font-size: 8px; margin-right: 5px;"></i>
+                        {{ payment.get_status_display }}
+                    </span>
+                    <span class="text-muted ms-3" style="font-size: 13px;">
+                        <i class="fas fa-credit-card"></i> {{ payment.get_payment_method_display }}
+                    </span>
+                    {% if payment.transaction_id %}
+                    <span class="text-muted ms-3" style="font-size: 13px;">
+                        <i class="fas fa-hashtag"></i> {{ payment.transaction_id|truncatechars:12 }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div>
+                    {% if payment.status == 'completed' %}
+                    <a href="#" class="btn btn-outline-primary btn-invoice">
+                        <i class="fas fa-file-pdf"></i> Comprobante
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- PAGINACIÓN -->
+        {% if payments.has_other_pages %}
+        <nav class="pagination-custom">
+            <ul class="pagination justify-content-center">
+                {% if payments.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ payments.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                </li>
+                {% endif %}
+
+                {% for num in payments.paginator.page_range %}
+                <li class="page-item {% if payments.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                        {{ num }}
+                    </a>
+                </li>
+                {% endfor %}
+
+                {% if payments.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ payments.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+
+    {% else %}
+        <!-- EMPTY STATE -->
+        <div class="empty-state">
+            <i class="fas fa-shopping-bag"></i>
+            <h4>No hay compras registradas</h4>
+            <p>Todavía no has realizado ninguna compra. Explora nuestro catálogo y comienza a aprender.</p>
+            <a href="{% url 'catalog' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-book-open"></i> Explorar cursos
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

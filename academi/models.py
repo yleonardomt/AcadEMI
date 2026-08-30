@@ -216,13 +216,13 @@ class Module(models.Model):  # RF-18, RF-20
     def __str__(self):
         return f"{self.course.title} - {self.title}"
 
-
-class Lesson(models.Model):  # RF-18, RF-19, RF-20
+class Lesson(models.Model):
     LESSON_TYPES = (
         ('video', 'Video'),
         ('document', 'Documento'),
         ('text', 'Texto'),
         ('quiz', 'Cuestionario'),
+        ('exam', 'Examen'),          # <--- AGREGAR
         ('assignment', 'Tarea'),
     )
     
@@ -231,13 +231,18 @@ class Lesson(models.Model):  # RF-18, RF-19, RF-20
     description = models.TextField(blank=True, null=True)
     content = models.TextField(blank=True, null=True)
     lesson_type = models.CharField(max_length=20, choices=LESSON_TYPES, default='video')
-    video_url = models.URLField(blank=True, null=True)  # RF-33
-    video_file = models.FileField(upload_to='videos/', blank=True, null=True)  # RF-19
-    document_file = models.FileField(upload_to='documents/', blank=True, null=True)  # RF-19
-    order = models.IntegerField(default=0)  # RF-20
-    is_free = models.BooleanField(default=False)  # RF-30
+    video_url = models.URLField(blank=True, null=True)
+    video_file = models.FileField(upload_to='videos/', blank=True, null=True)
+    document_file = models.FileField(upload_to='documents/', blank=True, null=True)
+    order = models.IntegerField(default=0)
+    is_free = models.BooleanField(default=False)
     is_published = models.BooleanField(default=False)
     duration_minutes = models.IntegerField(default=0)
+    
+    # ===== PARA TAREAS =====
+    assignment_deadline_days = models.IntegerField(default=7, null=True, blank=True)
+    assignment_deadline_hours = models.IntegerField(default=0, null=True, blank=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -248,7 +253,7 @@ class Lesson(models.Model):  # RF-18, RF-19, RF-20
         return f"{self.module.title} - {self.title}"
 
 
-class LessonResource(models.Model):  # RF-19
+class LessonResource(models.Model):  # <--- AGREGAR ESTA CLASE
     RESOURCE_TYPES = (
         ('pdf', 'PDF'),
         ('doc', 'Documento'),
@@ -608,7 +613,7 @@ class Coupon(models.Model):  # RF-59, RF-60, RF-73
         return max(0, amount - self.discount_value)
 
 
-class Payment(models.Model):  # RF-56, RF-57, RF-58, RF-61, RF-62
+class Payment(models.Model):
     PAYMENT_STATUS = (
         ('pending', 'Pendiente'),
         ('completed', 'Completado'),
@@ -622,49 +627,33 @@ class Payment(models.Model):  # RF-56, RF-57, RF-58, RF-61, RF-62
         ('paypal', 'PayPal'),
         ('bank_transfer', 'Transferencia bancaria'),
         ('pago_efectivo', 'Pago Efectivo'),
+        ('cart', 'Carrito'),  # <--- Agregar esta opción
     )
     
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
-    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')  # RF-59
+    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount_applied = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     final_amount = models.DecimalField(max_digits=10, decimal_places=2)
-    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='stripe')  # RF-57
-    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')  # RF-61
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='stripe')
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
     transaction_id = models.CharField(max_length=255, blank=True, null=True)
-    receipt_url = models.URLField(blank=True, null=True)  # RF-62
+    receipt_url = models.URLField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     confirmed_at = models.DateTimeField(blank=True, null=True)
     
     def __str__(self):
         return f"{self.student.username} - Bs.{self.final_amount} - {self.status}"
+
+
+class PaymentItem(models.Model):
+    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='cart_items')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
     
-    def confirm_payment(self):  # RF-58, RF-63
-        self.status = 'completed'
-        self.confirmed_at = timezone.now()
-        self.save()
-        
-        # Crear inscripciones para los cursos
-        for item in self.cart_items.all():
-            enrollment = Enrollment.objects.create(
-                student=self.student,
-                course=item.course,
-                status='enrolled',
-                payment_amount=item.price,
-                payment_status='paid',
-                payment_method=self.payment_method,
-                transaction_id=self.transaction_id,
-                payment_date=self.confirmed_at
-            )
-            # Crear notificación
-            Notification.objects.create(
-                user=self.student,
-                type='purchase',
-                title=f'¡Curso adquirido!',
-                message=f'Has comprado el curso "{item.course.title}" exitosamente.',
-                link=f'/course/{item.course.id}/'
-            )
+    def __str__(self):
+        return f"{self.payment.student.username} - {self.course.title}"
 
 
 class PaymentItem(models.Model):  # RF-56

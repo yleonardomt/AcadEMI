@@ -195,3 +195,36 @@ LOGOUT_REDIRECT_URL = '/login/'
 # CLAVE POR DEFECTO
 # ============================================
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# ============================================
+# SEGURIDAD PARA CUESTIONARIOS
+# ============================================
+
+# Rate limiting para prevenir ataques
+RATELIMIT_VIEW = 'django_ratelimit.views.ratelimited'
+
+# CSP (Content Security Policy) - Prevenir inyecciones
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'", "'unsafe-eval'")
+CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
+CSP_IMG_SRC = ("'self'", "data:", "https:")
+CSP_FRAME_SRC = ("'self'", "https://www.youtube.com", "https://player.vimeo.com")
+CSP_CONNECT_SRC = ("'self'",)
+
+# Seguridad de sesión
+SESSION_COOKIE_SECURE = True
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Strict'
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Strict'
+
+# Headers de seguridad
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Tiempo límite por defecto para evaluaciones
+DEFAULT_QUIZ_TIME_LIMIT = 30  # minutos
+MAX_ATTEMPTS_PER_QUIZ = 3
