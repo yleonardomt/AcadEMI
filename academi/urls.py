@@ -106,4 +106,8 @@ path('quiz/<int:lesson_id>/', views.quiz_view, name='quiz_view'),
 path('quiz/result/<int:result_id>/', views.quiz_result_view, name='quiz_result'),
 # urls.py
 path('quiz/alert/tab-switch/', views.quiz_tab_switch_alert, name='quiz_tab_switch_alert'),
+path('mis-estudiantes/', views.mis_estudiantes_view, name='mis_estudiantes'),
+path('mis-resenas/', views.mis_resenas_view, name='mis_resenas'),
+
+
 ]

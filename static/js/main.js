@@ -59,6 +59,117 @@ function validateEmail(email) {
 }
 
 // ============================================
+// TOAST - NOTIFICACIONES FLOTANTES
+// ============================================
+
+function showToast(message, type) {
+    type = type || 'info';
+    
+    // Buscar contenedor existente
+    var container = document.querySelector('.toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+    }
+    
+    var toast = document.createElement('div');
+    toast.className = 'toast-custom ' + type;
+
+    var iconMap = {
+        success: 'fa-check-circle',
+        error: 'fa-times-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+    var icon = iconMap[type] || iconMap.info;
+
+    toast.innerHTML = `
+        <i class="fas ${icon} toast-icon"></i>
+        <span class="toast-message">${message}</span>
+        <button class="toast-close" onclick="this.parentElement.remove();">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    container.appendChild(toast);
+
+    setTimeout(function() {
+        if (toast.parentElement) {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.3s ease';
+            setTimeout(function() {
+                if (toast.parentElement) {
+                    toast.remove();
+                }
+            }, 300);
+        }
+    }, 5000);
+}
+
+// ============================================
+// FUNCIONES GLOBALES PARA MODALES SIN FONDO NEGRO
+// ============================================
+
+// Función para abrir cualquier modal sin fondo negro
+function openModalWithoutBackdrop(modalId) {
+    // Limpiar backdrops viejos
+    document.querySelectorAll('.modal-backdrop').forEach(function(el) {
+        el.remove();
+    });
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    
+    var modalElement = document.getElementById(modalId);
+    if (!modalElement) {
+        console.error('Modal no encontrado:', modalId);
+        return;
+    }
+    
+    var modal = new bootstrap.Modal(modalElement, {
+        backdrop: false,
+        keyboard: true
+    });
+    modal.show();
+}
+
+// Función para cerrar cualquier modal
+function closeModalWithoutBackdrop(modalId) {
+    var modalElement = document.getElementById(modalId);
+    if (!modalElement) return;
+    
+    var modal = bootstrap.Modal.getInstance(modalElement);
+    if (modal) {
+        modal.hide();
+    }
+    
+    document.querySelectorAll('.modal-backdrop').forEach(function(el) {
+        el.remove();
+    });
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+}
+
+// ============================================
+// OBTENER CSRF TOKEN
+// ============================================
+
+function getCsrfToken() {
+    var cookieValue = null;
+    var name = 'csrftoken';
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ============================================
 // EVENTOS AL CARGAR LA PÁGINA
 // ============================================
 
@@ -70,7 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnComprar[i].addEventListener('click', function(e) {
             e.preventDefault();
             var curso = this.getAttribute('data-curso') || 'Curso';
-            showMessage('Curso "' + curso + '" agregado al carrito', 'success');
+            showToast('Curso "' + curso + '" agregado al carrito', 'success');
         });
     }
     
@@ -79,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (btnVerTodos) {
         btnVerTodos.addEventListener('click', function(e) {
             e.preventDefault();
-            showMessage('Cargando todos los cursos...', 'info');
+            showToast('Cargando todos los cursos...', 'info');
         });
     }
     
@@ -91,16 +202,16 @@ document.addEventListener('DOMContentLoaded', function() {
         var email = emailInput.value.trim();
         
         if (!email) {
-            showMessage('Por favor, ingresa tu email', 'warning');
+            showToast('Por favor, ingresa tu email', 'warning');
             return;
         }
         
         if (!validateEmail(email)) {
-            showMessage('Por favor, ingresa un email válido', 'error');
+            showToast('Por favor, ingresa un email válido', 'error');
             return;
         }
         
-        showMessage('Te has suscrito correctamente', 'success');
+        showToast('Te has suscrito correctamente', 'success');
         emailInput.value = '';
     }
     
@@ -133,6 +244,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
 // ============================================
 // REGISTRO INTERACTIVO
 // ============================================
@@ -179,7 +291,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (roleSelect) {
         roleSelect.addEventListener('change', toggleRoleFields);
-        toggleRoleFields(); // Ejecutar al cargar
+        toggleRoleFields();
     }
     
     // ===== Validación de contraseña en tiempo real =====
@@ -266,114 +378,40 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // ===== Mensajes de notificación (sin alert) =====
-    function showMessage(message, type) {
-        document.querySelectorAll('.message').forEach(function(msg) {
-            msg.remove();
-        });
-        
-        var messageDiv = document.createElement('div');
-        messageDiv.className = 'message message-' + type;
-        
-        var icons = {
-            success: 'fa-check-circle',
-            error: 'fa-exclamation-circle',
-            info: 'fa-info-circle',
-            warning: 'fa-exclamation-triangle'
-        };
-        
-        messageDiv.innerHTML = 
-            '<i class="fas ' + icons[type] + '"></i>' +
-            '<span>' + message + '</span>' +
-            '<button class="message-close">' +
-                '<i class="fas fa-times"></i>' +
-            '</button>';
-        
-        document.body.appendChild(messageDiv);
-        
-        messageDiv.querySelector('.message-close').addEventListener('click', function() {
-            messageDiv.style.opacity = '0';
-            messageDiv.style.transition = 'opacity 0.3s ease';
-            setTimeout(function() {
-                if (messageDiv.parentElement) {
-                    messageDiv.remove();
-                }
-            }, 300);
-        });
-        
-        setTimeout(function() {
-            if (messageDiv.parentElement) {
-                messageDiv.style.opacity = '0';
-                messageDiv.style.transition = 'opacity 0.5s ease';
-                setTimeout(function() {
-                    if (messageDiv.parentElement) {
-                        messageDiv.remove();
-                    }
-                }, 500);
-            }
-        }, 4000);
-    }
-    
     // Exponer funciones globalmente
-    window.showMessage = showMessage;
-    
-    // ===== Botones de compra =====
-    document.querySelectorAll('.btn-comprar').forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            var curso = this.getAttribute('data-curso') || 'Curso';
-            showMessage('Curso "' + curso + '" agregado al carrito', 'success');
-        });
+    window.showToast = showToast;
+    window.openModalWithoutBackdrop = openModalWithoutBackdrop;
+    window.closeModalWithoutBackdrop = closeModalWithoutBackdrop;
+    window.getCsrfToken = getCsrfToken;
+});
+
+// ============================================
+// CERRAR MODALES CON ESC Y CLICK FUERA
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Cerrar con ESC - funciona globalmente
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            // Cerrar cualquier modal abierto
+            var openModals = document.querySelectorAll('.modal.show');
+            openModals.forEach(function(modal) {
+                var modalId = modal.id;
+                if (modalId) {
+                    closeModalWithoutBackdrop(modalId);
+                }
+            });
+        }
     });
-    
-    // ===== Suscripción =====
-    var btnSubscribe = document.getElementById('btnSubscribe');
-    var emailInputSubscribe = document.getElementById('emailSubscribe');
-    
-    function handleSubscribe() {
-        var email = emailInputSubscribe.value.trim();
-        var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        
-        if (!email) {
-            showMessage('Por favor, ingresa tu email', 'warning');
-            return;
-        }
-        
-        if (!re.test(email)) {
-            showMessage('Por favor, ingresa un email válido', 'error');
-            return;
-        }
-        
-        showMessage('Te has suscrito correctamente', 'success');
-        emailInputSubscribe.value = '';
-    }
-    
-    if (btnSubscribe) {
-        btnSubscribe.addEventListener('click', handleSubscribe);
-    }
-    
-    if (emailInputSubscribe) {
-        emailInputSubscribe.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                handleSubscribe();
-            }
-        });
-    }
-    
-    // ===== Scroll suave =====
-    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-        anchor.addEventListener('click', function(e) {
-            var href = this.getAttribute('href');
-            if (href === '#') return;
-            
-            e.preventDefault();
-            var target = document.querySelector(href);
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
+});
+
+// ============================================
+// INICIALIZAR TOOLTIPS DE BOOTSTRAP
+// ============================================
+
+document.addEventListener('DOMContentLoaded', function() {
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
     });
 });

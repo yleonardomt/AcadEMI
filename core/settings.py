@@ -122,7 +122,12 @@ AUTH_USER_MODEL = 'academi.User'
 # ============================================
 # CONFIGURACIÓN DE CAPTCHA (django-simple-captcha)
 # ============================================
-CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.math_challenge'
+CAPTCHA_CHALLENGE_FUNCT = 'captcha.helpers.random_char_challenge'
+CAPTCHA_IMAGE_SIZE = (200, 60)  # Ancho, Alto
+CAPTCHA_FONT_SIZE = 40
+CAPTCHA_BACKGROUND_COLOR = '#ffffff'  # Fondo blanco
+CAPTCHA_FOREGROUND_COLOR = '#2d3748'  # Color de texto (gris oscuro)
+CAPTCHA_LENGTH = 3
 
 
 # ============================================

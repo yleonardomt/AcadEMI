@@ -553,7 +553,11 @@ class EvaluationIncident(models.Model):  # RF-53
 # MÓDULO 7: CARRITO, COMPRAS, PAGOS Y CUPONES (RF-54 al RF-63)
 # ============================================
 
-class Cart(models.Model):  # RF-54, RF-55
+# ============================================
+# MÓDULO 7: CARRITO, COMPRAS, PAGOS Y CUPONES (RF-54 al RF-63)
+# ============================================
+
+class Cart(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -566,7 +570,7 @@ class Cart(models.Model):  # RF-54, RF-55
         return sum(item.course.price for item in self.items.all())
 
 
-class CartItem(models.Model):  # RF-54
+class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, related_name='items')
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     added_at = models.DateTimeField(auto_now_add=True)
@@ -578,7 +582,7 @@ class CartItem(models.Model):  # RF-54
         return f"{self.cart.student.username} - {self.course.title}"
 
 
-class Coupon(models.Model):  # RF-59, RF-60, RF-73
+class Coupon(models.Model):
     DISCOUNT_TYPES = (
         ('percentage', 'Porcentaje'),
         ('fixed', 'Monto fijo'),
@@ -614,12 +618,18 @@ class Coupon(models.Model):  # RF-59, RF-60, RF-73
 
 
 class Payment(models.Model):
+    """
+    Modelo de pagos con facturación y seguimiento completo
+    """
+    
     PAYMENT_STATUS = (
         ('pending', 'Pendiente'),
+        ('processing', 'Procesando'),
         ('completed', 'Completado'),
         ('failed', 'Fallido'),
         ('refunded', 'Reembolsado'),
         ('cancelled', 'Cancelado'),
+        ('expired', 'Expirado'),
     )
     
     PAYMENT_METHODS = (
@@ -627,43 +637,165 @@ class Payment(models.Model):
         ('paypal', 'PayPal'),
         ('bank_transfer', 'Transferencia bancaria'),
         ('pago_efectivo', 'Pago Efectivo'),
-        ('cart', 'Carrito'),  # <--- Agregar esta opción
+        ('qr', 'Pago QR'),
+        ('card', 'Tarjeta'),
+        ('cart', 'Carrito'),
+        ('mobile', 'Pago Móvil'),
     )
     
-    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='payments')
-    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True, related_name='payments')
+    # RELACIONES
+    student = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='payments'
+    )
+    coupon = models.ForeignKey(
+        Coupon, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='payments'
+    )
+    
+    # DATOS DEL PAGO
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     discount_applied = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     final_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    commission_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    teacher_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    
     payment_method = models.CharField(max_length=20, choices=PAYMENT_METHODS, default='stripe')
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    
+    # DATOS DE TRANSACCIÓN
     transaction_id = models.CharField(max_length=255, blank=True, null=True)
+    payment_intent_id = models.CharField(max_length=255, blank=True, null=True)
     receipt_url = models.URLField(blank=True, null=True)
+    
+    # FACTURACIÓN
+    invoice_number = models.CharField(max_length=50, unique=True, blank=True, null=True)
+    billing_name = models.CharField(max_length=255, blank=True, null=True)
+    billing_email = models.EmailField(blank=True, null=True)
+    billing_phone = models.CharField(max_length=50, blank=True, null=True)
+    billing_address = models.TextField(blank=True, null=True)
+    billing_ci = models.CharField(max_length=20, blank=True, null=True)
+    billing_company = models.CharField(max_length=255, blank=True, null=True)
+    billing_nit = models.CharField(max_length=50, blank=True, null=True)
+    
+    # DATOS DE PAGO
+    payment_details = models.JSONField(default=dict, blank=True)
+    
+    # FECHAS
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     confirmed_at = models.DateTimeField(blank=True, null=True)
+    refunded_at = models.DateTimeField(blank=True, null=True)
+    cancelled_at = models.DateTimeField(blank=True, null=True)
+    expires_at = models.DateTimeField(blank=True, null=True)
+    
+    # METADATOS
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+    user_agent = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    metadata = models.JSONField(default=dict, blank=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Pago'
+        verbose_name_plural = 'Pagos'
+        indexes = [
+            models.Index(fields=['invoice_number']),
+            models.Index(fields=['transaction_id']),
+            models.Index(fields=['status']),
+            models.Index(fields=['student', 'status']),
+            models.Index(fields=['created_at']),
+        ]
     
     def __str__(self):
-        return f"{self.student.username} - Bs.{self.final_amount} - {self.status}"
+        return f"{self.invoice_number or 'Pago'} - {self.student.username} - Bs.{self.final_amount}"
+    
+    def save(self, *args, **kwargs):
+        if not self.invoice_number:
+            self.invoice_number = self.generate_invoice_number()
+        
+        if self.final_amount > 0:
+            self.commission_amount = self.final_amount * Decimal('0.10')
+            self.teacher_amount = self.final_amount - self.commission_amount
+        
+        super().save(*args, **kwargs)
+    
+    def generate_invoice_number(self):
+        year = timezone.now().year
+        last_payment = Payment.objects.filter(
+            created_at__year=year
+        ).order_by('-created_at').first()
+        
+        if last_payment and last_payment.invoice_number:
+            try:
+                last_num = int(last_payment.invoice_number.split('-')[-1])
+                next_num = last_num + 1
+            except:
+                next_num = 1
+        else:
+            next_num = 1
+        
+        return f"FAC-{year}-{str(next_num).zfill(5)}"
+    
+    def complete(self):
+        self.status = 'completed'
+        self.confirmed_at = timezone.now()
+        self.save()
+    
+    def refund(self):
+        self.status = 'refunded'
+        self.refunded_at = timezone.now()
+        self.save()
+    
+    def cancel(self):
+        self.status = 'cancelled'
+        self.cancelled_at = timezone.now()
+        self.save()
 
 
 class PaymentItem(models.Model):
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='cart_items')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    """Items individuales de un pago (cursos comprados)"""
+    
+    payment = models.ForeignKey(
+        Payment, 
+        on_delete=models.CASCADE, 
+        related_name='items'
+    )
+    course = models.ForeignKey(
+        Course, 
+        on_delete=models.CASCADE
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_applied = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    final_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    teacher_commission = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    platform_commission = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        verbose_name = 'Item de pago'
+        verbose_name_plural = 'Items de pago'
+        indexes = [
+            models.Index(fields=['payment', 'course']),
+        ]
     
     def __str__(self):
-        return f"{self.payment.student.username} - {self.course.title}"
-
-
-class PaymentItem(models.Model):  # RF-56
-    payment = models.ForeignKey(Payment, on_delete=models.CASCADE, related_name='cart_items')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+        return f"{self.payment.invoice_number} - {self.course.title}"
     
-    def __str__(self):
-        return f"{self.payment.student.username} - {self.course.title}"
-
+    def save(self, *args, **kwargs):
+        if self.final_price == 0:
+            self.final_price = self.price - self.discount_applied
+        
+        if self.final_price > 0:
+            self.platform_commission = self.final_price * Decimal('0.10')
+            self.teacher_commission = self.final_price - self.platform_commission
+        
+        super().save(*args, **kwargs)
 
 # ============================================
 # MÓDULO 8: CERTIFICADOS (RF-64 al RF-67)

@@ -4,11 +4,11 @@
 
 {% block content %}
     {% if user.role == 'student' %}
-        {% include 'academi/dashboard_estudiante.html' %}
+        {% include 'academi/dashboard/dashboard_estudiante.html' %}
     {% elif user.role == 'teacher' %}
-        {% include 'academi/dashboard_docente.html' %}
+        {% include 'academi/dashboard/dashboard_docente.html' %}
     {% elif user.role == 'admin' %}
-        {% include 'academi/dashboard_admin.html' %}
+        {% include 'academi/dashboard/dashboard_admin.html' %}
     {% else %}
         <div class="container py-5">
             <div class="alert alert-warning">

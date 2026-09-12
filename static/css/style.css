@@ -1443,3 +1443,152 @@ a {
         right: 16px;
     }
 }
+/* ============================================
+   MENSAJES TOAST (NOTIFICACIONES SIN ALERT)
+   ============================================ */
+.message-toast {
+    position: fixed;
+    top: 90px;
+    right: 20px;
+    z-index: 99999;
+    background: white;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    min-width: 320px;
+    max-width: 450px;
+    border-left: 5px solid #0033a0;
+    transform: translateX(120%);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.message-toast-show {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.message-toast-hide {
+    transform: translateX(120%);
+    opacity: 0;
+    pointer-events: none;
+}
+
+.message-toast-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: #f8fafc;
+}
+
+.message-toast-content {
+    flex: 1;
+    font-size: 14px;
+    color: #1a202c;
+    font-weight: 500;
+    line-height: 1.5;
+}
+
+.message-toast-close {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+}
+
+.message-toast-close:hover {
+    background: #f1f5f9;
+    color: #1a202c;
+}
+
+/* TIPOS DE MENSAJE */
+.message-toast-success {
+    border-left-color: #10b981;
+}
+.message-toast-success .message-toast-icon {
+    color: #10b981;
+    background: #d1fae5;
+}
+
+.message-toast-error {
+    border-left-color: #ef4444;
+}
+.message-toast-error .message-toast-icon {
+    color: #ef4444;
+    background: #fee2e2;
+}
+
+.message-toast-warning {
+    border-left-color: #f59e0b;
+}
+.message-toast-warning .message-toast-icon {
+    color: #f59e0b;
+    background: #fef3c7;
+}
+
+.message-toast-info {
+    border-left-color: #3b82f6;
+}
+.message-toast-info .message-toast-icon {
+    color: #3b82f6;
+    background: #dbeafe;
+}
+
+/* ============================================
+   RESPONSIVE - MENSAJES TOAST
+   ============================================ */
+@media (max-width: 768px) {
+    .message-toast {
+        top: 75px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+        padding: 14px 16px;
+    }
+    
+    .message-toast-icon {
+        font-size: 18px;
+        width: 30px;
+        height: 30px;
+    }
+    
+    .message-toast-content {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .message-toast {
+        top: 70px;
+        right: 8px;
+        left: 8px;
+        padding: 12px 14px;
+        border-radius: 10px;
+    }
+    
+    .message-toast-icon {
+        font-size: 16px;
+        width: 28px;
+        height: 28px;
+    }
+    
+    .message-toast-content {
+        font-size: 12px;
+    }
+}

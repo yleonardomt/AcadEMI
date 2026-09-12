@@ -1,12 +1,16 @@
 <!-- ============================================
-     HEADER / NAVBAR - SIMPLE Y FUNCIONAL
+     HEADER / NAVBAR CON SLIDER LATERAL
      ============================================ -->
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}">
+        <!-- BOTÓN MENÚ HAMBURGUESA (SLIDER IZQUIERDO) -->
+        <button class="navbar-toggler me-2" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <a class="navbar-brand" href="{% url 'dashboard' %}">
             <i class="fas fa-graduation-cap"></i> 
             <span>AcadEMI</span>
-            <small class="brand-badge">Bolivia</small>
         </a>
         
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -35,23 +39,27 @@
                 
                 {% if user.is_authenticated %}
                 
-                <!-- ===== NOTIFICACIONES Y CARRITO ===== -->
+                <!-- ===== NOTIFICACIONES ===== -->
                 <li class="nav-item">
-                    <a class="nav-link position-relative" href="{% url 'notifications' %}">
+                    <a class="nav-link icon-link" href="{% url 'notifications' %}" title="Notificaciones">
                         <i class="fas fa-bell"></i>
                         {% if unread_notifications > 0 %}
-                        <span class="badge-notification">{{ unread_notifications }}</span>
+                        <span class="badge-icon pulse">{{ unread_notifications }}</span>
                         {% endif %}
                     </a>
                 </li>
+                
+                <!-- ===== CARRITO (SOLO ESTUDIANTES) ===== -->
+                {% if user.role == 'student' %}
                 <li class="nav-item">
-                    <a class="nav-link position-relative" href="{% url 'cart' %}">
+                    <a class="nav-link icon-link" href="{% url 'cart' %}" title="Carrito de compras">
                         <i class="fas fa-shopping-cart"></i>
                         {% if cart_items > 0 %}
-                        <span class="badge-cart">{{ cart_items }}</span>
+                        <span class="badge-icon cart-pulse">{{ cart_items }}</span>
                         {% endif %}
                     </a>
                 </li>
+                {% endif %}
                 
                 <!-- ===== DROPDOWN USUARIO ===== -->
                 <li class="nav-item dropdown ms-2">
@@ -67,134 +75,54 @@
                     </a>
                     
                     <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
-                        
-                        <!-- ===== OPCIONES PARA TODOS ===== -->
-                        <li>
-                            <a class="dropdown-item" href="{% url 'dashboard' %}">
-                                <i class="fas fa-tachometer-alt"></i> Dashboard
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'profile' %}">
-                                <i class="fas fa-user"></i> Mi perfil
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'change_password' %}">
-                                <i class="fas fa-key"></i> Cambiar contraseña
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" href="{% url 'notifications' %}">
-                                <i class="fas fa-bell"></i> Notificaciones
-                            </a>
-                        </li>
-                        
-                        <!-- ===== ESTUDIANTE ===== -->
-                        {% if user.role == 'student' %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header"><i class="fas fa-graduation-cap"></i> Mis cursos</h6></li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'my_courses' %}">
-                                    <i class="fas fa-book-open"></i> Mis cursos
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'my_progress' %}">
-                                    <i class="fas fa-tasks"></i> Mi progreso
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'my_grades' %}">
-                                    <i class="fas fa-star"></i> Calificaciones
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'my_certificates' %}">
-                                    <i class="fas fa-certificate"></i> Certificados
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'my_favorites' %}">
-                                    <i class="fas fa-heart"></i> Favoritos
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'purchase_history' %}">
-                                    <i class="fas fa-shopping-bag"></i> Historial de compras
-                                </a>
-                            </li>
-                        {% endif %}
-                        
-                        <!-- ===== DOCENTE ===== -->
-                        {% if user.role == 'teacher' %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header"><i class="fas fa-chalkboard-teacher"></i> Gestión de cursos</h6></li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'my_courses' %}">
-                                    <i class="fas fa-list"></i> Mis cursos
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'create_course' %}">
-                                    <i class="fas fa-plus-circle"></i> Crear curso
-                                </a>
-                            </li>
-                        {% endif %}
-                        
-                        <!-- ===== ADMIN ===== -->
-                        {% if user.role == 'admin' %}
-                            <li><hr class="dropdown-divider"></li>
-                            <li><h6 class="dropdown-header"><i class="fas fa-shield-alt"></i> Administración</h6></li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'admin_users' %}">
-                                    <i class="fas fa-users-cog"></i> Gestionar usuarios
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'admin_courses' %}">
-                                    <i class="fas fa-book"></i> Gestionar cursos
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'admin_categories' %}">
-                                    <i class="fas fa-tags"></i> Categorías
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'admin_reports' %}">
-                                    <i class="fas fa-flag"></i> Reportes
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'admin_coupons' %}">
-                                    <i class="fas fa-ticket-alt"></i> Cupones
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'admin_payments' %}">
-                                    <i class="fas fa-credit-card"></i> Pagos
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{% url 'admin_certificates' %}">
-                                    <i class="fas fa-certificate"></i> Certificados
-                                </a>
-                            </li>
-                        {% endif %}
-                        
+                        <li><h6 class="dropdown-header"><i class="fas fa-user-circle"></i> Mi cuenta</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Mi perfil</a></li>
+                        <li><a class="dropdown-item" href="{% url 'change_password' %}"><i class="fas fa-key"></i> Cambiar contraseña</a></li>
+                        <li><a class="dropdown-item" href="{% url 'notifications' %}"><i class="fas fa-bell"></i> Notificaciones</a></li>
                         <li><hr class="dropdown-divider"></li>
-                        <li>
-                            <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-                            </a>
-                        </li>
+                        
+                        {% if user.role == 'student' %}
+                        <li><h6 class="dropdown-header"><i class="fas fa-graduation-cap"></i> Mis cursos</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'my_courses' %}"><i class="fas fa-book-open"></i> Mis cursos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my_progress' %}"><i class="fas fa-tasks"></i> Mi progreso</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my_grades' %}"><i class="fas fa-star"></i> Calificaciones</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my_certificates' %}"><i class="fas fa-certificate"></i> Certificados</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><h6 class="dropdown-header"><i class="fas fa-heart"></i> Actividad</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'my_favorites' %}"><i class="fas fa-heart"></i> Favoritos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'purchase_history' %}"><i class="fas fa-shopping-bag"></i> Historial</a></li>
+                        <li><a class="dropdown-item" href="{% url 'cart' %}"><i class="fas fa-shopping-cart"></i> Carrito</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        
+                        {% if user.role == 'teacher' %}
+                        <li><h6 class="dropdown-header"><i class="fas fa-chalkboard-teacher"></i> Gestión</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'my_courses' %}"><i class="fas fa-list"></i> Mis cursos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'create_course' %}"><i class="fas fa-plus-circle"></i> Crear curso</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        
+                        {% if user.role == 'admin' %}
+                        <li><h6 class="dropdown-header"><i class="fas fa-shield-alt"></i> Administración</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_users' %}"><i class="fas fa-users-cog"></i> Usuarios</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_courses' %}"><i class="fas fa-book"></i> Cursos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_categories' %}"><i class="fas fa-tags"></i> Categorías</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_reports' %}"><i class="fas fa-flag"></i> Reportes</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_coupons' %}"><i class="fas fa-ticket-alt"></i> Cupones</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_payments' %}"><i class="fas fa-credit-card"></i> Pagos</a></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_certificates' %}"><i class="fas fa-certificate"></i> Certificados</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'admin_reports_generate' %}"><i class="fas fa-file-alt"></i> Generar reportes</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% endif %}
+                        
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a></li>
                     </ul>
                 </li>
                 
                 {% else %}
                 
-                <!-- ===== USUARIO NO LOGEADO ===== -->
                 <li class="nav-item">
                     <a class="btn btn-outline-primary btn-nav" href="{% url 'login' %}">
                         <i class="fas fa-sign-in-alt"></i> Iniciar sesión
@@ -212,49 +140,308 @@
     </div>
 </nav>
 
+<!-- ============================================
+     SLIDER LATERAL IZQUIERDO (OFFCANVAS)
+     ============================================ -->
+<div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="sidebarMenuLabel">
+            <i class="fas fa-graduation-cap" style="color: #f7c600;"></i> AcadEMI
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body">
+        
+        <!-- PERFIL DEL USUARIO -->
+        {% if user.is_authenticated %}
+        <div class="sidebar-user text-center mb-4">
+            {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="{{ user.username }}" class="sidebar-avatar">
+            {% else %}
+                <div class="sidebar-avatar-placeholder">
+                    {{ user.username|first|upper }}
+                </div>
+            {% endif %}
+            <h6 class="mt-2 mb-0">{{ user.get_full_name|default:user.username }}</h6>
+            <small class="text-muted">{{ user.get_role_display }}</small>
+        </div>
+        <hr>
+        {% endif %}
+        
+        <!-- MENÚ PRINCIPAL -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            
+            <!-- Inicio -->
+            <li class="nav-item">
+                <a href="{% url 'home' %}" class="nav-link active">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </li>
+            
+            <!-- Catálogo -->
+            <li class="nav-item">
+                <a href="{% url 'catalog' %}" class="nav-link">
+                    <i class="fas fa-book-open"></i> Catálogo
+                </a>
+            </li>
+            
+            <!-- Buscar -->
+            <li class="nav-item">
+                <a href="{% url 'search_courses' %}" class="nav-link">
+                    <i class="fas fa-search"></i> Buscar cursos
+                </a>
+            </li>
+            
+            <!-- Asistente -->
+            <li class="nav-item">
+                <a href="{% url 'chatbot' %}" class="nav-link">
+                    <i class="fas fa-robot"></i> Asistente virtual
+                </a>
+            </li>
+            
+            <hr>
+            
+            {% if user.is_authenticated %}
+            
+            <!-- Dashboard -->
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link">
+                    <i class="fas fa-tachometer-alt"></i> Dashboard
+                </a>
+            </li>
+            
+            <!-- Mi perfil -->
+            <li class="nav-item">
+                <a href="{% url 'profile' %}" class="nav-link">
+                    <i class="fas fa-user-edit"></i> Mi perfil
+                </a>
+            </li>
+            
+            <!-- Notificaciones -->
+            <li class="nav-item">
+                <a href="{% url 'notifications' %}" class="nav-link position-relative">
+                    <i class="fas fa-bell"></i> Notificaciones
+                    {% if unread_notifications > 0 %}
+                    <span class="badge bg-danger rounded-pill ms-2">{{ unread_notifications }}</span>
+                    {% endif %}
+                </a>
+            </li>
+            
+            <hr>
+            
+            {% if user.role == 'student' %}
+            
+            <!-- SECCIÓN ESTUDIANTE -->
+            <li class="nav-item">
+                <a href="{% url 'my_courses' %}" class="nav-link">
+                    <i class="fas fa-book-open"></i> Mis cursos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'my_progress' %}" class="nav-link">
+                    <i class="fas fa-tasks"></i> Mi progreso
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'my_grades' %}" class="nav-link">
+                    <i class="fas fa-star"></i> Calificaciones
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'my_certificates' %}" class="nav-link">
+                    <i class="fas fa-certificate"></i> Certificados
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'my_favorites' %}" class="nav-link">
+                    <i class="fas fa-heart"></i> Favoritos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'purchase_history' %}" class="nav-link">
+                    <i class="fas fa-shopping-bag"></i> Historial
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'cart' %}" class="nav-link">
+                    <i class="fas fa-shopping-cart"></i> Carrito
+                </a>
+            </li>
+            
+            {% elif user.role == 'teacher' %}
+            
+            <!-- SECCIÓN DOCENTE -->
+            <li class="nav-item">
+                <a href="{% url 'my_courses' %}" class="nav-link">
+                    <i class="fas fa-list"></i> Mis cursos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'create_course' %}" class="nav-link">
+                    <i class="fas fa-plus-circle"></i> Crear curso
+                </a>
+            </li>
+            
+            {% elif user.role == 'admin' %}
+            
+            <!-- SECCIÓN ADMIN -->
+            <li class="nav-item">
+                <a href="{% url 'admin_users' %}" class="nav-link">
+                    <i class="fas fa-users-cog"></i> Gestionar usuarios
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_courses' %}" class="nav-link">
+                    <i class="fas fa-book"></i> Gestionar cursos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_categories' %}" class="nav-link">
+                    <i class="fas fa-tags"></i> Categorías
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_reports' %}" class="nav-link">
+                    <i class="fas fa-flag"></i> Reportes
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_coupons' %}" class="nav-link">
+                    <i class="fas fa-ticket-alt"></i> Cupones
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_payments' %}" class="nav-link">
+                    <i class="fas fa-credit-card"></i> Pagos
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_certificates' %}" class="nav-link">
+                    <i class="fas fa-certificate"></i> Certificados
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'admin_reports_generate' %}" class="nav-link">
+                    <i class="fas fa-file-alt"></i> Generar reportes
+                </a>
+            </li>
+            
+            {% endif %}
+            
+            <hr>
+            
+            <!-- Cerrar sesión -->
+            <li class="nav-item">
+                <a href="{% url 'logout' %}" class="nav-link text-danger">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                </a>
+            </li>
+            
+            {% else %}
+            
+            <!-- USUARIO NO LOGUEADO -->
+            <li class="nav-item">
+                <a href="{% url 'login' %}" class="nav-link">
+                    <i class="fas fa-sign-in-alt"></i> Iniciar sesión
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'register' %}" class="nav-link">
+                    <i class="fas fa-user-plus"></i> Registrarse
+                </a>
+            </li>
+            
+            {% endif %}
+        </ul>
+        
+        <!-- VERSIÓN -->
+        <hr>
+        <div class="text-center text-muted small">
+            <i class="fas fa-code"></i> v1.0.0
+            <br>
+            <i class="fas fa-heart" style="color: #f7c600;"></i> Hecho en Bolivia
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     ESTILOS - FONDO CLARO CON TOQUE AZUL NATURAL
+     ============================================ -->
 <style>
 /* ============================================
-   ESTILOS HEADER
+   NAVBAR - FONDO CLARO CON ONDAS
    ============================================ */
 .navbar {
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.92);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: 12px 0;
-    box-shadow: 0 2px 20px rgba(0,0,0,0.04);
-    border-bottom: 3px solid var(--primary, #0033a0);
+    padding: 10px 0;
+    box-shadow: 0 2px 24px rgba(0, 51, 160, 0.04);
+    border-bottom: 1px solid rgba(0, 51, 160, 0.06);
     transition: all 0.3s ease;
+}
+
+/* ONDA AZUL SUTIL EN EL BORDE */
+.navbar::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(0, 51, 160, 0.05) 20%, 
+        rgba(0, 51, 160, 0.15) 40%, 
+        rgba(0, 51, 160, 0.2) 50%,
+        rgba(0, 51, 160, 0.15) 60%,
+        rgba(0, 51, 160, 0.05) 80%,
+        transparent 100%
+    );
+    animation: waveBorder 8s ease-in-out infinite;
+}
+
+@keyframes waveBorder {
+    0% { transform: scaleX(1); opacity: 0.5; }
+    50% { transform: scaleX(1.2); opacity: 1; }
+    100% { transform: scaleX(1); opacity: 0.5; }
 }
 
 .navbar-brand {
     font-weight: 800;
     font-size: 24px;
-    color: var(--primary, #0033a0);
+    color: #0033a0;
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none;
 }
 
 .navbar-brand i {
-    color: var(--secondary, #f7c600);
+    color: #f7c600;
     font-size: 28px;
+}
+
+.navbar-brand span {
+    color: #0033a0;
 }
 
 .brand-badge {
     font-size: 10px;
     font-weight: 700;
-    background: var(--secondary, #f7c600);
-    color: var(--primary, #0033a0);
+    background: #f7c600;
+    color: #0033a0;
     padding: 2px 10px;
     border-radius: 50px;
+    margin-left: 4px;
 }
 
 .nav-link {
-    color: var(--gray-dark, #2d3748);
+    color: #4a5568;
     font-weight: 500;
     font-size: 14px;
     padding: 8px 14px;
-    border-radius: var(--radius-sm, 8px);
+    border-radius: 8px;
     transition: all 0.3s ease;
     display: flex;
     align-items: center;
@@ -263,25 +450,63 @@
 }
 
 .nav-link i {
-    font-size: 14px;
-    color: var(--primary, #0033a0);
+    font-size: 16px;
+    color: #0033a0;
     opacity: 0.6;
+    transition: all 0.3s ease;
 }
 
 .nav-link:hover {
-    color: var(--primary, #0033a0);
-    background: var(--primary-lighter, #e8edf5);
+    color: #0033a0;
+    background: rgba(0, 51, 160, 0.04);
 }
 
 .nav-link:hover i {
     opacity: 1;
+    transform: scale(1.1);
 }
 
-.badge-notification {
+/* Efecto azul natural al hover */
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #0033a0, transparent);
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.nav-link:hover::after {
+    width: 60%;
+}
+
+.icon-link {
+    padding: 8px 12px !important;
+    position: relative;
+}
+
+.icon-link i {
+    font-size: 20px !important;
+    color: #0033a0;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+.icon-link:hover i {
+    opacity: 1;
+    transform: scale(1.15);
+    color: #0033a0;
+}
+
+.badge-icon {
     position: absolute;
     top: -4px;
-    right: -6px;
-    background: var(--danger, #ef4444);
+    right: -2px;
+    background: #ef4444;
     color: white;
     font-size: 10px;
     font-weight: 700;
@@ -289,20 +514,34 @@
     border-radius: 50px;
     min-width: 18px;
     text-align: center;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+    animation: bounceIn 0.5s ease;
 }
 
-.badge-cart {
-    position: absolute;
-    top: -4px;
-    right: -6px;
-    background: var(--secondary, #f7c600);
-    color: var(--primary, #0033a0);
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 50px;
-    min-width: 18px;
-    text-align: center;
+.badge-icon.cart-pulse {
+    background: #f7c600;
+    color: #0033a0;
+    box-shadow: 0 2px 8px rgba(247, 198, 0, 0.4);
+}
+
+.pulse {
+    animation: pulse 2s infinite;
+}
+
+.cart-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0); opacity: 0; }
+    60% { transform: scale(1.3); opacity: 1; }
+    100% { transform: scale(1); }
 }
 
 .user-avatar {
@@ -310,26 +549,38 @@
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid var(--primary-lighter, #e8edf5);
+    border: 2px solid #e8edf5;
+    transition: all 0.3s ease;
+}
+
+.user-avatar:hover {
+    border-color: #0033a0;
+    transform: scale(1.05);
 }
 
 .user-avatar-placeholder {
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: var(--primary, #0033a0);
+    background: linear-gradient(135deg, #f7c600, #f59e0b);
     color: white;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.user-avatar-placeholder:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(247, 198, 0, 0.3);
 }
 
 .user-name {
     font-weight: 500;
     font-size: 14px;
-    color: var(--gray-dark, #2d3748);
+    color: #2d3748;
 }
 
 .btn-nav {
@@ -341,16 +592,17 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    text-decoration: none;
 }
 
 .btn-outline-primary {
-    border: 2px solid var(--primary, #0033a0);
-    color: var(--primary, #0033a0);
+    border: 2px solid #0033a0;
+    color: #0033a0;
     background: transparent;
 }
 
 .btn-outline-primary:hover {
-    background: var(--primary, #0033a0);
+    background: #0033a0;
     color: white;
     transform: translateY(-2px);
     box-shadow: 0 4px 20px rgba(0, 51, 160, 0.25);
@@ -370,25 +622,31 @@
 }
 
 .dropdown-menu {
-    border-radius: var(--radius, 16px);
+    border-radius: 16px;
     padding: 8px;
-    min-width: 260px;
+    min-width: 280px;
     margin-top: 10px;
     border: none;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(10px);
 }
 
 .dropdown-header {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 0.05em;
-    color: var(--gray, #718096);
+    color: #718096;
     padding: 8px 16px;
     font-weight: 700;
 }
 
+.dropdown-header i {
+    margin-right: 6px;
+}
+
 .dropdown-item {
-    border-radius: var(--radius-sm, 8px);
+    border-radius: 8px;
     padding: 10px 16px;
     font-weight: 500;
     font-size: 14px;
@@ -396,48 +654,218 @@
     display: flex;
     align-items: center;
     gap: 10px;
+    cursor: pointer;
 }
 
 .dropdown-item i {
     width: 20px;
     text-align: center;
-    color: var(--gray, #718096);
+    color: #718096;
     font-size: 14px;
 }
 
 .dropdown-item:hover {
-    background: var(--primary-lighter, #e8edf5);
-    color: var(--primary, #0033a0);
+    background: rgba(0, 51, 160, 0.04);
+    color: #0033a0;
 }
 
 .dropdown-item:hover i {
-    color: var(--primary, #0033a0);
+    color: #0033a0;
 }
 
 .dropdown-item.text-danger:hover {
     background: #fee2e2;
-    color: var(--danger, #ef4444);
+    color: #ef4444;
 }
 
 .dropdown-divider {
     margin: 6px 0;
-    border-color: var(--gray-light, #e2e8f0);
+    border-color: #e8edf5;
 }
 
-/* ===== RESPONSIVE ===== */
+/* ============================================
+   SIDEBAR (OFFCANVAS) - CON TOQUE AZUL
+   ============================================ */
+.offcanvas {
+    background: linear-gradient(180deg, #ffffff 0%, #f0f4ff 100%);
+    color: #2d3748;
+    width: 300px !important;
+    border-right: 1px solid rgba(0, 51, 160, 0.06);
+}
+
+/* Onda azul en el borde del sidebar */
+.offcanvas::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -2px;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(180deg, 
+        transparent 0%, 
+        rgba(0, 51, 160, 0.05) 20%, 
+        rgba(0, 51, 160, 0.15) 40%, 
+        rgba(0, 51, 160, 0.2) 50%,
+        rgba(0, 51, 160, 0.15) 60%,
+        rgba(0, 51, 160, 0.05) 80%,
+        transparent 100%
+    );
+}
+
+.offcanvas-header {
+    border-bottom: 1px solid rgba(0, 51, 160, 0.06);
+}
+
+.offcanvas-title {
+    color: #0033a0;
+    font-weight: 700;
+}
+
+.offcanvas-title i {
+    color: #f7c600;
+}
+
+.offcanvas .btn-close {
+    opacity: 0.6;
+}
+
+.offcanvas .btn-close:hover {
+    opacity: 1;
+}
+
+.offcanvas-body {
+    padding: 20px;
+}
+
+.sidebar-user {
+    text-align: center;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0, 51, 160, 0.06);
+}
+
+.sidebar-avatar {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #0033a0;
+}
+
+.sidebar-avatar-placeholder {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f7c600, #f59e0b);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0 auto;
+}
+
+.sidebar-user h6 {
+    color: #1a202c;
+    font-weight: 600;
+    margin-top: 8px;
+}
+
+.sidebar-user small {
+    color: #718096;
+}
+
+.offcanvas-body .nav-link {
+    color: #4a5568;
+    padding: 10px 16px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.offcanvas-body .nav-link i {
+    color: #718096;
+    width: 20px;
+    text-align: center;
+}
+
+.offcanvas-body .nav-link:hover {
+    background: rgba(0, 51, 160, 0.04);
+    color: #0033a0;
+}
+
+.offcanvas-body .nav-link:hover i {
+    color: #f7c600;
+}
+
+.offcanvas-body .nav-link.active {
+    background: rgba(0, 51, 160, 0.06);
+    color: #0033a0;
+}
+
+.offcanvas-body .nav-link.active i {
+    color: #f7c600;
+}
+
+.offcanvas-body .nav-link.text-danger {
+    color: #ef4444;
+}
+
+.offcanvas-body .nav-link.text-danger:hover {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.offcanvas-body hr {
+    border-color: rgba(0, 51, 160, 0.06);
+    margin: 12px 0;
+}
+
+.offcanvas-body .nav-pills {
+    margin-bottom: 12px;
+}
+
+.offcanvas-body .badge {
+    background: #ef4444 !important;
+    color: white;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
 @media (max-width: 992px) {
     .navbar-nav { padding-top: 10px; }
     .nav-item { width: 100%; }
     .nav-link { padding: 10px 16px; justify-content: center; }
+    .nav-link::after { display: none; }
+    .icon-link { justify-content: center; }
     .btn-nav { width: 100%; justify-content: center; margin: 4px 0; }
-    .dropdown-menu { margin-top: 0; box-shadow: none; border: none; background: var(--white-smoke, #f5f7fa); }
+    .dropdown-menu { 
+        margin-top: 0; 
+        box-shadow: none; 
+        border: none; 
+        background: transparent; 
+    }
     .dropdown-item { padding: 10px 16px; }
     .user-name { display: none; }
+    .navbar-toggler.me-2 { display: flex; }
+}
+
+@media (min-width: 993px) {
+    .navbar-toggler.me-2 { display: none; }
 }
 
 @media (max-width: 768px) {
     .navbar-brand { font-size: 20px; }
     .navbar-brand i { font-size: 22px; }
     .brand-badge { font-size: 8px; padding: 1px 8px; }
+    .offcanvas { width: 280px !important; }
+    .navbar::after { height: 3px; }
+}
+
+@media (max-width: 576px) {
+    .navbar { padding: 8px 0; }
+    .navbar-brand { font-size: 18px; }
+    .navbar-brand i { font-size: 18px; }
+    .navbar::after { height: 2px; }
 }
 </style>

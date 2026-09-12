@@ -1,0 +1,1232 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}{{ course.title }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ============================================
+       CURSO DETALLE - ESTILOS COMPLETOS
+       ============================================ */
+    
+    /* HERO */
+    .course-hero {
+        background: linear-gradient(135deg, #0033a0, #1a4db8);
+        color: white;
+        padding: 40px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .course-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -20%;
+        width: 500px;
+        height: 500px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .course-hero h1 {
+        font-weight: 800;
+        font-size: 2.2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .course-hero .price-tag {
+        font-size: 24px;
+        font-weight: 700;
+        background: #f7c600;
+        color: #002277;
+        padding: 6px 20px;
+        border-radius: 50px;
+        display: inline-block;
+        position: relative;
+        z-index: 1;
+    }
+
+    .course-hero .price-tag.free {
+        background: #10b981;
+        color: white;
+    }
+
+    .course-hero .btn-hero {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: none;
+        text-decoration: none;
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
+    }
+
+    .course-hero .btn-hero-primary {
+        background: #f7c600;
+        color: #002277;
+    }
+
+    .course-hero .btn-hero-primary:hover {
+        background: #d4a800;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(247, 198, 0, 0.3);
+        color: #002277;
+        text-decoration: none;
+    }
+
+    .course-hero .btn-hero-outline {
+        background: transparent;
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+    }
+
+    .course-hero .btn-hero-outline:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: white;
+        color: white;
+        text-decoration: none;
+    }
+
+    .btn-cart-hero {
+        background: transparent;
+        border: 2px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-cart-hero:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: white;
+        color: white;
+    }
+
+    .btn-cart-hero.in-cart {
+        background: #10b981;
+        border-color: #10b981;
+        color: white;
+    }
+
+    .btn-cart-hero.in-cart:hover {
+        background: #059669;
+        border-color: #059669;
+        color: white;
+    }
+
+    .badge-owned-hero {
+        background: #10b981;
+        color: white;
+        padding: 4px 14px;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 13px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .badge-level {
+        background: rgba(255,255,255,0.2);
+        color: white;
+        padding: 3px 14px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* BOTÓN VER VIDEO PROMOCIONAL */
+    .btn-video-promo {
+        background: rgba(255,255,255,0.15);
+        color: white;
+        border: 2px solid rgba(255,255,255,0.3);
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        position: relative;
+        z-index: 1;
+        text-decoration: none;
+    }
+
+    .btn-video-promo:hover {
+        background: rgba(255,255,255,0.25);
+        border-color: white;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-video-promo i {
+        font-size: 16px;
+    }
+
+    /* VIDEO PROMOCIONAL - THUMBNAIL */
+    .video-thumbnail {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+        cursor: pointer;
+        background: #000;
+    }
+
+    .video-thumbnail img {
+        width: 100%;
+        max-height: 350px;
+        object-fit: cover;
+        transition: all 0.3s ease;
+    }
+
+    .video-thumbnail:hover img {
+        transform: scale(1.02);
+    }
+
+    .video-thumbnail .play-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+
+    .video-thumbnail .play-overlay:hover {
+        background: rgba(0,0,0,0.2);
+    }
+
+    .video-thumbnail .play-overlay .play-icon {
+        width: 80px;
+        height: 80px;
+        background: rgba(247, 198, 0, 0.9);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #0033a0;
+        font-size: 36px;
+        transition: all 0.3s ease;
+        border: none;
+    }
+
+    .video-thumbnail .play-overlay:hover .play-icon {
+        transform: scale(1.1);
+        background: #f7c600;
+        box-shadow: 0 0 40px rgba(247, 198, 0, 0.3);
+    }
+
+    /* MODAL VIDEO */
+    .modal-video .modal-content {
+        background: #000 !important;
+        border: none !important;
+        border-radius: 12px !important;
+    }
+
+    .modal-video .modal-header {
+        border: none !important;
+        padding: 10px 16px !important;
+        background: rgba(0,0,0,0.6) !important;
+        border-radius: 12px 12px 0 0 !important;
+    }
+
+    .modal-video .modal-header .btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+    }
+
+    .modal-video .modal-header .btn-close:hover {
+        opacity: 1;
+    }
+
+    .modal-video .modal-body {
+        padding: 0 !important;
+        position: relative;
+        background: #000;
+    }
+
+    .modal-video .modal-body video {
+        width: 100%;
+        border-radius: 0 0 12px 12px;
+        display: block;
+        max-height: 80vh;
+    }
+
+    .modal-video .btn-close-video {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 10;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        border: 1px solid rgba(255,255,255,0.2);
+        border-radius: 50px;
+        padding: 8px 20px;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .modal-video .btn-close-video:hover {
+        background: rgba(255,255,255,0.2);
+    }
+
+    /* INFO CARD */
+    .course-info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        border: 1px solid #e2e8f0;
+        margin-bottom: 20px;
+    }
+
+    .course-info-card .info-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f5f7fa;
+    }
+
+    .course-info-card .info-item:last-child {
+        border-bottom: none;
+    }
+
+    .course-info-card .info-item i {
+        width: 20px;
+        color: #0033a0;
+        font-size: 14px;
+    }
+
+    .course-info-card .info-item .label {
+        color: #718096;
+        font-size: 13px;
+    }
+
+    .course-info-card .info-item .value {
+        font-weight: 600;
+        color: #2d3748;
+        margin-left: auto;
+        font-size: 13px;
+    }
+
+    /* MÓDULOS */
+    .course-modules {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        margin-bottom: 30px;
+    }
+
+    .course-modules .module-header {
+        background: #f8fafc;
+        padding: 14px 20px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+    .course-modules .module-header .module-title {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 15px;
+    }
+
+    .course-modules .module-body {
+        padding: 10px 20px;
+    }
+
+    .course-modules .lesson-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0;
+        border-bottom: 1px solid #f5f7fa;
+        font-size: 14px;
+    }
+
+    .course-modules .lesson-item:last-child {
+        border-bottom: none;
+    }
+
+    .course-modules .lesson-item i {
+        color: #0033a0;
+        width: 18px;
+        font-size: 14px;
+    }
+
+    .course-modules .lesson-item .lesson-title {
+        color: #2d3748;
+        flex: 1;
+    }
+
+    .course-modules .lesson-item .lesson-duration {
+        color: #718096;
+        font-size: 12px;
+        margin-left: auto;
+    }
+
+    .course-modules .lesson-item.locked {
+        opacity: 0.5;
+    }
+
+    .course-modules .lesson-item.locked i {
+        color: #718096;
+    }
+
+    .course-modules .lesson-item .badge-free {
+        background: #10b981;
+        color: white;
+        font-size: 9px;
+        padding: 1px 10px;
+        border-radius: 50px;
+        font-weight: 600;
+        margin-left: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .course-modules .lesson-item .badge-free i {
+        color: white;
+        font-size: 8px;
+        width: auto;
+    }
+
+    .course-modules .lesson-item .badge-locked {
+        background: #ef4444;
+        color: white;
+        font-size: 9px;
+        padding: 1px 10px;
+        border-radius: 50px;
+        font-weight: 600;
+        margin-left: 6px;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+    }
+
+    .course-modules .lesson-item .badge-locked i {
+        color: white;
+        font-size: 8px;
+        width: auto;
+    }
+
+    /* SECCIÓN COMENTARIOS */
+    .comments-section {
+        background: white;
+        border-radius: 12px;
+        border: 1px solid #e2e8f0;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .comment-item {
+        padding: 12px 0;
+        border-bottom: 1px solid #f5f7fa;
+    }
+
+    .comment-item:last-child {
+        border-bottom: none;
+    }
+
+    .comment-item .comment-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 4px;
+    }
+
+    .comment-item .comment-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0033a0, #1a4db8);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 12px;
+        flex-shrink: 0;
+    }
+
+    .comment-item .comment-name {
+        font-weight: 600;
+        font-size: 13px;
+        color: #2d3748;
+    }
+
+    .comment-item .comment-date {
+        color: #718096;
+        font-size: 11px;
+        margin-left: auto;
+    }
+
+    .comment-item .comment-content {
+        color: #4a5568;
+        font-size: 14px;
+        margin-top: 4px;
+        line-height: 1.6;
+    }
+
+    .comment-item .comment-empty {
+        color: #718096;
+        font-size: 14px;
+        font-style: italic;
+    }
+
+    /* FORMULARIO COMENTARIO */
+    .comment-form {
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #e2e8f0;
+    }
+
+    .comment-form textarea {
+        border-radius: 8px;
+        border: 2px solid #e2e8f0;
+        padding: 10px 14px;
+        font-size: 14px;
+        width: 100%;
+        min-height: 70px;
+        transition: all 0.3s ease;
+        font-family: inherit;
+        resize: vertical;
+    }
+
+    .comment-form textarea:focus {
+        border-color: #0033a0;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.08);
+    }
+
+    /* TOAST */
+    .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+    }
+
+    .toast-custom {
+        background: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 14px 18px;
+        margin-bottom: 10px;
+        border-left: 4px solid #0033a0;
+        min-width: 260px;
+        animation: slideInRight 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 14px;
+    }
+
+    .toast-custom.success {
+        border-left-color: #10b981;
+    }
+
+    .toast-custom.error {
+        border-left-color: #ef4444;
+    }
+
+    .toast-custom i {
+        font-size: 18px;
+    }
+
+    .toast-custom .toast-close {
+        margin-left: auto;
+        cursor: pointer;
+        background: none;
+        border: none;
+        color: #718096;
+        font-size: 16px;
+        padding: 0 4px;
+    }
+
+    .toast-custom .toast-close:hover {
+        color: #1a202c;
+    }
+
+    @keyframes slideInRight {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideOutRight {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+
+    .toast-custom.removing {
+        animation: slideOutRight 0.3s ease forwards;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .course-hero {
+            padding: 24px 20px;
+        }
+        .course-hero h1 {
+            font-size: 1.6rem;
+        }
+        .course-hero .price-tag {
+            font-size: 20px;
+            padding: 4px 16px;
+        }
+        .course-hero .btn-hero {
+            width: 100%;
+            justify-content: center;
+            padding: 10px 16px;
+        }
+        .btn-cart-hero {
+            width: 100%;
+            justify-content: center;
+            padding: 10px 16px;
+        }
+        .btn-video-promo {
+            width: 100%;
+            justify-content: center;
+            padding: 8px 16px;
+        }
+        .hero-actions {
+            flex-direction: column;
+            width: 100%;
+        }
+        .hero-actions .btn-hero,
+        .hero-actions .btn-cart-hero,
+        .hero-actions .btn-video-promo {
+            width: 100%;
+            justify-content: center;
+        }
+        .course-info-card .info-item {
+            flex-wrap: wrap;
+        }
+        .course-info-card .info-item .value {
+            margin-left: 0;
+            width: 100%;
+        }
+        .toast-container {
+            top: 10px;
+            right: 10px;
+            left: 10px;
+        }
+        .toast-custom {
+            min-width: auto;
+        }
+        .video-thumbnail .play-overlay .play-icon {
+            width: 56px;
+            height: 56px;
+            font-size: 24px;
+        }
+        .modal-video .modal-body video {
+            max-height: 60vh;
+        }
+        .modal-video .btn-close-video {
+            bottom: 10px;
+            right: 10px;
+            padding: 6px 14px;
+            font-size: 12px;
+        }
+    }
+
+    @media (min-width: 769px) {
+        .hero-actions {
+            flex-wrap: wrap;
+        }
+        .hero-actions .btn-hero {
+            flex: 0 1 auto;
+        }
+        .hero-actions .btn-cart-hero {
+            flex: 0 1 auto;
+        }
+        .hero-actions .btn-video-promo {
+            flex: 0 1 auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <!-- TOAST -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- HERO -->
+    <div class="course-hero">
+        <div class="row align-items-center">
+            <div class="col-lg-7">
+                <h1 class="mb-2">{{ course.title }}</h1>
+                <p class="mb-3" style="opacity: 0.85; font-size: 1.05rem; line-height: 1.7;">{{ course.description|truncatechars:300 }}</p>
+                <div class="d-flex align-items-center gap-3 flex-wrap mb-2">
+                    <span class="badge-level">{{ course.get_level_display }}</span>
+                    {% if course.category %}
+                    <span style="opacity: 0.7; font-size: 13px;">| {{ course.category.name }}</span>
+                    {% endif %}
+                    {% if course.is_featured %}
+                    <span style="background: #f7c600; color: #002277; padding: 2px 12px; border-radius: 50px; font-size: 11px; font-weight: 700;">
+                        <i class="fas fa-star"></i> Destacado
+                    </span>
+                    {% endif %}
+                </div>
+                <div style="opacity: 0.7; font-size: 13px;">
+                    <span><i class="fas fa-user"></i> {{ course.total_students }} estudiantes</span>
+                    <span class="ms-3"><i class="fas fa-book"></i> {{ course.total_lessons }} lecciones</span>
+                    <span class="ms-3"><i class="fas fa-clock"></i> {{ course.total_duration }} min</span>
+                    <span class="ms-3"><i class="fas fa-star" style="color: #f7c600;"></i> {{ course.average_rating|floatformat:1 }} ({{ course.total_reviews }} reseñas)</span>
+                </div>
+            </div>
+            <div class="col-lg-5 text-center text-lg-end mt-4 mt-lg-0">
+                <div class="mb-3">
+                    {% if course.is_free %}
+                        <span class="price-tag free"><i class="fas fa-gift"></i> Gratis</span>
+                    {% else %}
+                        <span class="price-tag">Bs. {{ course.price }}</span>
+                    {% endif %}
+                </div>
+
+                <!-- BOTONES DE ACCIÓN -->
+                {% if user.is_authenticated and user.role == 'student' and course.id in user_enrolled_courses %}
+                    <a href="{% url 'course_learn' course.id %}" class="btn-hero btn-hero-primary d-inline-flex">
+                        <i class="fas fa-play"></i> Continuar aprendiendo
+                    </a>
+                    <span class="badge-owned-hero d-block mt-2" style="justify-content: center;">
+                        <i class="fas fa-check-circle"></i> Curso adquirido
+                    </span>
+                {% else %}
+                    <div class="hero-actions">
+                        {% if course.video_promo %}
+                        <button class="btn-video-promo" onclick="openVideoModal()">
+                            <i class="fas fa-play-circle"></i> Ver video promocional
+                        </button>
+                        {% endif %}
+                        <!-- AGREGAR AL CARRITO -->
+                        {% if user.is_authenticated %}
+                        <button class="btn-cart-hero" onclick="addToCart({{ course.id }}, '{{ course.title|escapejs }}')" id="cartBtn{{ course.id }}" title="Agregar al carrito">
+                            <i class="fas fa-shopping-cart"></i> <span id="cartText{{ course.id }}">Agregar al carrito</span>
+                        </button>
+                        {% else %}
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn-hero btn-hero-outline">
+                            <i class="fas fa-sign-in-alt"></i> Iniciar sesión para comprar
+                        </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="col-lg-8">
+            
+            <!-- THUMBNAIL DEL VIDEO PROMOCIONAL -->
+            {% if course.video_promo %}
+            <div class="video-thumbnail" onclick="openVideoModal()">
+                {% if course.image %}
+                <img src="{{ course.image.url }}" alt="{{ course.title }}">
+                {% else %}
+                <img src="{% static 'images/video-placeholder.jpg' %}" alt="Video promocional">
+                {% endif %}
+                <div class="play-overlay">
+                    <div class="play-icon">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+            </div>
+            {% elif course.image %}
+            <div class="mb-3" style="border-radius: 12px; overflow: hidden;">
+                <img src="{{ course.image.url }}" alt="{{ course.title }}" class="img-fluid" style="width: 100%; max-height: 400px; object-fit: cover;">
+            </div>
+            {% endif %}
+
+            <!-- DESCRIPCIÓN COMPLETA -->
+            <div class="course-modules mb-3">
+                <div class="module-header">
+                    <h5 class="module-title mb-0"><i class="fas fa-align-left"></i> Descripción del curso</h5>
+                </div>
+                <div class="module-body">
+                    <div style="color: #4a5568; font-size: 15px; line-height: 1.8;">
+                        {{ course.description|linebreaks }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- MÓDULOS Y LECCIONES -->
+            <div class="course-modules">
+                <div class="module-header">
+                    <h5 class="module-title mb-0"><i class="fas fa-list-ul"></i> Contenido del curso</h5>
+                </div>
+                {% if course.modules.all %}
+                    {% for module in course.modules.all %}
+                    <div class="module-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold" style="font-size: 14px;">
+                                <i class="fas fa-folder-open" style="color: #0033a0; margin-right: 6px;"></i>
+                                {{ module.title }}
+                            </span>
+                            <span class="text-muted small">{{ module.lessons.count }} lecciones</span>
+                        </div>
+                        {% if module.description %}
+                        <small class="text-muted d-block mb-2" style="font-size: 13px;">{{ module.description }}</small>
+                        {% endif %}
+                        {% for lesson in module.lessons.all %}
+                        <div class="lesson-item {% if not lesson.is_free and not user_enrolled_courses %}locked{% endif %}">
+                            <i class="fas {% if lesson.lesson_type == 'video' %}fa-video{% elif lesson.lesson_type == 'document' %}fa-file-pdf{% elif lesson.lesson_type == 'quiz' %}fa-tasks{% elif lesson.lesson_type == 'exam' %}fa-clipboard-list{% elif lesson.lesson_type == 'assignment' %}fa-pencil-alt{% else %}fa-file-alt{% endif %}"></i>
+                            <span class="lesson-title">
+                                {{ lesson.title }}
+                                {% if lesson.is_free %}
+                                    <span class="badge-free"><i class="fas fa-star"></i> Gratis</span>
+                                {% elif not user_enrolled_courses %}
+                                    <span class="badge-locked"><i class="fas fa-lock"></i> Bloqueado</span>
+                                {% endif %}
+                            </span>
+                            <span class="lesson-duration">
+                                {% if lesson.duration_minutes > 0 %}
+                                    <i class="far fa-clock"></i> {{ lesson.duration_minutes }} min
+                                {% endif %}
+                            </span>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="module-body text-center py-4">
+                        <p class="text-muted mb-0">Este curso aún no tiene módulos.</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- ============================================
+                 SECCIÓN COMENTARIOS
+                 ============================================ -->
+            <div class="comments-section">
+                <h5 class="fw-bold mb-3" style="font-size: 15px;">
+                    <i class="fas fa-comments" style="color: #0033a0;"></i> Comentarios 
+                    <span class="text-muted" style="font-weight: 400; font-size: 14px;">({{ course.comments.all|length }})</span>
+                </h5>
+                
+                {% if course.comments.all %}
+                    {% for comment in course.comments.all|slice:":10" %}
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <div class="comment-avatar">{{ comment.student.username|first|upper }}</div>
+                            <div>
+                                <span class="comment-name">{{ comment.student.get_full_name|default:comment.student.username }}</span>
+                            </div>
+                            <span class="comment-date">{{ comment.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <div class="comment-content">{{ comment.content }}</div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="comment-item">
+                        <div class="comment-empty">No hay comentarios aún. ¡Sé el primero en comentar!</div>
+                    </div>
+                {% endif %}
+
+                <!-- FORMULARIO PARA COMENTAR -->
+                {% if user.is_authenticated and user.role == 'student' and course.id in user_enrolled_courses %}
+                <div class="comment-form">
+                    <form method="POST" action="{% url 'add_comment' course.id %}">
+                        {% csrf_token %}
+                        <div class="mb-2">
+                            <textarea name="content" class="form-control" placeholder="Escribe un comentario sobre este curso..." rows="2" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 50px; padding: 6px 20px; font-size: 13px;">
+                            <i class="fas fa-paper-plane"></i> Publicar comentario
+                        </button>
+                    </form>
+                </div>
+                {% elif user.is_authenticated %}
+                <div class="comment-form">
+                    <p class="text-muted small mb-0"><i class="fas fa-lock"></i> Debes adquirir el curso para comentar.</p>
+                </div>
+                {% else %}
+                <div class="comment-form">
+                    <p class="text-muted small mb-0"><i class="fas fa-sign-in-alt"></i> <a href="{% url 'login' %}?next={{ request.path }}">Inicia sesión</a> para comentar.</p>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- SIDEBAR -->
+        <div class="col-lg-4">
+            <div class="course-info-card">
+                <h6 class="fw-bold mb-3" style="font-size: 14px;"><i class="fas fa-info-circle"></i> Información del curso</h6>
+                <div class="info-item">
+                    <i class="fas fa-user-graduate"></i>
+                    <span class="label">Instructor</span>
+                    <span class="value">{{ course.teacher.get_full_name|default:course.teacher.username }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-tag"></i>
+                    <span class="label">Categoría</span>
+                    <span class="value">{{ course.category.name|default:"Sin categoría" }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-signal"></i>
+                    <span class="label">Nivel</span>
+                    <span class="value">{{ course.get_level_display }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-clock"></i>
+                    <span class="label">Duración total</span>
+                    <span class="value">{{ course.total_duration }} min</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-book"></i>
+                    <span class="label">Lecciones</span>
+                    <span class="value">{{ course.total_lessons }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <span class="label">Estudiantes</span>
+                    <span class="value">{{ course.total_students }}</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-star" style="color: #f7c600;"></i>
+                    <span class="label">Valoración</span>
+                    <span class="value">{{ course.average_rating|floatformat:1 }} ({{ course.total_reviews }})</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span class="label">Publicado</span>
+                    <span class="value">{{ course.published_at|date:"d/m/Y"|default:"No publicado" }}</span>
+                </div>
+            </div>
+
+            <!-- COMPARTIR -->
+            <div class="course-info-card">
+                <h6 class="fw-bold mb-3" style="font-size: 14px;"><i class="fas fa-share-alt"></i> Compartir</h6>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px; border-radius: 50px;"><i class="fab fa-facebook"></i> Facebook</a>
+                    <a href="https://twitter.com/intent/tweet?text={{ course.title }}&url={{ request.build_absolute_uri }}" target="_blank" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px; border-radius: 50px;"><i class="fab fa-twitter"></i> Twitter</a>
+                    <a href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.build_absolute_uri }}" target="_blank" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px; border-radius: 50px;"><i class="fab fa-linkedin"></i> LinkedIn</a>
+                    <a href="https://wa.me/?text={{ course.title }} - {{ request.build_absolute_uri }}" target="_blank" class="btn btn-sm btn-outline-primary" style="padding: 4px 10px; font-size: 13px; border-radius: 50px;"><i class="fab fa-whatsapp"></i> WhatsApp</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================
+     MODAL VIDEO PROMOCIONAL - CON BOTÓN CERRAR
+     ============================================ -->
+<div class="modal fade modal-video" id="videoModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-white" style="font-size: 14px;">
+                    <i class="fas fa-video"></i> {{ course.title }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <video controls autoplay style="width:100%; max-height:80vh; display: block;">
+                    <source src="{{ course.video_promo.url }}" type="video/mp4">
+                    Tu navegador no soporta videos HTML5.
+                </video>
+                <!-- BOTÓN DE CERRAR FLOTANTE DENTRO DEL VIDEO -->
+                <button type="button" class="btn-close-video" onclick="closeVideoModal()">
+                    <i class="fas fa-times"></i> Cerrar video
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL COMPRA -->
+<div class="modal fade" id="purchaseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" style="font-size: 16px;">
+                    <i class="fas fa-shopping-cart" style="color: #0033a0;"></i> Confirmar compra
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div style="font-size: 40px; color: #f7c600; margin-bottom: 12px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <h6 class="fw-bold mb-2" style="font-size: 15px;">¿Estás seguro de comprar este curso?</h6>
+                <p class="text-muted" id="purchaseCourseTitle" style="font-size: 14px;">Curso: <strong>Nombre del curso</strong></p>
+                <p class="text-muted" id="purchaseCoursePrice" style="font-size: 14px;">Precio: <strong>Bs. 0.00</strong></p>
+                <input type="hidden" id="purchaseCourseId">
+                <input type="hidden" id="purchaseIsFree" value="false">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal" style="padding: 6px 16px; font-size: 13px; border-radius: 50px;">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" id="confirmPurchaseBtn" style="padding: 6px 20px; font-size: 13px; border-radius: 50px;">
+                    <i class="fas fa-check"></i> Confirmar compra
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ============================================
+    // TOAST
+    // ============================================
+    function showToast(message, type) {
+        var container = document.getElementById('toastContainer');
+        var toast = document.createElement('div');
+        toast.className = 'toast-custom ' + type;
+
+        var icon = type === 'error' ? 'fas fa-times-circle' :
+                   type === 'success' ? 'fas fa-check-circle' :
+                   'fas fa-info-circle';
+        var iconColor = type === 'error' ? '#ef4444' :
+                        type === 'success' ? '#10b981' :
+                        '#0033a0';
+
+        toast.innerHTML = `
+            <i class="${icon}" style="color: ${iconColor};"></i>
+            <span>${message}</span>
+            <button class="toast-close" onclick="this.parentElement.remove();">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        container.appendChild(toast);
+
+        setTimeout(function() {
+            if (toast.parentElement) {
+                toast.classList.add('removing');
+                setTimeout(function() {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }
+        }, 5000);
+    }
+
+    // ============================================
+    // ABRIR MODAL VIDEO
+    // ============================================
+    function openVideoModal() {
+        var modal = new bootstrap.Modal(document.getElementById('videoModal'));
+        modal.show();
+    }
+
+    // ============================================
+    // CERRAR MODAL VIDEO
+    // ============================================
+    function closeVideoModal() {
+        var modalElement = document.getElementById('videoModal');
+        var modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) {
+            modal.hide();
+        }
+        // Pausar video al cerrar
+        var video = modalElement.querySelector('video');
+        if (video) {
+            video.pause();
+        }
+    }
+
+    // ============================================
+    // CARRITO
+    // ============================================
+    var cartItems = [];
+
+    function addToCart(courseId, courseTitle) {
+        var btn = document.getElementById('cartBtn' + courseId);
+        var txt = document.getElementById('cartText' + courseId);
+
+        if (!btn) return;
+
+        if (cartItems.includes(courseId)) {
+            cartItems = cartItems.filter(function(id) { return id !== courseId; });
+            btn.classList.remove('in-cart');
+            btn.style.borderColor = 'rgba(255,255,255,0.3)';
+            btn.style.background = 'transparent';
+            if (txt) txt.textContent = 'Agregar al carrito';
+            showToast('Curso "' + courseTitle + '" eliminado del carrito', 'error');
+            updateCartCount();
+            return;
+        }
+
+        fetch('/cart/add/' + courseId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ course_id: courseId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                cartItems.push(courseId);
+                btn.classList.add('in-cart');
+                btn.style.borderColor = '#10b981';
+                btn.style.background = '#10b981';
+                if (txt) txt.textContent = 'En carrito';
+                showToast('Curso "' + courseTitle + '" agregado al carrito', 'success');
+                updateCartCount();
+            } else {
+                showToast(data.message || 'Error al agregar al carrito', 'error');
+            }
+        })
+        .catch(function() {
+            showToast('Error de conexión al servidor', 'error');
+        });
+    }
+
+    function updateCartCount() {
+        var count = cartItems.length;
+        var badge = document.querySelector('.badge-cart');
+        if (badge) {
+            if (count > 0) {
+                badge.textContent = count;
+                badge.style.display = 'inline';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+    }
+
+    // ============================================
+    // COMPRA
+    // ============================================
+    function openPurchaseModal(courseId, courseTitle, coursePrice, isFree) {
+        {% if not user.is_authenticated %}
+            window.location.href = "{% url 'login' %}?next={{ request.path }}";
+            return;
+        {% endif %}
+
+        document.getElementById('purchaseCourseId').value = courseId;
+        document.getElementById('purchaseCourseTitle').innerHTML = 'Curso: <strong>' + courseTitle + '</strong>';
+        document.getElementById('purchaseCoursePrice').innerHTML = 'Precio: <strong>' + (isFree ? 'Gratis' : 'Bs. ' + coursePrice) + '</strong>';
+        document.getElementById('purchaseIsFree').value = isFree ? 'true' : 'false';
+        new bootstrap.Modal(document.getElementById('purchaseModal')).show();
+    }
+
+    document.getElementById('confirmPurchaseBtn').addEventListener('click', function() {
+        var courseId = document.getElementById('purchaseCourseId').value;
+        var modal = bootstrap.Modal.getInstance(document.getElementById('purchaseModal'));
+
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
+
+        fetch('/purchase/' + courseId + '/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ course_id: courseId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                modal.hide();
+                showToast('Compra realizada con éxito. ¡Disfruta tu curso!', 'success');
+                setTimeout(function() { location.reload(); }, 1500);
+            } else {
+                showToast(data.message || 'Error al procesar la compra', 'error');
+                this.disabled = false;
+                this.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
+            }
+        })
+        .catch(function() {
+            showToast('Error de conexión al servidor', 'error');
+            this.disabled = false;
+            this.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
+        });
+    });
+
+    // ============================================
+    // INICIALIZAR
+    // ============================================
+    document.addEventListener('DOMContentLoaded', function() {
+        fetch('/cart/items/')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cartItems = data.items || [];
+                    cartItems.forEach(function(id) {
+                        var btn = document.getElementById('cartBtn' + id);
+                        var txt = document.getElementById('cartText' + id);
+                        if (btn) {
+                            btn.classList.add('in-cart');
+                            btn.style.borderColor = '#10b981';
+                            btn.style.background = '#10b981';
+                            if (txt) txt.textContent = 'En carrito';
+                        }
+                    });
+                    updateCartCount();
+                }
+            })
+            .catch(function() {});
+
+        // Pausar video al cerrar modal
+        document.getElementById('videoModal').addEventListener('hidden.bs.modal', function() {
+            var video = this.querySelector('video');
+            if (video) {
+                video.pause();
+            }
+        });
+    });
+
+    // RESETEAR MODAL
+    document.getElementById('purchaseModal').addEventListener('hidden.bs.modal', function() {
+        var btn = document.getElementById('confirmPurchaseBtn');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
+    });
+</script>
+{% endblock %}

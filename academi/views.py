@@ -82,7 +82,7 @@ def register_view(request):
     else:
         form = RegisterForm()
     
-    return render(request, 'academi/register.html', {'form': form})
+    return render(request, 'academi/auth/register.html', {'form': form})
 
 
 # ============================================
@@ -108,7 +108,7 @@ def login_view(request):
     else:
         form = LoginForm()
     
-    return render(request, 'academi/login.html', {'form': form})
+    return render(request, 'academi/auth/login.html', {'form': form})
 
 
 # ============================================
@@ -137,7 +137,7 @@ def change_password_view(request):
     else:
         form = CustomPasswordChangeForm(request.user)
     
-    return render(request, 'academi/change_password.html', {'form': form})
+    return render(request, 'academi/auth/cambiar_contraseña.html', {'form': form})
 
 
 # ============================================
@@ -155,21 +155,21 @@ def password_reset_request_view(request):
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
                 messages.error(request, 'No existe un usuario con este email.')
-                return render(request, 'academi/password_reset_request.html', {'form': form})
+                return render(request, 'academi/auth/password_reset_request.html', {'form': form})
             
             reset_link = generate_reset_link(user, request)
             
             try:
                 send_password_reset_email(user, request, reset_link)
                 messages.success(request, 'Se ha enviado un enlace de recuperación a tu email.')
-                return render(request, 'academi/password_reset_done.html')
+                return render(request, 'academi/auth/password_reset_done.html')
             except:
                 messages.error(request, 'Error al enviar el email. Intenta nuevamente.')
     
     else:
         form = PasswordResetRequestForm()
     
-    return render(request, 'academi/password_reset_request.html', {'form': form})
+    return render(request, 'academi/auth/password_reset_request.html', {'form': form})
 
 
 # ============================================
@@ -194,7 +194,7 @@ def password_reset_confirm_view(request, uidb64, token):
         else:
             form = PasswordResetConfirmForm()
         
-        return render(request, 'academi/password_reset_confirm.html', {'form': form, 'valid': True})
+        return render(request, 'academi/auth/password_reset_confirm.html', {'form': form, 'valid': True})
     else:
         messages.error(request, 'El enlace de recuperación es inválido o ha expirado.')
         return redirect('password_reset_request')
@@ -238,23 +238,32 @@ def profile_view(request):
     else:
         form = UserProfileForm(instance=request.user)
     
-    return render(request, 'academi/perfil.html', {'form': form})
+    return render(request, 'academi/users/perfil.html', {'form': form})
 
 
 # ============================================
-# DASHBOARD
+# DASHBOARD - VERSIÓN MEJORADA
 # ============================================
 @login_required
 def dashboard_view(request):
     user = request.user
+    now = timezone.now()
+    today = now.date()
     
+    # ============================================
+    # NOTIFICACIONES
+    # ============================================
     notifications = Notification.objects.filter(user=user).order_by('-created_at')[:10]
     unread_notifications = Notification.objects.filter(user=user, is_read=False).count()
     
+    # ============================================
+    # MÉTRICAS DEL ESTUDIANTE (si es estudiante)
+    # ============================================
     enrollments = Enrollment.objects.filter(student=user)
     total_enrollments = enrollments.count()
     completed_courses = enrollments.filter(status='completed').count()
     in_progress_courses = enrollments.filter(status='in_progress').count()
+    pending_courses = enrollments.filter(status='pending').count()
     
     avg_progress = 0
     if total_enrollments > 0:
@@ -269,55 +278,200 @@ def dashboard_view(request):
         pending_percentage = 100 - completed_percentage - in_progress_percentage
     
     total_certificates = Certificate.objects.filter(enrollment__student=user).count()
-    enrollments_in_progress = enrollments.filter(status='in_progress')[:5]
+    enrollments_in_progress = enrollments.filter(status='in_progress').select_related('course')[:5]
     
+    # Últimos cursos iniciados
+    recent_enrollments = enrollments.order_by('-enrollment_date').select_related('course')[:5]
+    
+    # ============================================
+    # MÉTRICAS DEL DOCENTE (si es docente)
+    # ============================================
     teacher_courses = Course.objects.filter(teacher=user)
     teacher_courses_count = teacher_courses.count()
     teacher_published_courses = teacher_courses.filter(status='published').count()
     teacher_draft_courses = teacher_courses.filter(status='draft').count()
+    teacher_pending_courses = teacher_courses.filter(status='pending').count()
+    teacher_rejected_courses = teacher_courses.filter(status='rejected').count()
     
-    teacher_students_total = Enrollment.objects.filter(course__in=teacher_courses, status='enrolled').count()
-    recent_courses = teacher_courses.order_by('-created_at')[:5]
+    # Estudiantes totales en cursos del docente
+    teacher_students_total = Enrollment.objects.filter(
+        course__in=teacher_courses, 
+        status__in=['enrolled', 'in_progress', 'completed']
+    ).count()
     
+    # Estudiantes activos (con progreso > 0)
+    teacher_active_students = Enrollment.objects.filter(
+        course__in=teacher_courses,
+        progress_percentage__gt=0,
+        status__in=['enrolled', 'in_progress']
+    ).values('student').distinct().count()
+    
+    recent_courses = teacher_courses.order_by('-created_at').select_related('category')[:5]
+    
+    # Reseñas de cursos del docente
+    teacher_reviews = Review.objects.filter(course__in=teacher_courses)
+    teacher_total_reviews = teacher_reviews.count()
+    teacher_avg_rating = teacher_reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+    
+    # ============================================
+    # MÉTRICAS GLOBALES (para admin)
+    # ============================================
     total_users = User.objects.count()
+    total_students = User.objects.filter(role='student').count()
+    total_teachers = User.objects.filter(role='teacher').count()
+    total_admins = User.objects.filter(role='admin').count()
+    active_users = User.objects.filter(is_active=True).count()
+    inactive_users = User.objects.filter(is_active=False).count()
+    
+    # Usuarios nuevos en los últimos 7 días
+    week_ago = now - timezone.timedelta(days=7)
+    new_users_week = User.objects.filter(date_joined__gte=week_ago).count()
+    
     total_courses = Course.objects.count()
+    published_courses = Course.objects.filter(status='published').count()
+    draft_courses = Course.objects.filter(status='draft').count()
+    pending_approval_courses = Course.objects.filter(status='pending').count()
+    featured_courses = Course.objects.filter(is_featured=True).count()
+    free_courses = Course.objects.filter(is_free=True).count()
+    
     total_payments = Payment.objects.filter(status='completed').count()
     total_revenue = Payment.objects.filter(status='completed').aggregate(total=Sum('final_amount'))['total'] or 0
-    recent_users = User.objects.all().order_by('-date_joined')[:5]
     
+    # Ingresos del mes actual
+    month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    monthly_revenue = Payment.objects.filter(
+        status='completed',
+        confirmed_at__gte=month_start
+    ).aggregate(total=Sum('final_amount'))['total'] or 0
+    
+    # Ingresos del mes pasado
+    last_month_start = (month_start - timezone.timedelta(days=1)).replace(day=1)
+    last_month_revenue = Payment.objects.filter(
+        status='completed',
+        confirmed_at__gte=last_month_start,
+        confirmed_at__lt=month_start
+    ).aggregate(total=Sum('final_amount'))['total'] or 0
+    
+    # Porcentaje de crecimiento
+    revenue_growth = 0
+    if last_month_revenue > 0:
+        revenue_growth = ((monthly_revenue - last_month_revenue) / last_month_revenue) * 100
+    
+    total_enrollments_global = Enrollment.objects.count()
+    completed_enrollments = Enrollment.objects.filter(status='completed').count()
+    in_progress_enrollments = Enrollment.objects.filter(status='in_progress').count()
+    
+    total_certificates_global = Certificate.objects.count()
+    verified_certificates = Certificate.objects.filter(is_verified=True).count()
+    
+    pending_reports = Report.objects.filter(status='pending').count()
+    total_reports = Report.objects.count()
+    
+    total_coupons = Coupon.objects.count()
+    active_coupons = Coupon.objects.filter(is_active=True, expires_at__gte=now).count()
+    
+    # ============================================
+    # ACTIVIDAD RECIENTE
+    # ============================================
+    recent_users = User.objects.all().order_by('-date_joined')[:10]
+    
+    # Últimos pagos
+    recent_payments = Payment.objects.filter(status='completed').order_by('-confirmed_at').select_related('student')[:5]
+    
+    # Últimas inscripciones
+    recent_enrollments_global = Enrollment.objects.order_by('-enrollment_date').select_related('student', 'course')[:5]
+    
+    # Últimos cursos creados
+    recent_courses_global = Course.objects.order_by('-created_at').select_related('teacher', 'category')[:5]
+    
+    # Últimas reseñas
+    recent_reviews = Review.objects.order_by('-created_at').select_related('student', 'course')[:5]
+    
+    # ============================================
+    # CONTEXTO COMPLETO
+    # ============================================
     context = {
+        # Usuario y roles
         'user': user,
         'is_student': user.role == 'student',
         'is_teacher': user.role == 'teacher',
         'is_admin': user.role == 'admin',
-        'now': timezone.now(),
+        'now': now,
+        'today': today,
         
+        # ===== MÉTRICAS ESTUDIANTE =====
         'total_enrollments': total_enrollments,
         'completed_courses': completed_courses,
         'in_progress_courses': in_progress_courses,
+        'pending_courses': pending_courses,
         'avg_progress': avg_progress,
         'completed_percentage': int(completed_percentage),
         'in_progress_percentage': int(in_progress_percentage),
         'pending_percentage': int(pending_percentage),
         'total_certificates': total_certificates,
         'enrollments_in_progress': enrollments_in_progress,
+        'recent_enrollments': recent_enrollments,
         
+        # ===== MÉTRICAS DOCENTE =====
         'teacher_courses_count': teacher_courses_count,
         'teacher_published_courses': teacher_published_courses,
         'teacher_draft_courses': teacher_draft_courses,
+        'teacher_pending_courses': teacher_pending_courses,
+        'teacher_rejected_courses': teacher_rejected_courses,
         'teacher_students_total': teacher_students_total,
+        'teacher_active_students': teacher_active_students,
         'recent_courses': recent_courses,
+        'teacher_total_reviews': teacher_total_reviews,
+        'teacher_avg_rating': round(teacher_avg_rating, 1),
         
+        # ===== MÉTRICAS GLOBALES =====
         'total_users': total_users,
+        'total_students': total_students,
+        'total_teachers': total_teachers,
+        'total_admins': total_admins,
+        'active_users': active_users,
+        'inactive_users': inactive_users,
+        'new_users_week': new_users_week,
+        
         'total_courses': total_courses,
+        'published_courses': published_courses,
+        'draft_courses': draft_courses,
+        'pending_approval_courses': pending_approval_courses,
+        'featured_courses': featured_courses,
+        'free_courses': free_courses,
+        
         'total_payments': total_payments,
         'total_revenue': total_revenue,
-        'recent_users': recent_users,
+        'monthly_revenue': monthly_revenue,
+        'last_month_revenue': last_month_revenue,
+        'revenue_growth': round(revenue_growth, 1),
         
+        'total_enrollments_global': total_enrollments_global,
+        'completed_enrollments': completed_enrollments,
+        'in_progress_enrollments': in_progress_enrollments,
+        
+        'total_certificates_global': total_certificates_global,
+        'verified_certificates': verified_certificates,
+        
+        'pending_reports': pending_reports,
+        'total_reports': total_reports,
+        
+        'total_coupons': total_coupons,
+        'active_coupons': active_coupons,
+        
+        # ===== ACTIVIDAD RECIENTE =====
+        'recent_users': recent_users,
+        'recent_payments': recent_payments,
+        'recent_enrollments_global': recent_enrollments_global,
+        'recent_courses_global': recent_courses_global,
+        'recent_reviews': recent_reviews,
+        
+        # ===== NOTIFICACIONES =====
         'notifications': notifications,
         'unread_notifications': unread_notifications,
     }
-    return render(request, 'academi/dashboard.html', context)
+    
+    return render(request, 'academi/dashboard/dashboard.html', context)
 
 
 # ============================================
@@ -327,18 +481,18 @@ def dashboard_view(request):
 def notifications_view(request):
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
     notifications.filter(is_read=False).update(is_read=True)
-    return render(request, 'academi/notificaciones.html', {'notifications': notifications})
+    return render(request, 'academi/pages/notificaciones.html', {'notifications': notifications})
 
 
 @login_required
 def my_courses_view(request):
     if request.user.role == 'teacher':
         courses = Course.objects.filter(teacher=request.user)
-        return render(request, 'academi/mis_cursos.html', {'courses': courses})
+        return render(request, 'academi/courses/mis_cursos.html', {'courses': courses})
     else:
         enrollments = Enrollment.objects.filter(student=request.user).select_related('course')
         courses = [enrollment.course for enrollment in enrollments]
-        return render(request, 'academi/mis_cursos.html', {'courses': courses})
+        return render(request, 'academi/courses/mis_cursos.html', {'courses': courses})
 
 
 @login_required
@@ -368,7 +522,7 @@ def my_favorites_view(request):
 @login_required
 def purchase_history_view(request):
     payments = Payment.objects.filter(student=request.user).order_by('-created_at')
-    return render(request, 'academi/historial_compras.html', {'payments': payments})
+    return render(request, 'academi/payments/historial_compras.html', {'payments': payments})
 
 
 @login_required
@@ -383,7 +537,7 @@ def cart_view(request):
         'items_count': items.count(),
         'total': total,
     }
-    return render(request, 'academi/carrito.html', context)
+    return render(request, 'academi/payments/carrito.html', context)
 
 
 # ============================================
@@ -408,7 +562,7 @@ def create_course_view(request):
         
         if not title or not description:
             messages.error(request, 'El título y la descripción son obligatorios.')
-            return render(request, 'academi/crear_curso.html', {'categories': Category.objects.all()})
+            return render(request, 'academi/courses/crear_curso.html', {'categories': Category.objects.all()})
         
         course = Course.objects.create(
             title=title,
@@ -435,7 +589,7 @@ def create_course_view(request):
         return redirect('manage_course', course_id=course.id)
     
     categories = Category.objects.all()
-    return render(request, 'academi/crear_curso.html', {'categories': categories})
+    return render(request, 'academi/courses/crear_curso.html', {'categories': categories})
 
 
 @login_required
@@ -447,7 +601,7 @@ def manage_course_view(request, course_id):
         return redirect('dashboard')
     
     modules = course.modules.all().prefetch_related('lessons')
-    return render(request, 'academi/gestionar_curso.html', {
+    return render(request, 'academi/courses/gestionar_curso.html', {
         'course': course,
         'modules': modules
     })
@@ -486,7 +640,7 @@ def edit_course_view(request, course_id):
         return redirect('manage_course', course_id=course.id)
     
     categories = Category.objects.all()
-    return render(request, 'academi/editar_curso.html', {
+    return render(request, 'academi/courses/editar_curso.html', {
         'course': course,
         'categories': categories
     })
@@ -506,7 +660,7 @@ def delete_course_view(request, course_id):
         messages.success(request, f'Curso "{title}" eliminado correctamente.')
         return redirect('my_courses')
     
-    return render(request, 'academi/eliminar_curso.html', {'course': course})
+    return render(request, 'academi/courses/eliminar_curso.html', {'course': course})
 
 
 @login_required
@@ -528,7 +682,7 @@ def publish_course_view(request, course_id):
         messages.success(request, f'Curso "{course.title}" publicado exitosamente.')
         return redirect('my_courses')
     
-    return render(request, 'academi/publicar_curso.html', {'course': course})
+    return render(request, 'academi/courses/publicar_curso.html', {'course': course})
 
 
 @login_required
@@ -545,7 +699,7 @@ def add_module_view(request, course_id):
         
         if not title:
             messages.error(request, 'El título del módulo es obligatorio.')
-            return render(request, 'academi/crear_modulo.html', {'course': course})
+            return render(request, 'academi/courses/crear_modulo.html', {'course': course})
         
         last_order = course.modules.count()
         Module.objects.create(
@@ -557,7 +711,7 @@ def add_module_view(request, course_id):
         messages.success(request, 'Módulo creado correctamente.')
         return redirect('manage_course', course_id=course.id)
     
-    return render(request, 'academi/crear_modulo.html', {'course': course})
+    return render(request, 'academi/courses/crear_modulo.html', {'course': course})
 
 
 @login_required
@@ -576,7 +730,7 @@ def edit_module_view(request, module_id):
         messages.success(request, 'Módulo actualizado correctamente.')
         return redirect('manage_course', course_id=course.id)
     
-    return render(request, 'academi/editar_modulo.html', {'module': module})
+    return render(request, 'academi/courses/editar_modulo.html', {'module': module})
 
 
 @login_required
@@ -594,7 +748,7 @@ def delete_module_view(request, module_id):
         messages.success(request, f'Módulo "{title}" eliminado correctamente.')
         return redirect('manage_course', course_id=course.id)
     
-    return render(request, 'academi/eliminar_modulo.html', {'module': module})
+    return render(request, 'academi/courses/eliminar_modulo.html', {'module': module})
 
 
 @login_required
@@ -640,7 +794,7 @@ def add_lesson_view(request, module_id):
         
         if not title:
             messages.error(request, 'El título de la lección es obligatorio.')
-            return render(request, 'academi/crear_leccion.html', {'module': module})
+            return render(request, 'academi/courses/crear_leccion.html', {'module': module})
         
         last_order = module.lessons.count()
         Lesson.objects.create(
@@ -655,7 +809,7 @@ def add_lesson_view(request, module_id):
         messages.success(request, 'Lección creada correctamente.')
         return redirect('manage_course', course_id=course.id)
     
-    return render(request, 'academi/crear_leccion.html', {'module': module})
+    return render(request, 'academi/courses/crear_leccion.html', {'module': module})
 
 
 @login_required
@@ -676,15 +830,15 @@ def edit_lesson_view(request, lesson_id):
     # DETERMINAR TEMPLATE
     # ============================================
     template_map = {
-        'text': 'academi/lecciones/crear_texto.html',
-        'video': 'academi/lecciones/crear_video.html',
-        'document': 'academi/lecciones/crear_documento.html',
-        'quiz': 'academi/lecciones/crear_cuestionario.html',
-        'exam': 'academi/lecciones/crear_cuestionario.html',
-        'assignment': 'academi/lecciones/crear_tarea.html',
+        'text': 'academi/courses/lecciones/crear_texto.html',
+        'video': 'academi/courses/lecciones/crear_video.html',
+        'document': 'academi/courses/lecciones/crear_documento.html',
+        'quiz': 'academi/courses/lecciones/crear_cuestionario.html',
+        'exam': 'academi/courses/lecciones/crear_cuestionario.html',
+        'assignment': 'academi/courses/lecciones/crear_tarea.html',
     }
     
-    template = template_map.get(lesson.lesson_type, 'academi/lecciones/crear_texto.html')
+    template = template_map.get(lesson.lesson_type, 'academi/courses/lecciones/crear_texto.html')
     
     # ============================================
     # POST - GUARDAR CAMBIOS
@@ -897,7 +1051,7 @@ def delete_lesson_view(request, lesson_id):
         messages.success(request, f'Lección "{title}" eliminada correctamente.')
         return redirect('manage_course', course_id=course.id)
     
-    return render(request, 'academi/eliminar_leccion.html', {'lesson': lesson})
+    return render(request, 'academi/courses/eliminar_leccion.html', {'lesson': lesson})
 
 
 @login_required
@@ -946,7 +1100,7 @@ def upload_video_view(request, lesson_id):
             messages.error(request, 'No se seleccionó ningún video.')
         return redirect('manage_course', course_id=course.id)
     
-    return render(request, 'academi/subir_video.html', {'lesson': lesson})
+    return render(request, 'academi/courses/subir_video.html', {'lesson': lesson})
 
 
 @login_required
@@ -974,7 +1128,7 @@ def upload_document_view(request, lesson_id):
             messages.error(request, 'No se seleccionó ningún documento.')
         return redirect('manage_course', course_id=course.id)
     
-    return render(request, 'academi/subir_documento.html', {'lesson': lesson})
+    return render(request, 'academi/courses/subir_documento.html', {'lesson': lesson})
 
 
 @login_required
@@ -998,7 +1152,7 @@ def course_stats_view(request, course_id):
         'total_lessons': course.total_lessons,
         'total_modules': course.total_modules,
     }
-    return render(request, 'academi/estadisticas_curso.html', context)
+    return render(request, 'academi/courses/estadisticas_curso.html', context)
 
 
 @login_required
@@ -1010,7 +1164,7 @@ def course_students_view(request, course_id):
         return redirect('dashboard')
     
     enrollments = Enrollment.objects.filter(course=course).select_related('student')
-    return render(request, 'academi/estudiantes_curso.html', {
+    return render(request, 'academi/courses/estudiantes_curso.html', {
         'course': course,
         'enrollments': enrollments
     })
@@ -1069,7 +1223,7 @@ def catalog_view(request):
         'categories': categories,
         'user_enrolled_courses': list(user_enrolled_courses),
     }
-    return render(request, 'academi/catalogo.html', context)
+    return render(request, 'academi/courses/catalogo.html', context)
 
 
 def search_courses_view(request):
@@ -1081,7 +1235,7 @@ def search_courses_view(request):
             Q(description__icontains=query) |
             Q(teacher__username__icontains=query)
         )
-    return render(request, 'academi/buscar.html', {'courses': courses, 'query': query})
+    return render(request, 'academi/courses/buscar.html', {'courses': courses, 'query': query})
 
 
 def categories_view(request):
@@ -1091,7 +1245,7 @@ def categories_view(request):
 
 def course_detail_view(request, course_id):
     course = get_object_or_404(Course, id=course_id, status='published')
-    return render(request, 'academi/curso_detalle.html', {'course': course})
+    return render(request, 'academi/courses/curso_detalle.html', {'course': course})
 
 
 # ============================================
@@ -1141,7 +1295,7 @@ def course_learn_view(request, course_id):
         'total_lessons': total_lessons,
         'completed_count': completed_count,
     }
-    return render(request, 'academi/curso_aprender.html', context)
+    return render(request, 'academi/courses/curso_aprender.html', context)
 
 
 @login_required
@@ -1278,7 +1432,7 @@ def lesson_view(request, lesson_id):
         'evaluation': evaluation,
     }
     
-    return render(request, 'academi/leccion_detalle.html', context)
+    return render(request, 'academi/courses/leccion_detalle.html', context)
 
 
 @login_required
@@ -1527,7 +1681,7 @@ def quiz_view(request, lesson_id):
         'attempts_used': attempts_used,
         'passing_score': evaluation.passing_score,
     }
-    return render(request, 'academi/quiz.html', context)
+    return render(request, 'academi/courses/quiz.html', context)
 
 
 @login_required
@@ -1570,7 +1724,7 @@ def quiz_result_view(request, result_id):
         'max_attempts': max_attempts,
         'remaining_attempts': remaining_attempts,
     }
-    return render(request, 'academi/quiz_resultado.html', context)
+    return render(request, 'academi/courses/quiz_resultado.html', context)
 
 
 @login_required
@@ -1599,71 +1753,416 @@ def quiz_tab_switch_alert(request):
 
 
 # ============================================
-# MÓDULO 7: CARRITO Y COMPRAS
+# MÓDULO 7: CARRITO Y COMPRAS (COMPLETO)
+# ============================================
+from decimal import Decimal
+from django.db import transaction
+
+# ============================================
+# CHECKOUT COMPLETO
 # ============================================
 @login_required
 def checkout_view(request):
     if request.method != 'POST':
         return JsonResponse({
             'success': False, 
-            'message': 'Metodo no permitido.'
-        })
+            'message': 'Método no permitido'
+        }, status=405)
     
     if request.user.role != 'student':
         return JsonResponse({
             'success': False, 
-            'message': 'Solo estudiantes pueden comprar.'
-        })
+            'message': 'Solo estudiantes pueden comprar'
+        }, status=403)
     
-    cart = get_object_or_404(Cart, student=request.user)
-    items = cart.items.all()
-    
-    if not items:
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
         return JsonResponse({
             'success': False, 
-            'message': 'El carrito esta vacio.'
+            'message': 'Datos inválidos'
+        }, status=400)
+    
+    # OBTENER CARRITO
+    cart = Cart.objects.filter(student=request.user).first()
+    if not cart:
+        return JsonResponse({
+            'success': False, 
+            'message': 'No tienes cursos en el carrito'
         })
     
-    created_count = 0
+    items = cart.items.select_related('course').all()
+    if not items.exists():
+        return JsonResponse({
+            'success': False, 
+            'message': 'El carrito está vacío'
+        })
+    
+    # CALCULAR TOTALES
+    subtotal = Decimal('0.00')
     for item in items:
-        if Enrollment.objects.filter(student=request.user, course=item.course).exists():
-            continue
-        
-        enrollment = Enrollment.objects.create(
-            student=request.user,
-            course=item.course,
-            status='enrolled',
-            payment_status='paid',
-            payment_method='cart',
-            payment_amount=0 if item.course.is_free else item.course.price,
-            payment_date=timezone.now()
-        )
-        created_count += 1
-        
-        Notification.objects.create(
-            user=request.user,
-            type='purchase',
-            title='Curso adquirido',
-            message=f'Has comprado el curso "{item.course.title}" exitosamente.',
-            link=f'/course/{item.course.id}/'
-        )
+        if not item.course.is_free:
+            subtotal += Decimal(str(item.course.price))
     
-    items.delete()
+    # APLICAR CUPÓN
+    discount = Decimal('0.00')
+    coupon_code = data.get('coupon_code')
+    coupon = None
     
-    if created_count == 0:
+    if coupon_code:
+        try:
+            coupon = Coupon.objects.get(code=coupon_code.upper(), is_active=True)
+            if coupon.is_valid():
+                if coupon.discount_type == 'percentage':
+                    discount = subtotal * (Decimal(str(coupon.discount_value)) / Decimal('100'))
+                else:
+                    discount = Decimal(str(coupon.discount_value))
+                if discount > subtotal:
+                    discount = subtotal
+        except Coupon.DoesNotExist:
+            pass
+    
+    total = subtotal - discount
+    
+    # VALIDAR DATOS DE PAGO
+    full_name = data.get('full_name', '').strip()
+    email = data.get('email', '').strip()
+    phone = data.get('phone', '').strip()
+    address = data.get('address', '').strip()
+    payment_method = data.get('payment_method', 'qr')
+    
+    if not full_name:
+        return JsonResponse({
+            'success': False, 
+            'message': 'El nombre completo es obligatorio'
+        })
+    
+    if not email:
+        return JsonResponse({
+            'success': False, 
+            'message': 'El correo electrónico es obligatorio'
+        })
+    
+    if payment_method == 'card':
+        card_number = data.get('card_number', '').replace(' ', '')
+        card_expiry = data.get('card_expiry', '')
+        card_cvc = data.get('card_cvc', '')
+        
+        if len(card_number) < 16:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Número de tarjeta inválido'
+            })
+        if not card_expiry or len(card_expiry) < 5:
+            return JsonResponse({
+                'success': False, 
+                'message': 'Fecha de expiración inválida'
+            })
+        if not card_cvc or len(card_cvc) < 3:
+            return JsonResponse({
+                'success': False, 
+                'message': 'CVC inválido'
+            })
+    
+    # CREAR PAGO CON TRANSACCIÓN
+    try:
+        with transaction.atomic():
+            payment = Payment.objects.create(
+                student=request.user,
+                coupon=coupon,
+                amount=subtotal,
+                discount_applied=discount,
+                final_amount=total,
+                payment_method=payment_method,
+                status='completed',
+                transaction_id=f"TXN-{secrets.token_hex(8).upper()}",
+                billing_name=full_name,
+                billing_email=email,
+                billing_phone=phone,
+                billing_address=address,
+                payment_details={
+                    'card_last_four': card_number[-4:] if payment_method == 'card' else None,
+                    'card_brand': 'Visa/Mastercard' if payment_method == 'card' else None,
+                },
+                confirmed_at=timezone.now(),
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            
+            # CREAR ENROLLMENTS Y PAYMENT ITEMS
+            created_courses = []
+            
+            for item in items:
+                course = item.course
+                
+                PaymentItem.objects.create(
+                    payment=payment,
+                    course=course,
+                    price=Decimal(str(course.price)) if not course.is_free else Decimal('0.00'),
+                    discount_applied=discount if items.count() == 1 else Decimal('0.00'),
+                    final_price=Decimal(str(course.price)) if not course.is_free else Decimal('0.00')
+                )
+                
+                enrollment, created = Enrollment.objects.get_or_create(
+                    student=request.user,
+                    course=course,
+                    defaults={
+                        'status': 'enrolled',
+                        'payment_amount': Decimal(str(course.price)) if not course.is_free else Decimal('0.00'),
+                        'payment_status': 'paid',
+                        'payment_method': payment_method,
+                        'transaction_id': payment.transaction_id,
+                        'payment_date': timezone.now(),
+                    }
+                )
+                
+                if not created:
+                    enrollment.payment_status = 'paid'
+                    enrollment.payment_amount = Decimal(str(course.price)) if not course.is_free else Decimal('0.00')
+                    enrollment.payment_method = payment_method
+                    enrollment.transaction_id = payment.transaction_id
+                    enrollment.payment_date = timezone.now()
+                    enrollment.status = 'enrolled'
+                    enrollment.save()
+                
+                created_courses.append(course.title)
+                
+                # NOTIFICACIÓN AL ESTUDIANTE
+                Notification.objects.create(
+                    user=request.user,
+                    type='purchase',
+                    title=f'Curso adquirido: {course.title}',
+                    message=f'Has comprado el curso "{course.title}" exitosamente. Factura: {payment.invoice_number}',
+                    link=f'/course/{course.id}/'
+                )
+                
+                # NOTIFICACIÓN AL DOCENTE
+                if course.teacher:
+                    Notification.objects.create(
+                        user=course.teacher,
+                        type='course',
+                        title=f'Nuevo estudiante en {course.title}',
+                        message=f'{request.user.username} se ha inscrito en tu curso "{course.title}"',
+                        link=f'/course/{course.id}/students/'
+                    )
+            
+            # ACTUALIZAR CUPÓN
+            if coupon:
+                coupon.used_count += 1
+                if coupon.used_count >= coupon.max_uses:
+                    coupon.is_active = False
+                coupon.save()
+            
+            # LIMPIAR CARRITO
+            cart.items.all().delete()
+            
+            # GUARDAR CUPÓN EN SESIÓN
+            if coupon:
+                request.session['active_coupon'] = coupon.code
+            else:
+                request.session.pop('active_coupon', None)
+            
+            # REGISTRAR ACTIVIDAD
+            ActivityLog.objects.create(
+                user=request.user,
+                action_type='payment',
+                description=f'Compra realizada - Factura: {payment.invoice_number} - {len(created_courses)} cursos - Total: Bs.{total}',
+                ip_address=get_client_ip(request),
+                user_agent=request.META.get('HTTP_USER_AGENT', '')
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Compra realizada con éxito. {len(created_courses)} curso(s) adquirido(s).',
+                'invoice_number': payment.invoice_number,
+                'total': str(total),
+                'courses': created_courses
+            })
+            
+    except Exception as e:
+        logger.error(f"Error en checkout: {str(e)}")
         return JsonResponse({
             'success': False,
-            'message': 'No se pudo completar la compra. Los cursos ya están en tu lista.'
-        })
+            'message': f'Error al procesar la compra: {str(e)}'
+        }, status=500)
+
+
+# ============================================
+# API: VALIDAR CUPÓN
+# ============================================
+@login_required
+def validate_coupon_api(request):
+    if request.method != 'POST':
+        return JsonResponse({
+            'success': False, 
+            'message': 'Método no permitido'
+        }, status=405)
     
-    return JsonResponse({
-        'success': True,
-        'message': f'Compra realizada con exito. {created_count} curso(s) adquirido(s).'
+    try:
+        data = json.loads(request.body)
+        code = data.get('code', '').upper().strip()
+        subtotal = Decimal(str(data.get('subtotal', 0)))
+        
+        if not code:
+            return JsonResponse({
+                'success': False,
+                'message': 'Ingresa un código de cupón'
+            })
+        
+        try:
+            coupon = Coupon.objects.get(code=code, is_active=True)
+        except Coupon.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': 'Cupón inválido'
+            })
+        
+        if not coupon.is_valid():
+            return JsonResponse({
+                'success': False,
+                'message': 'Cupón expirado o sin usos disponibles'
+            })
+        
+        if coupon.course:
+            cart = Cart.objects.filter(student=request.user).first()
+            if not cart:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'El cupón es para un curso específico'
+                })
+            
+            has_course = cart.items.filter(course=coupon.course).exists()
+            if not has_course:
+                return JsonResponse({
+                    'success': False,
+                    'message': f'Este cupón es solo para el curso "{coupon.course.title}"'
+                })
+        
+        if coupon.discount_type == 'percentage':
+            discount_amount = subtotal * (Decimal(str(coupon.discount_value)) / Decimal('100'))
+        else:
+            discount_amount = Decimal(str(coupon.discount_value))
+        
+        if discount_amount > subtotal:
+            discount_amount = subtotal
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Descuento aplicado: {coupon.discount_value}%' if coupon.discount_type == 'percentage' else f'Descuento aplicado: Bs.{coupon.discount_value}',
+            'discount_amount': float(discount_amount),
+            'coupon': {
+                'code': coupon.code,
+                'discount_type': coupon.discount_type,
+                'discount_value': float(coupon.discount_value)
+            }
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+
+# ============================================
+# API: OBTENER CUPÓN ACTIVO
+# ============================================
+@login_required
+def get_active_coupon_api(request):
+    coupon_code = request.session.get('active_coupon')
+    if coupon_code:
+        try:
+            coupon = Coupon.objects.get(code=coupon_code, is_active=True)
+            return JsonResponse({
+                'success': True,
+                'coupon': {
+                    'code': coupon.code,
+                    'discount_type': coupon.discount_type,
+                    'discount_value': float(coupon.discount_value)
+                }
+            })
+        except Coupon.DoesNotExist:
+            pass
+    return JsonResponse({'success': False})
+
+
+# ============================================
+# HISTORIAL DE COMPRAS
+# ============================================
+@login_required
+def purchase_history_view(request):
+    payments = Payment.objects.filter(
+        student=request.user
+    ).select_related('coupon').order_by('-created_at')
+    
+    for payment in payments:
+        payment.items = PaymentItem.objects.filter(payment=payment).select_related('course')
+    
+    total_spent = payments.aggregate(total=Sum('final_amount'))['total'] or 0
+    
+    return render(request, 'academi/payments/historial_compras.html', {
+        'payments': payments,
+        'total_payments': payments.count(),
+        'total_spent': total_spent,
     })
 
 
+# ============================================
+# FACTURA
+# ============================================
+@login_required
+def invoice_view(request, payment_id):
+    payment = get_object_or_404(Payment, id=payment_id, student=request.user)
+    items = PaymentItem.objects.filter(payment=payment).select_related('course')
+    
+    return render(request, 'academi/payments/factura.html', {
+        'payment': payment,
+        'items': items,
+        'subtotal': payment.amount,
+        'discount': payment.discount_applied,
+        'total': payment.final_amount
+    })
+
+
+# ============================================
+# ADMIN - LISTA DE PAGOS
+# ============================================
+@login_required
+def admin_payments_view(request):
+    if request.user.role != 'admin':
+        messages.error(request, 'No tienes permisos.')
+        return redirect('dashboard')
+    
+    payments = Payment.objects.all().select_related('student', 'coupon').order_by('-created_at')
+    
+    # Estadísticas
+    total_revenue = payments.filter(status='completed').aggregate(total=Sum('final_amount'))['total'] or 0
+    total_payments = payments.filter(status='completed').count()
+    pending_payments = payments.filter(status='pending').count()
+    
+    # Pagos por método
+    payment_methods = payments.values('payment_method').annotate(
+        total=Sum('final_amount'),
+        count=Count('id')
+    )
+    
+    return render(request, 'academi/admin/pagos.html', {
+        'payments': payments,
+        'total_revenue': total_revenue,
+        'total_payments': total_payments,
+        'pending_payments': pending_payments,
+        'payment_methods': payment_methods,
+    })
+
+# ============================================
+# CARRITO - VISTAS FALTANTES
+# ============================================
+
 @login_required
 def cart_add_view(request, course_id):
+    """
+    Agregar un curso al carrito
+    """
     try:
         if request.user.role != 'student':
             return JsonResponse({
@@ -1673,20 +2172,24 @@ def cart_add_view(request, course_id):
         
         course = get_object_or_404(Course, id=course_id, status='published')
         
+        # Verificar si ya está inscrito
         if Enrollment.objects.filter(student=request.user, course=course).exists():
             return JsonResponse({
                 'success': False, 
                 'message': 'Ya has comprado este curso.'
             })
         
+        # Obtener o crear carrito
         cart, created = Cart.objects.get_or_create(student=request.user)
         
+        # Verificar si ya está en el carrito
         if CartItem.objects.filter(cart=cart, course=course).exists():
             return JsonResponse({
                 'success': False, 
-                'message': 'El curso ya esta en el carrito.'
+                'message': 'El curso ya está en el carrito.'
             })
         
+        # Agregar al carrito
         CartItem.objects.create(cart=cart, course=course)
         items_count = cart.items.count()
         
@@ -1704,6 +2207,9 @@ def cart_add_view(request, course_id):
 
 @login_required
 def cart_remove_view(request, course_id):
+    """
+    Eliminar un curso del carrito
+    """
     try:
         cart = get_object_or_404(Cart, student=request.user)
         item = get_object_or_404(CartItem, cart=cart, course_id=course_id)
@@ -1717,11 +2223,17 @@ def cart_remove_view(request, course_id):
             'items_count': items_count
         })
     except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)})
+        return JsonResponse({
+            'success': False, 
+            'message': str(e)
+        })
 
 
 @login_required
 def cart_items_view(request):
+    """
+    Obtener los items del carrito (API)
+    """
     try:
         cart, created = Cart.objects.get_or_create(student=request.user)
         items = list(cart.items.values_list('course_id', flat=True))
@@ -1741,10 +2253,35 @@ def cart_items_view(request):
 
 
 # ============================================
+# CARRITO - VISTA PRINCIPAL (ya la tienes)
+# ============================================
+
+@login_required
+def cart_view(request):
+    """
+    Vista principal del carrito
+    """
+    cart, created = Cart.objects.get_or_create(student=request.user)
+    items = cart.items.select_related('course').all()
+    
+    # Calcular total
+    total = 0
+    for item in items:
+        if not item.course.is_free:
+            total += item.course.price
+    
+    context = {
+        'cart': cart,
+        'items': items,
+        'items_count': items.count(),
+        'total': total,
+    }
+    return render(request, 'academi/payments/carrito.html', context)
+# ============================================
 # MÓDULO 10: ASISTENTE VIRTUAL
 # ============================================
 def chatbot_view(request):
-    return render(request, 'academi/chatbot.html')
+    return render(request, 'academi/chatbot/chatbot.html')
 
 
 # ============================================
@@ -1841,7 +2378,7 @@ def admin_users_view(request):
         'total_active': User.objects.filter(is_active=True).count(),
         'total_inactive': User.objects.filter(is_active=False).count(),
     }
-    return render(request, 'academi/admin_usuarios.html', context)
+    return render(request, 'academi/users/admin_usuarios.html', context)
 
 
 @login_required
@@ -1878,7 +2415,7 @@ def admin_user_create(request):
         messages.success(request, f'Usuario {username} creado correctamente.')
         return redirect('admin_users')
     
-    return render(request, 'academi/admin_crear_usuario.html')
+    return render(request, 'academi/users/admin_crear_usuario.html')
 
 
 @login_required
@@ -1900,7 +2437,7 @@ def admin_user_edit(request, user_id):
         messages.success(request, f'Usuario {user.username} actualizado correctamente.')
         return redirect('admin_users')
     
-    return render(request, 'academi/admin_editar_usuario.html', {'edit_user': user})
+    return render(request, 'academi/users/admin_editar_usuario.html', {'edit_user': user})
 
 
 @login_required
@@ -1960,7 +2497,7 @@ def admin_user_reset_password(request, user_id):
         messages.success(request, f'Contraseña de {user.username} restablecida correctamente.')
         return redirect('admin_users')
     
-    return render(request, 'academi/admin_reset_password.html', {'reset_user': user})
+    return render(request, 'academi/users/admin_reset_password.html', {'reset_user': user})
 
 
 # ============================================
@@ -1997,11 +2534,11 @@ def create_lesson_text_view(request, module_id):
 
         if not title or len(title) < 3:
             messages.error(request, 'El título es obligatorio y debe tener al menos 3 caracteres.')
-            return render_lesson_form(request, module, 'academi/lecciones/crear_texto.html', request.POST)
+            return render_lesson_form(request, module, 'academi/courses/lecciones/crear_texto.html', request.POST)
 
         if not content:
             messages.error(request, 'El contenido es obligatorio.')
-            return render_lesson_form(request, module, 'academi/lecciones/crear_texto.html', request.POST)
+            return render_lesson_form(request, module, 'academi/courses/lecciones/crear_texto.html', request.POST)
 
         try:
             duration = int(duration) if duration else 0
@@ -2023,7 +2560,7 @@ def create_lesson_text_view(request, module_id):
         messages.success(request, f'Lección de texto "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
-    return render_lesson_form(request, module, 'academi/lecciones/crear_texto.html')
+    return render_lesson_form(request, module, 'academi/courses/lecciones/crear_texto.html')
 
 
 @login_required
@@ -2043,11 +2580,11 @@ def create_lesson_video_view(request, module_id):
 
         if not title or len(title) < 3:
             messages.error(request, 'El título es obligatorio y debe tener al menos 3 caracteres.')
-            return render_lesson_form(request, module, 'academi/lecciones/crear_video.html', request.POST)
+            return render_lesson_form(request, module, 'academi/courses/lecciones/crear_video.html', request.POST)
 
         if not video_url and not video_file:
             messages.error(request, 'Debes proporcionar una URL de video o subir un archivo.')
-            return render_lesson_form(request, module, 'academi/lecciones/crear_video.html', request.POST)
+            return render_lesson_form(request, module, 'academi/courses/lecciones/crear_video.html', request.POST)
 
         try:
             duration = int(duration) if duration else 0
@@ -2074,7 +2611,7 @@ def create_lesson_video_view(request, module_id):
         messages.success(request, f'Lección de video "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
-    return render_lesson_form(request, module, 'academi/lecciones/crear_video.html')
+    return render_lesson_form(request, module, 'academi/courses/lecciones/crear_video.html')
 
 
 @login_required
@@ -2093,11 +2630,11 @@ def create_lesson_document_view(request, module_id):
 
         if not title or len(title) < 3:
             messages.error(request, 'El título es obligatorio y debe tener al menos 3 caracteres.')
-            return render_lesson_form(request, module, 'academi/lecciones/crear_documento.html', request.POST)
+            return render_lesson_form(request, module, 'academi/courses/lecciones/crear_documento.html', request.POST)
 
         if not document_file:
             messages.error(request, 'Debes subir un archivo de documento.')
-            return render_lesson_form(request, module, 'academi/lecciones/crear_documento.html', request.POST)
+            return render_lesson_form(request, module, 'academi/courses/lecciones/crear_documento.html', request.POST)
 
         try:
             duration = int(duration) if duration else 0
@@ -2122,7 +2659,7 @@ def create_lesson_document_view(request, module_id):
         messages.success(request, f'Lección de documento "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
-    return render_lesson_form(request, module, 'academi/lecciones/crear_documento.html')
+    return render_lesson_form(request, module, 'academi/courses/lecciones/crear_documento.html')
 
 
 @login_required
@@ -2170,7 +2707,7 @@ def create_lesson_quiz_view(request, module_id):
 
         if not title or len(title) < 3:
             messages.error(request, 'El título es obligatorio y debe tener al menos 3 caracteres.')
-            return render(request, 'academi/lecciones/crear_cuestionario.html', {
+            return render(request, 'academi/courses/lecciones/crear_cuestionario.html', {
                 'module': module,
                 'form_data': request.POST,
                 'titulo_pagina': titulo_pagina,
@@ -2183,7 +2720,7 @@ def create_lesson_quiz_view(request, module_id):
 
         if not content:
             messages.error(request, 'Las instrucciones son obligatorias.')
-            return render(request, 'academi/lecciones/crear_cuestionario.html', {
+            return render(request, 'academi/courses/lecciones/crear_cuestionario.html', {
                 'module': module,
                 'form_data': request.POST,
                 'titulo_pagina': titulo_pagina,
@@ -2302,7 +2839,7 @@ def create_lesson_quiz_view(request, module_id):
 
         return redirect('manage_course', course_id=course.id)
 
-    return render(request, 'academi/lecciones/crear_cuestionario.html', {
+    return render(request, 'academi/courses/lecciones/crear_cuestionario.html', {
         'module': module,
         'titulo_pagina': titulo_pagina,
         'icono': icono,
@@ -2331,14 +2868,14 @@ def create_lesson_assignment_view(request, module_id):
 
         if not title or len(title) < 3:
             messages.error(request, 'El título es obligatorio y debe tener al menos 3 caracteres.')
-            return render(request, 'academi/lecciones/crear_tarea.html', {
+            return render(request, 'academi/courses/lecciones/crear_tarea.html', {
                 'module': module,
                 'form_data': request.POST
             })
 
         if not content:
             messages.error(request, 'La descripción de la tarea es obligatoria.')
-            return render(request, 'academi/lecciones/crear_tarea.html', {
+            return render(request, 'academi/courses/lecciones/crear_tarea.html', {
                 'module': module,
                 'form_data': request.POST
             })
@@ -2368,4 +2905,44 @@ def create_lesson_assignment_view(request, module_id):
         messages.success(request, f'Tarea "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
-    return render(request, 'academi/lecciones/crear_tarea.html', {'module': module})
+    return render(request, 'academi/courses/lecciones/crear_tarea.html', {'module': module})
+
+
+
+
+@login_required
+def mis_estudiantes_view(request):
+    if request.user.role != 'teacher' and request.user.role != 'admin':
+        messages.error(request, 'No tienes permisos.')
+        return redirect('dashboard')
+    
+    courses = Course.objects.filter(teacher=request.user)
+    enrollments = Enrollment.objects.filter(
+        course__in=courses,
+        status__in=['enrolled', 'in_progress', 'completed']
+    ).select_related('student', 'course')
+    
+    return render(request, 'academi/courses/mis_estudiantes.html', {
+        'enrollments': enrollments,
+        'total_students': enrollments.count(),
+        'courses': courses,
+    })
+
+@login_required
+def mis_resenas_view(request):
+    if request.user.role != 'teacher' and request.user.role != 'admin':
+        messages.error(request, 'No tienes permisos.')
+        return redirect('dashboard')
+    
+    from django.db.models import Avg
+    courses = Course.objects.filter(teacher=request.user)
+    reviews = Review.objects.filter(course__in=courses).select_related('student', 'course')
+    
+    return render(request, 'academi/courses/mis_resenas.html', {
+        'reviews': reviews,
+        'total_reviews': reviews.count(),
+        'courses': courses,
+    })
+    
+    
+    

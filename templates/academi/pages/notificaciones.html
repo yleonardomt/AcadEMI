@@ -1,0 +1,456 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Notificaciones - AcadEMI{% endblock %}
+
+{% block content %}
+<style>
+    /* ============================================
+       NOTIFICACIONES - ESTILOS DIRECTOS
+       ============================================ */
+    .notificaciones-wrapper {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 48px 24px;
+    }
+
+    /* HEADER */
+    .notif-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .notif-header-left {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .notif-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .notif-title i {
+        color: #0033a0;
+    }
+
+    .notif-subtitle {
+        font-size: 16px;
+        color: #718096;
+        margin: 0;
+    }
+
+    .notif-badge {
+        background: #0033a0;
+        color: #ffffff;
+        padding: 8px 20px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .notif-divider {
+        border: none;
+        border-top: 2px solid #e2e8f0;
+        margin: 0 0 24px 0;
+    }
+
+    /* LISTA */
+    .notif-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .notif-item {
+        display: flex;
+        gap: 20px;
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+        border-left: 4px solid transparent;
+    }
+
+    .notif-item:hover {
+        box-shadow: 0 8px 40px rgba(0, 51, 160, 0.15);
+        transform: translateY(-2px);
+    }
+
+    .notif-item.unread {
+        border-left-color: #0033a0;
+        background: #e8edf5;
+    }
+
+    /* ICONO */
+    .notif-icon {
+        flex-shrink: 0;
+        width: 52px;
+        height: 52px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+    }
+
+    .notif-icon.primary { background: #e8edf5; color: #0033a0; }
+    .notif-icon.success { background: #d1fae5; color: #10b981; }
+    .notif-icon.warning { background: #fef3c7; color: #f59e0b; }
+    .notif-icon.info { background: #dbeafe; color: #3b82f6; }
+    .notif-icon.secondary { background: #e2e8f0; color: #718096; }
+    .notif-icon.danger { background: #fecaca; color: #ef4444; }
+    .notif-icon.muted { background: #e2e8f0; color: #718096; }
+
+    /* CONTENIDO */
+    .notif-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notif-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .notif-title-text {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1a202c;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .notif-badge-new {
+        background: #10b981;
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 600;
+        padding: 2px 12px;
+        border-radius: 999px;
+    }
+
+    .notif-time {
+        font-size: 12px;
+        color: #718096;
+        white-space: nowrap;
+    }
+
+    .notif-time i {
+        margin-right: 4px;
+    }
+
+    .notif-message {
+        font-size: 16px;
+        color: #2d3748;
+        line-height: 1.6;
+        margin: 0 0 8px 0;
+    }
+
+    .notif-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #0033a0;
+        font-weight: 500;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.15s ease;
+    }
+
+    .notif-link:hover {
+        color: #002277;
+        gap: 12px;
+    }
+
+    .notif-link i {
+        font-size: 14px;
+        transition: all 0.15s ease;
+    }
+
+    /* ACCIONES */
+    .notif-actions {
+        text-align: center;
+        margin-top: 24px;
+    }
+
+    .btn-mark-all {
+        background: transparent;
+        border: 2px solid #e2e8f0;
+        color: #2d3748;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-mark-all:hover {
+        border-color: #0033a0;
+        color: #0033a0;
+        background: #e8edf5;
+    }
+
+    /* ESTADO VACÍO */
+    .notif-empty {
+        text-align: center;
+        padding: 64px 20px;
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .notif-empty-icon {
+        font-size: 64px;
+        color: #718096;
+        margin-bottom: 20px;
+        opacity: 0.4;
+    }
+
+    .notif-empty-title {
+        font-size: 26px;
+        font-weight: 600;
+        color: #1a202c;
+        margin-bottom: 8px;
+    }
+
+    .notif-empty-text {
+        font-size: 16px;
+        color: #718096;
+        margin-bottom: 24px;
+    }
+
+    .btn-primary-custom {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #0033a0, #1a4db8);
+        color: #ffffff;
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 40px rgba(0, 51, 160, 0.15);
+        color: #ffffff;
+    }
+
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    @media (max-width: 768px) {
+        .notificaciones-wrapper {
+            padding: 20px 16px;
+        }
+
+        .notif-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .notif-title {
+            font-size: 26px;
+        }
+
+        .notif-item {
+            padding: 16px;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .notif-icon {
+            width: 44px;
+            height: 44px;
+            font-size: 18px;
+        }
+
+        .notif-top {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        .notif-time {
+            white-space: normal;
+        }
+
+        .btn-mark-all {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-primary-custom {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .notif-title {
+            font-size: 22px;
+        }
+
+        .notif-item {
+            padding: 12px;
+            border-radius: 8px;
+        }
+
+        .notif-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 14px;
+        }
+
+        .notif-title-text {
+            font-size: 16px;
+        }
+    }
+</style>
+
+<div class="notificaciones-wrapper">
+    <!-- HEADER -->
+    <div class="notif-header">
+        <div class="notif-header-left">
+            <h1 class="notif-title">
+                <i class="fas fa-bell"></i> Notificaciones
+            </h1>
+            <p class="notif-subtitle">Mantente al día con tus actividades</p>
+        </div>
+        {% if notifications %}
+            <span class="notif-badge">
+                {{ notifications.count }} {% if notifications.count == 1 %}nueva{% else %}nuevas{% endif %}
+            </span>
+        {% endif %}
+    </div>
+
+    <hr class="notif-divider">
+
+    {% if notifications %}
+        <!-- LISTA -->
+        <div class="notif-list">
+            {% for notification in notifications %}
+                <div class="notif-item {% if not notification.is_read %}unread{% endif %}">
+                    <!-- Icono -->
+                    <div class="notif-icon 
+                        {% if notification.type == 'course' %}primary
+                        {% elif notification.type == 'evaluation' %}success
+                        {% elif notification.type == 'purchase' %}warning
+                        {% elif notification.type == 'certificate' %}info
+                        {% elif notification.type == 'comment' %}secondary
+                        {% elif notification.type == 'question' %}danger
+                        {% else %}muted{% endif %}">
+                        {% if notification.type == 'course' %}
+                            <i class="fas fa-book"></i>
+                        {% elif notification.type == 'evaluation' %}
+                            <i class="fas fa-check-circle"></i>
+                        {% elif notification.type == 'purchase' %}
+                            <i class="fas fa-shopping-cart"></i>
+                        {% elif notification.type == 'certificate' %}
+                            <i class="fas fa-award"></i>
+                        {% elif notification.type == 'comment' %}
+                            <i class="fas fa-comment"></i>
+                        {% elif notification.type == 'question' %}
+                            <i class="fas fa-question-circle"></i>
+                        {% else %}
+                            <i class="fas fa-info-circle"></i>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contenido -->
+                    <div class="notif-body">
+                        <div class="notif-top">
+                            <h5 class="notif-title-text">
+                                {{ notification.title }}
+                                {% if not notification.is_read %}
+                                    <span class="notif-badge-new">Nuevo</span>
+                                {% endif %}
+                            </h5>
+                            <small class="notif-time">
+                                <i class="far fa-clock"></i> {{ notification.created_at|timesince }} atrás
+                            </small>
+                        </div>
+                        <p class="notif-message">{{ notification.message }}</p>
+                        {% if notification.link %}
+                            <a href="{{ notification.link }}" class="notif-link">
+                                Ver más <i class="fas fa-arrow-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Botón marcar todas -->
+            <div class="notif-actions">
+                <button class="btn-mark-all" onclick="marcarTodasLeidas()">
+                    <i class="fas fa-check-double"></i> Marcar todas como leídas
+                </button>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- ESTADO VACÍO -->
+        <div class="notif-empty">
+            <div class="notif-empty-icon">
+                <i class="fas fa-bell-slash"></i>
+            </div>
+            <h3 class="notif-empty-title">¡Todas las notificaciones están leídas!</h3>
+            <p class="notif-empty-text">No tienes notificaciones pendientes. Sigue aprendiendo.</p>
+            <a href="{% url 'catalog' %}" class="btn-primary-custom">
+                <i class="fas fa-search"></i> Explorar cursos
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- JavaScript -->
+<script>
+    function marcarTodasLeidas() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+        const token = csrfToken ? csrfToken.value : '';
+
+        fetch('/notifications/marcar-todas/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+{% endblock %}
