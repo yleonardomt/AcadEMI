@@ -51,8 +51,12 @@ urlpatterns = [
     path('my-progress/', views.my_progress_view, name='my_progress'),
     path('my-grades/', views.my_grades_view, name='my_grades'),
     path('my-certificates/', views.my_certificates_view, name='my_certificates'),
+    path('my-certificates/<int:certificate_id>/', views.certificate_detail_view, name='certificate_detail'),
+    path('my-certificates/<int:certificate_id>/send-email/', views.certificate_send_email_view, name='certificate_send_email'),
+    path('verify-certificate/<str:code>/', views.verify_certificate_view, name='verify_certificate'),
     path('my-favorites/', views.my_favorites_view, name='my_favorites'),
     path('purchase-history/', views.purchase_history_view, name='purchase_history'),
+    path('purchase-history/invoice/<int:payment_id>/', views.invoice_view, name='invoice'),
     
     # ============================================
     # CARRITO DE COMPRAS (AGREGAR ESTO)
@@ -62,6 +66,8 @@ urlpatterns = [
     path('cart/remove/<int:course_id>/', views.cart_remove_view, name='cart_remove'),
     path('cart/items/', views.cart_items_view, name='cart_items'),
     path('checkout/', views.checkout_view, name='checkout'),
+    path('api/validate-coupon/', views.validate_coupon_api, name='validate_coupon_api'),
+    path('api/get-active-coupon/', views.get_active_coupon_api, name='get_active_coupon_api'),
     
     # ============================================
     # CATÁLOGO
@@ -70,9 +76,11 @@ urlpatterns = [
     path('search/', views.search_courses_view, name='search_courses'),
     path('categories/', views.categories_view, name='categories'),
     path('course/<int:course_id>/', views.course_detail_view, name='course_detail'),
+    path('course/<int:course_id>/favorite/', views.favorite_toggle_view, name='favorite_toggle'),
     
     # Chatbot
     path('chatbot/', views.chatbot_view, name='chatbot'),
+    path('chatbot/send/', views.chatbot_send_message, name='chatbot_send'),
     
     # Admin
     path('panel/usuarios/', views.admin_users_view, name='admin_users'),
@@ -82,13 +90,23 @@ urlpatterns = [
     path('panel/usuarios/activar/<int:user_id>/', views.admin_user_toggle_active, name='admin_user_toggle'),
     path('panel/usuarios/reset-password/<int:user_id>/', views.admin_user_reset_password, name='admin_user_reset_password'),
     
-    path('admin/courses/', views.admin_courses_view, name='admin_courses'),
-    path('admin/categories/', views.admin_categories_view, name='admin_categories'),
-    path('admin/reports/', views.admin_reports_view, name='admin_reports'),
-    path('admin/coupons/', views.admin_coupons_view, name='admin_coupons'),
-    path('admin/payments/', views.admin_payments_view, name='admin_payments'),
-    path('admin/certificates/', views.admin_certificates_view, name='admin_certificates'),
-    path('admin/reports-generate/', views.admin_reports_generate_view, name='admin_reports_generate'),
+    # NOTA: estas rutas usan el prefijo 'panel/' (y no 'admin/') porque
+    # core/urls.py registra Django admin en 'admin/' antes de estas urls;
+    # usar 'admin/' aquí hacía que todas estas vistas fueran inalcanzables
+    # (Django las interceptaba y redirigía al login del admin de Django).
+    path('panel/courses/', views.admin_courses_view, name='admin_courses'),
+    path('panel/courses/<int:course_id>/<str:action>/', views.admin_course_moderate, name='admin_course_moderate'),
+    path('panel/categories/', views.admin_categories_view, name='admin_categories'),
+    path('panel/categories/<int:category_id>/edit/', views.admin_category_edit, name='admin_category_edit'),
+    path('panel/categories/<int:category_id>/delete/', views.admin_category_delete, name='admin_category_delete'),
+    path('panel/reports/', views.admin_reports_view, name='admin_reports'),
+    path('panel/reports/<int:report_id>/<str:action>/', views.admin_report_resolve, name='admin_report_resolve'),
+    path('panel/coupons/', views.admin_coupons_view, name='admin_coupons'),
+    path('panel/coupons/<int:coupon_id>/toggle/', views.admin_coupon_toggle, name='admin_coupon_toggle'),
+    path('panel/coupons/<int:coupon_id>/editar/', views.admin_coupon_edit, name='admin_coupon_edit'),
+    path('panel/payments/', views.admin_payments_view, name='admin_payments'),
+    path('panel/certificates/', views.admin_certificates_view, name='admin_certificates'),
+    path('panel/reports-generate/', views.admin_reports_generate_view, name='admin_reports_generate'),
     
     # ============================================
     # CREAR LECCIONES POR TIPO
@@ -108,6 +126,29 @@ path('quiz/result/<int:result_id>/', views.quiz_result_view, name='quiz_result')
 path('quiz/alert/tab-switch/', views.quiz_tab_switch_alert, name='quiz_tab_switch_alert'),
 path('mis-estudiantes/', views.mis_estudiantes_view, name='mis_estudiantes'),
 path('mis-resenas/', views.mis_resenas_view, name='mis_resenas'),
+path('mis-cupones/', views.teacher_coupons_view, name='teacher_coupons'),
+path('mis-cupones/<int:coupon_id>/editar/', views.teacher_coupon_edit, name='teacher_coupon_edit'),
+path('mis-cupones/<int:coupon_id>/activar/', views.teacher_coupon_toggle, name='teacher_coupon_toggle'),
+path('mis-cupones/<int:coupon_id>/eliminar/', views.teacher_coupon_delete, name='teacher_coupon_delete'),
 
+# ============================================
+# MÓDULO 5: COMENTARIOS, PREGUNTAS, RESEÑAS Y REPORTES
+# ============================================
+path('lesson/<int:lesson_id>/comments/add/', views.add_comment_view, name='add_comment'),
+path('comments/<int:comment_id>/edit/', views.edit_comment_view, name='edit_comment'),
+path('comments/<int:comment_id>/delete/', views.delete_comment_view, name='delete_comment'),
+path('lesson/<int:lesson_id>/questions/add/', views.add_question_view, name='add_question'),
+path('questions/<int:question_id>/answer/', views.answer_question_view, name='answer_question'),
+path('course/<int:course_id>/reviews/add/', views.add_review_view, name='add_review'),
+path('reviews/<int:review_id>/edit/', views.edit_review_view, name='edit_review'),
+path('reviews/<int:review_id>/delete/', views.delete_review_view, name='delete_review'),
+path('reports/add/', views.report_content_view, name='report_content'),
+
+# ============================================
+# ENTREGA Y CALIFICACIÓN DE TAREAS
+# ============================================
+path('lesson/<int:lesson_id>/assignment/submit/', views.submit_assignment_view, name='submit_assignment'),
+path('lesson/<int:lesson_id>/assignment/submissions/', views.assignment_submissions_view, name='assignment_submissions'),
+path('assignment-submissions/<int:submission_id>/grade/', views.grade_assignment_view, name='grade_assignment'),
 
 ]

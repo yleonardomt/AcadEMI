@@ -1,0 +1,138 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Certificado - {{ certificate.enrollment.course.title }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .certificate-actions {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-6);
+        flex-wrap: wrap;
+    }
+
+    .certificate-diploma {
+        max-width: 800px;
+        margin: 0 auto;
+        background: var(--surface);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+        padding: 60px 50px;
+        text-align: center;
+        position: relative;
+        border: 10px solid var(--primary-lighter);
+    }
+
+    .certificate-diploma::before {
+        content: '';
+        position: absolute;
+        inset: 14px;
+        border: 2px solid var(--secondary);
+        border-radius: 8px;
+        pointer-events: none;
+    }
+
+    .certificate-seal {
+        font-size: 48px;
+        color: var(--secondary);
+        margin-bottom: var(--space-4);
+    }
+
+    .certificate-heading {
+        font-size: 13px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: var(--space-2);
+    }
+
+    .certificate-student {
+        font-size: 32px;
+        font-weight: var(--font-weight-bold);
+        color: var(--primary);
+        margin: var(--space-3) 0;
+    }
+
+    .certificate-course {
+        font-size: 22px;
+        font-weight: var(--font-weight-semibold);
+        color: var(--dark);
+        margin-bottom: var(--space-5);
+    }
+
+    .certificate-meta {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-8);
+        margin-top: var(--space-6);
+        padding-top: var(--space-5);
+        border-top: 1px solid var(--gray-light);
+        font-size: var(--font-size-small);
+        color: var(--text-muted);
+        flex-wrap: wrap;
+    }
+
+    .certificate-meta strong {
+        display: block;
+        color: var(--dark);
+    }
+
+    @media print {
+        .navbar, .footer, .certificate-actions, .page-header { display: none !important; }
+        .main-content { padding: 0 !important; }
+        .certificate-diploma { box-shadow: none; border-color: var(--primary-lighter); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="page-header">
+        <div class="page-header-icon"><i class="fas fa-certificate"></i></div>
+        <div class="page-header-text">
+            <h1 class="page-title">Certificado de finalización</h1>
+            <p class="page-subtitle">Código de verificación: {{ certificate.certificate_code }}</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{% url 'my_certificates' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
+        </div>
+    </div>
+
+    <div class="certificate-actions">
+        {% if certificate.pdf_file %}
+        <a href="{{ certificate.pdf_file.url }}" download class="btn btn-primary"><i class="fas fa-file-pdf"></i> Descargar PDF</a>
+        {% else %}
+        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
+        {% endif %}
+        <a href="{% url 'certificate_send_email' certificate.id %}" class="btn btn-outline-primary"><i class="fas fa-envelope"></i> Enviar por correo</a>
+        <a href="{% url 'verify_certificate' certificate.certificate_code %}" class="btn btn-outline-primary" target="_blank"><i class="fas fa-shield-alt"></i> Verificar autenticidad</a>
+    </div>
+
+    <div class="certificate-diploma">
+        <div class="certificate-seal"><i class="fas fa-graduation-cap"></i></div>
+        <p class="certificate-heading">AcadEMI certifica que</p>
+        <p class="certificate-student">{{ certificate.enrollment.student.get_full_name|default:certificate.enrollment.student.username }}</p>
+        <p class="certificate-heading">ha completado satisfactoriamente el curso</p>
+        <p class="certificate-course">{{ certificate.enrollment.course.title }}</p>
+
+        <div class="certificate-meta">
+            <div>
+                <strong>{{ certificate.issued_at|date:"d/m/Y" }}</strong>
+                Fecha de emisión
+            </div>
+            <div>
+                <strong>{{ certificate.enrollment.course.total_duration }} min</strong>
+                Duración del curso
+            </div>
+            <div>
+                <strong>{{ certificate.certificate_code }}</strong>
+                Código de verificación
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

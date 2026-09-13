@@ -1,0 +1,124 @@
+/* ============================================
+   FORMULARIOS
+   ============================================ */
+.form-control {
+    height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    border: 2px solid var(--input-border);
+    border-radius: var(--input-radius);
+    font-size: var(--input-font-size);
+    font-family: var(--font);
+    transition: var(--transition);
+}
+
+.form-control:focus {
+    border-color: var(--input-focus);
+    box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.08);
+}
+
+.form-control.is-invalid {
+    border-color: var(--danger);
+}
+
+.form-label {
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-2);
+}
+
+.form-label .required {
+    color: var(--danger);
+    margin-left: 4px;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.form-check-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+}
+
+/* ============================================
+   ICONO CIRCULAR (auth: login/register)
+   ============================================ */
+.icon-circle {
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: var(--primary-lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+}
+
+/* ============================================
+   CAPTCHA
+   ============================================ */
+.captcha-container {
+    margin-bottom: 20px;
+}
+
+.captcha-container img {
+    display: block;
+    margin-bottom: 10px;
+    border-radius: var(--border-radius-sm);
+}
+
+.captcha {
+    margin-bottom: 20px !important;
+}
+
+.captcha-container input {
+    margin-top: 10px;
+    margin-bottom: 5px;
+}
+
+.captcha-box {
+    border-radius: var(--border-radius-sm);
+    background: var(--white-smoke);
+    border: 2px dashed var(--gray-light);
+    font-weight: 700;
+    color: var(--primary);
+}
+
+/* ============================================
+   BARRA DE FORTALEZA DE CONTRASEÑA (registro)
+   ============================================ */
+.password-strength {
+    margin-top: 5px;
+}
+
+.strength-bar {
+    height: 4px;
+    border-radius: 4px;
+    background: var(--gray-light);
+    transition: var(--transition);
+    width: 0%;
+}
+
+.strength-text {
+    font-size: 12px;
+    transition: color 0.3s ease;
+}
+
+/* ============================================
+   PASOS DEL FORMULARIO DE REGISTRO
+   ============================================ */
+.step-section {
+    animation: fadeSlide 0.5s ease;
+}
+
+@keyframes fadeSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

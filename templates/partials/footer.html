@@ -11,292 +11,64 @@
     </div>
 
     <div class="container">
-        <div class="footer-content">
-            <!-- Logo -->
-            <div class="footer-brand">
-                <i class="fas fa-graduation-cap"></i>
-                <span>AcadEMI</span>
+        <div class="footer-grid">
+            <!-- MARCA -->
+            <div class="footer-col footer-col-brand">
+                <div class="footer-brand">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>AcadEMI</span>
+                </div>
+                <p class="footer-description">
+                    Transformando vidas a través de la educación online.
+                    Aprende de los mejores expertos y alcanza tus metas profesionales.
+                </p>
+                <div class="footer-social">
+                    <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="social-link" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                </div>
             </div>
 
-            <p class="footer-description">
-                Transformando vidas a través de la educación online.
-                Aprende de los mejores expertos y alcanza tus metas profesionales.
-            </p>
-
-            <!-- Menú -->
-            <ul class="footer-menu">
-                <li><a href="{% url 'catalog' %}">Cursos</a></li>
-                <li><a href="#">Instructores</a></li>
-                <li><a href="#">Contacto</a></li>
-                <li><a href="#">Términos</a></li>
-                <li><a href="#">Privacidad</a></li>
-            </ul>
-
-            <!-- Redes Sociales -->
-            <div class="footer-social">
-                <a href="#" class="social-link"><i class="fab fa-facebook-f"></i></a>
-                <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-                <a href="#" class="social-link"><i class="fab fa-youtube"></i></a>
-                <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-                <a href="#" class="social-link"><i class="fab fa-linkedin-in"></i></a>
+            <!-- EXPLORAR -->
+            <div class="footer-col">
+                <h6 class="footer-col-title">Explorar</h6>
+                <ul class="footer-links">
+                    <li><a href="{% url 'catalog' %}"><i class="fas fa-book-open"></i> Catálogo de cursos</a></li>
+                    <li><a href="{% url 'categories' %}"><i class="fas fa-tags"></i> Categorías</a></li>
+                    <li><a href="{% url 'search_courses' %}"><i class="fas fa-search"></i> Buscar cursos</a></li>
+                    <li><a href="{% url 'chatbot' %}"><i class="fas fa-headset"></i> Ayuda y soporte</a></li>
+                </ul>
             </div>
 
-            <!-- Copyright -->
+            <!-- MI CUENTA -->
+            <div class="footer-col">
+                <h6 class="footer-col-title">Mi cuenta</h6>
+                <ul class="footer-links">
+                    {% if user.is_authenticated %}
+                    <li><a href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Mi dashboard</a></li>
+                    <li><a href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Mi perfil</a></li>
+                    {% if user.role == 'student' %}
+                    <li><a href="{% url 'my_courses' %}"><i class="fas fa-graduation-cap"></i> Mis cursos</a></li>
+                    <li><a href="{% url 'my_certificates' %}"><i class="fas fa-certificate"></i> Mis certificados</a></li>
+                    {% elif user.role == 'teacher' %}
+                    <li><a href="{% url 'create_course' %}"><i class="fas fa-plus-circle"></i> Crear curso</a></li>
+                    <li><a href="{% url 'mis_estudiantes' %}"><i class="fas fa-users"></i> Mis estudiantes</a></li>
+                    {% endif %}
+                    <li><a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a></li>
+                    {% else %}
+                    <li><a href="{% url 'register' %}"><i class="fas fa-user-plus"></i> Crear cuenta</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Iniciar sesión</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
             <p class="footer-copy">
                 &copy; {% now "Y" %} <strong>AcadEMI</strong>. Todos los derechos reservados.
             </p>
         </div>
     </div>
 </footer>
-
-<style>
-/* ============================================
-   FOOTER - ACADEMI BONITO
-   ============================================ */
-.footer {
-    position: relative;
-    background: linear-gradient(135deg, #0033a0, #1a4db8);
-    padding: 80px 20px 30px;
-    margin-top: 80px;
-    color: white;
-    overflow: hidden;
-}
-
-/* ============================================
-   ONDAS BONITAS
-   ============================================ */
-.footer-waves {
-    position: absolute;
-    top: -2px;
-    left: 0;
-    width: 100%;
-    height: 120px;
-    overflow: hidden;
-}
-
-.footer-waves svg {
-    width: 100%;
-    height: 100%;
-}
-
-.wave-1 {
-    fill: #f5f7fa;
-    opacity: 0.15;
-    animation: waveMove 8s ease-in-out infinite alternate;
-}
-
-.wave-2 {
-    fill: #f5f7fa;
-    opacity: 0.10;
-    animation: waveMove 10s ease-in-out infinite alternate;
-}
-
-.wave-3 {
-    fill: #f5f7fa;
-    opacity: 0.06;
-    animation: waveMove 12s ease-in-out infinite alternate;
-}
-
-@keyframes waveMove {
-    0% { transform: translateX(-80px) scale(1); }
-    50% { transform: translateX(0) scale(1.02); }
-    100% { transform: translateX(80px) scale(1); }
-}
-
-/* ============================================
-   CONTENIDO
-   ============================================ */
-.footer-content {
-    position: relative;
-    z-index: 2;
-    text-align: center;
-    max-width: 900px;
-    margin: 0 auto;
-}
-
-.footer-brand {
-    font-size: 30px;
-    font-weight: 800;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 14px;
-}
-
-.footer-brand i {
-    color: #f7c600;
-    font-size: 34px;
-}
-
-.footer-brand span {
-    color: white;
-}
-
-.footer-description {
-    color: rgba(255,255,255,0.75);
-    font-size: 15px;
-    line-height: 1.8;
-    max-width: 550px;
-    margin: 0 auto 25px;
-}
-
-/* ============================================
-   MENÚ
-   ============================================ */
-.footer-menu {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 6px;
-    list-style: none;
-    padding: 0;
-    margin: 0 0 25px;
-}
-
-.footer-menu li {
-    list-style: none;
-}
-
-.footer-menu a {
-    color: rgba(255,255,255,0.7);
-    text-decoration: none;
-    padding: 6px 18px;
-    border-radius: 50px;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.footer-menu a:hover {
-    color: white;
-    background: rgba(255,255,255,0.1);
-    transform: translateY(-2px);
-}
-
-/* ============================================
-   REDES SOCIALES
-   ============================================ */
-.footer-social {
-    display: flex;
-    justify-content: center;
-    gap: 12px;
-    margin-bottom: 25px;
-}
-
-.social-link {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: rgba(255,255,255,0.08);
-    color: rgba(255,255,255,0.8);
-    font-size: 16px;
-    transition: all 0.3s ease;
-    text-decoration: none;
-    border: 1px solid rgba(255,255,255,0.06);
-}
-
-.social-link:hover {
-    transform: translateY(-4px);
-    color: white;
-    border-color: transparent;
-}
-
-.social-link:nth-child(1):hover { background: #1877f2; }
-.social-link:nth-child(2):hover { background: #1da1f2; }
-.social-link:nth-child(3):hover { background: #ff0000; }
-.social-link:nth-child(4):hover { background: #e4405f; }
-.social-link:nth-child(5):hover { background: #0a66c2; }
-
-/* ============================================
-   COPYRIGHT
-   ============================================ */
-.footer-copy {
-    color: rgba(255,255,255,0.4);
-    font-size: 13px;
-    margin: 0;
-}
-
-.footer-copy strong {
-    color: rgba(255,255,255,0.7);
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 768px) {
-    .footer {
-        padding: 60px 16px 25px;
-        margin-top: 40px;
-    }
-
-    .footer-waves {
-        height: 80px;
-    }
-
-    .footer-brand {
-        font-size: 26px;
-    }
-
-    .footer-brand i {
-        font-size: 28px;
-    }
-
-    .footer-description {
-        font-size: 14px;
-        padding: 0 10px;
-    }
-
-    .footer-menu a {
-        font-size: 13px;
-        padding: 4px 14px;
-    }
-
-    .social-link {
-        width: 38px;
-        height: 38px;
-        font-size: 14px;
-    }
-}
-
-@media (max-width: 480px) {
-    .footer {
-        padding: 50px 12px 20px;
-        margin-top: 30px;
-    }
-
-    .footer-waves {
-        height: 60px;
-    }
-
-    .footer-brand {
-        font-size: 22px;
-    }
-
-    .footer-brand i {
-        font-size: 24px;
-    }
-
-    .footer-description {
-        font-size: 13px;
-    }
-
-    .footer-menu a {
-        font-size: 12px;
-        padding: 3px 10px;
-    }
-
-    .social-link {
-        width: 34px;
-        height: 34px;
-        font-size: 13px;
-    }
-
-    .footer-copy {
-        font-size: 12px;
-    }
-}
-</style>

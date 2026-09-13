@@ -1,0 +1,330 @@
+/* ============================================
+   ACADEMI - VARIABLES GLOBALES
+   Única fuente de verdad para colores, tipografía,
+   espaciado, sombras y radios de todo el sitio.
+   ============================================ */
+:root {
+    /* TIPOGRAFÍA */
+    --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-size-h1: 32px;
+    --font-size-h2: 26px;
+    --font-size-h3: 22px;
+    --font-size-h4: 18px;
+    --font-size-body: 16px;
+    --font-size-small: 14px;
+    --font-size-xs: 12px;
+    --font-size-button: 15px;
+    --font-size-input: 15px;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
+    --line-height-title: 1.2;
+    --line-height-heading: 1.3;
+    --line-height-body: 1.6;
+    --line-height-small: 1.4;
+
+    /* COLORES PRINCIPALES */
+    --primary: #0033a0;
+    --primary-dark: #002277;
+    --primary-light: #1a4db8;
+    --primary-lighter: #e8edf5;
+    --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
+
+    /* COLOR SECUNDARIO */
+    --secondary: #f7c600;
+    --secondary-dark: #d4a800;
+    --secondary-light: #fde68a;
+    --secondary-gradient: linear-gradient(135deg, #f7c600, #f59e0b);
+
+    /* COLORES NEUTROS */
+    --white: #ffffff;
+    --white-smoke: #f5f7fa;
+    --gray-light: #e2e8f0;
+    --gray: #718096;
+    --gray-dark: #2d3748;
+    --dark: #1a202c;
+
+    /* COLORES DE ESTADO */
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+
+    /* COLORES DE ACENTO (variedad para etiquetas, categorías,
+       niveles e íconos de estadísticas; el azul y el amarillo
+       siguen siendo los colores dominantes de la marca) */
+    --accent-teal: #0d9488;
+    --accent-teal-light: #ccfbf1;
+    --accent-purple: #7c3aed;
+    --accent-purple-light: #ede9fe;
+    --accent-pink: #db2777;
+    --accent-pink-light: #fce7f3;
+    --accent-orange: #ea580c;
+    --accent-orange-light: #ffedd5;
+
+    /* TEXTOS */
+    --text-primary: #1a202c;
+    --text-secondary: #2d3748;
+    --text-muted: #718096;
+    --text-white: #ffffff;
+
+    /* FONDOS */
+    --bg-primary: #ffffff;
+    --bg-secondary: #f5f7fa;
+    --bg-light: #e8edf5;
+
+    /* BORDES Y RADIOS (nombre canónico + alias corto usado por las páginas de marketing) */
+    --border-color: #e2e8f0;
+    --border-radius: 16px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 20px;
+    --border-radius-pill: 999px;
+    --radius: var(--border-radius);
+    --radius-sm: var(--border-radius-sm);
+
+    /* SOMBRAS */
+    --shadow: 0 4px 20px rgba(0, 51, 160, 0.08);
+    --shadow-hover: 0 8px 40px rgba(0, 51, 160, 0.15);
+    --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
+    --shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 20px 60px rgba(0, 51, 160, 0.12);
+
+    /* ESPACIADO */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 32px;
+    --space-8: 40px;
+    --space-9: 48px;
+    --space-10: 64px;
+
+    /* BOTONES */
+    --button-height: 44px;
+    --button-padding-x: 20px;
+    --button-padding-y: 10px;
+    --button-radius: 8px;
+    --button-font-size: 15px;
+    --button-font-weight: 600;
+
+    /* INPUTS */
+    --input-height: 44px;
+    --input-padding-x: 14px;
+    --input-padding-y: 10px;
+    --input-radius: 8px;
+    --input-font-size: 15px;
+    --input-border: #e2e8f0;
+    --input-focus: #0033a0;
+
+    /* TARJETAS (semitransparentes con blur, para que el fondo de
+       partículas de particles-bg.js se note detrás del contenido,
+       igual que en el navbar y el footer) */
+    --card-padding: 24px;
+    --card-radius: 16px;
+    --card-background: rgba(255, 255, 255, 0.82);
+    --card-blur: 20px;
+    --card-shadow: 0 4px 20px rgba(0, 51, 160, 0.08);
+
+    /* ICONOS */
+    --icon-xs: 14px;
+    --icon-sm: 18px;
+    --icon-md: 22px;
+    --icon-lg: 28px;
+    --icon-xl: 36px;
+
+    /* TRANSICIONES */
+    --transition-fast: all 0.15s ease;
+    --transition: all 0.3s ease;
+    --transition-slow: all 0.5s ease;
+
+    /* CONTENEDORES */
+    --container-max-width: 1200px;
+    --container-padding: 24px;
+
+    /* Z-INDEX */
+    --z-dropdown: 1000;
+    --z-sticky: 1100;
+    --z-modal: 1200;
+    --z-tooltip: 1300;
+
+    /* ============================================
+       TOKENS "CONSCIENTES DEL TEMA" (modo noche/día)
+       ============================================ */
+    --nav-bg: rgba(255, 255, 255, 0.85);
+    --nav-surface: rgba(255, 255, 255, 0.98);
+    --nav-text: #4a5568;
+    --nav-text-muted: var(--text-muted);
+    --nav-heading: var(--dark);
+    --nav-accent: var(--primary);
+    --surface: var(--white);
+    --ink: var(--dark);
+    --ink-muted: var(--text-muted);
+    /* Usar en vez de --primary cuando --primary es TEXTO/ícono/borde
+       sobre el fondo de la página o una tarjeta (no un botón relleno):
+       --primary es azul marino oscuro y no se lee bien sobre un fondo
+       oscuro, así que este token se aclara en modo noche. */
+    --primary-text: var(--primary);
+}
+
+/* ============================================
+   MODO OSCURO
+   Se activa con [data-theme="dark"] en <html>
+   (ver static/js/theme-toggle.js), y también con
+   la preferencia del sistema si el usuario no
+   eligió nada todavía.
+
+   Estos SÍ cambian: navbar, menú lateral, fondo de
+   página, tarjetas (--card-background/--surface) y
+   los textos que usan --dark/--gray-dark/--gray/
+   --text-*, que son los que se usan dentro de esas
+   tarjetas en todo el sitio.
+
+   Estos NO cambian (a propósito): --white (se usa
+   como texto blanco sobre botones/insignias de
+   color, no solo como fondo) y --primary-lighter/
+   --secondary-light/--accent-*-light (fondos pálidos
+   de insignias que van con un texto oscuro fijo del
+   mismo color; esas insignias se quedan con su
+   estilo "claro" en ambos modos para no romper su
+   contraste). La portada pública y login/registro
+   mantienen su diseño de marca fijo siempre.
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --nav-bg: rgba(15, 23, 42, 0.85);
+        --nav-surface: rgba(22, 33, 58, 0.98);
+        --nav-text: #cbd5e1;
+        --nav-text-muted: #94a3b8;
+        --nav-heading: #e8edf5;
+        --nav-accent: #7db8ff;
+        --primary-text: #7db8ff;
+        --surface: #1e293b;
+        --white-smoke: #16213a;
+        --gray-light: #33415c;
+        --border-color: #33415c;
+        --ink: #e8edf5;
+        --ink-muted: #94a3b8;
+        --dark: #e8edf5;
+        --gray-dark: #cbd5e1;
+        --gray: #94a3b8;
+        --text-primary: #e8edf5;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --card-background: rgba(30, 41, 59, 0.86);
+    }
+}
+
+:root[data-theme="dark"] {
+    --nav-bg: rgba(15, 23, 42, 0.85);
+    --nav-surface: rgba(22, 33, 58, 0.98);
+    --nav-text: #cbd5e1;
+    --nav-text-muted: #94a3b8;
+    --nav-heading: #e8edf5;
+    --nav-accent: #7db8ff;
+    --primary-text: #7db8ff;
+    --surface: #1e293b;
+    --white-smoke: #16213a;
+    --gray-light: #33415c;
+    --border-color: #33415c;
+    --ink: #e8edf5;
+    --ink-muted: #94a3b8;
+    --dark: #e8edf5;
+    --gray-dark: #cbd5e1;
+    --gray: #94a3b8;
+    --text-primary: #e8edf5;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --card-background: rgba(30, 41, 59, 0.86);
+}
+
+/* ============================================
+   RESET Y BASE
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ============================================
+   TIPOGRAFÍA DE TÍTULOS
+   ============================================ */
+/* Nota: a propósito NO se fija "color" aquí. Muchas secciones (hero,
+   banners de estadísticas, tarjetas con fondo de color) ponen texto
+   blanco sobre fondos azules heredando el color de un contenedor
+   padre; fijar un color oscuro a nivel global rompía ese contraste
+   (títulos negros sobre fondo azul). El color de cada título se
+   define donde corresponde: por CSS local de la página o por
+   herencia del contenedor. */
+h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font);
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-heading);
+    letter-spacing: -0.01em;
+}
+
+h1 { font-size: var(--font-size-h1); }
+h2 { font-size: var(--font-size-h2); }
+h3 { font-size: var(--font-size-h3); }
+h4 { font-size: var(--font-size-h4); }
+
+strong, b { font-weight: var(--font-weight-semibold); }
+
+body {
+    position: relative;
+    font-family: var(--font);
+    font-size: var(--font-size-body);
+    line-height: 1.7;
+    color: var(--ink);
+    min-height: 100vh;
+    background: #1e59fd linear-gradient(135deg, #eaf1ff 0%, #f8fafd 55%, #fff8e6 100%);
+    overflow-x: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) body {
+        background: #0f172a linear-gradient(135deg, #0f172a 0%, #16213a 55%, #1c1a12 100%);
+    }
+}
+
+:root[data-theme="dark"] body {
+    background: #0f172a linear-gradient(135deg, #0f172a 0%, #16213a 55%, #1c1a12 100%);
+}
+
+/* El fondo dinámico real (partículas 3D) vive en
+   static/js/particles-bg.js + static/css/components/particles-bg.css.
+   El degradado de arriba es su respaldo: se ve solo, sin manchas
+   animadas en CSS, si WebGL no está disponible. */
+
+a {
+    text-decoration: none;
+    color: var(--primary);
+    transition: var(--transition);
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--white-smoke);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-light);
+    border-radius: var(--border-radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary);
+}

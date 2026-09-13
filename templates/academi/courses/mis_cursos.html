@@ -160,64 +160,7 @@
         margin: 0 auto 20px;
     }
 
-    /* ============================================
-       TOAST
-       ============================================ */
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-    .toast-custom {
-        background: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        padding: 14px 18px;
-        margin-bottom: 10px;
-        border-left: 4px solid #0033a0;
-        min-width: 260px;
-        animation: slideInRight 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-    }
-    .toast-custom.success {
-        border-left-color: #10b981;
-    }
-    .toast-custom.error {
-        border-left-color: #ef4444;
-    }
-    .toast-custom.warning {
-        border-left-color: #f59e0b;
-    }
-    .toast-custom i {
-        font-size: 18px;
-    }
-    .toast-custom .toast-close {
-        margin-left: auto;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: #718096;
-        font-size: 16px;
-        padding: 0 4px;
-    }
-    .toast-custom .toast-close:hover {
-        color: #1a202c;
-    }
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0%); opacity: 1; }
-    }
-    @keyframes slideOutRight {
-        from { transform: translateX(0%); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    .toast-custom.removing {
-        animation: slideOutRight 0.3s ease forwards;
-    }
+    /* Toast: usa el sistema único de static/css/components/notifications.css */
 
     /* ============================================
        MODAL DE CONFIRMACIÓN
@@ -304,9 +247,6 @@
 
 {% block content %}
 <div class="container py-4">
-
-    <!-- TOAST -->
-    <div class="toast-container" id="toastContainer"></div>
 
     <!-- MODAL DE CONFIRMACIÓN PARA ELIMINAR -->
     <div class="modal-overlay" id="deleteModal">
@@ -470,44 +410,6 @@
 
 {% block extra_js %}
 <script>
-    // ============================================
-    // TOAST
-    // ============================================
-    function showToast(message, type) {
-        var container = document.getElementById('toastContainer');
-        var toast = document.createElement('div');
-        toast.className = 'toast-custom ' + type;
-
-        var icon = type === 'error' ? 'fas fa-times-circle' :
-                   type === 'success' ? 'fas fa-check-circle' :
-                   type === 'warning' ? 'fas fa-exclamation-circle' :
-                   'fas fa-info-circle';
-        var iconColor = type === 'error' ? '#ef4444' :
-                        type === 'success' ? '#10b981' :
-                        type === 'warning' ? '#f59e0b' :
-                        '#0033a0';
-
-        toast.innerHTML = `
-            <i class="${icon}" style="color: ${iconColor};"></i>
-            <span>${message}</span>
-            <button class="toast-close" onclick="this.parentElement.remove();">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        container.appendChild(toast);
-
-        setTimeout(function() {
-            if (toast.parentElement) {
-                toast.classList.add('removing');
-                setTimeout(function() {
-                    if (toast.parentElement) {
-                        toast.remove();
-                    }
-                }, 300);
-            }
-        }, 5000);
-    }
-
     // ============================================
     // MODAL DE ELIMINAR
     // ============================================

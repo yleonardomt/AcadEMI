@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu certificado - AcadEMI</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+            background: #f0f2f5;
+            padding: 40px 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 580px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #0033a0 0%, #1a4db8 100%);
+            padding: 32px 30px;
+            text-align: center;
+            position: relative;
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f7c600, #fad633, #f7c600);
+        }
+        .header h1 { color: #ffffff; font-size: 28px; font-weight: 700; margin: 0; }
+        .header h1 span { color: #f7c600; }
+        .header .subtitle { color: rgba(255, 255, 255, 0.8); font-size: 14px; margin-top: 6px; }
+        .content { padding: 40px 35px 30px; text-align: center; }
+        .badge { font-size: 48px; color: #f7c600; margin-bottom: 12px; }
+        .greeting { font-size: 20px; font-weight: 600; color: #1a202c; margin-bottom: 16px; }
+        .greeting span { color: #0033a0; }
+        .course-name { font-size: 18px; font-weight: 700; color: #0033a0; margin: 8px 0 20px; }
+        .text { color: #4a5568; font-size: 15px; line-height: 1.7; margin-bottom: 12px; }
+        .btn-container { text-align: center; margin: 26px 0 10px; }
+        .btn {
+            display: inline-block;
+            padding: 14px 40px;
+            background: linear-gradient(135deg, #0033a0 0%, #1a4db8 100%);
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 16px;
+            box-shadow: 0 4px 16px rgba(0, 51, 160, 0.25);
+        }
+        .code-box {
+            background: #f8fafc;
+            border: 1px dashed #cbd5e0;
+            border-radius: 10px;
+            padding: 12px;
+            font-size: 14px;
+            color: #4a5568;
+            margin: 20px 0;
+        }
+        .footer { background: #f8fafc; padding: 25px 35px; text-align: center; border-top: 1px solid #e2e8f0; }
+        .footer p { color: #a0aec0; font-size: 13px; margin: 0; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1><span>Acad</span>EMI</h1>
+        <p class="subtitle">Certificado de finalización</p>
+    </div>
+    <div class="content">
+        <div class="badge">🎓</div>
+        <div class="greeting">¡Felicidades, <span>{{ user.username }}</span>!</div>
+        <p class="text">Has completado exitosamente el curso:</p>
+        <div class="course-name">{{ certificate.enrollment.course.title }}</div>
+        <p class="text">Adjuntamos el enlace para ver, descargar e imprimir tu certificado oficial.</p>
+        <div class="btn-container">
+            <a href="{{ certificate_link }}" class="btn">
+                <i class="fas fa-certificate"></i> Ver mi certificado
+            </a>
+        </div>
+        <div class="code-box">Código de verificación: <strong>{{ certificate.certificate_code }}</strong></div>
+    </div>
+    <div class="footer">
+        <p>&copy; 2026 <strong>AcadEMI</strong> — Transformando vidas a través de la educación</p>
+    </div>
+</div>
+</body>
+</html>

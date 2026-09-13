@@ -1,0 +1,62 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Pagos e Ingresos - Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+                        <div>
+                            <h4 class="fw-bold">
+                                <i class="fas fa-credit-card" style="color: var(--primary);"></i>
+                                Pagos e ingresos
+                            </h4>
+                            <p class="text-muted mb-0">Historial de compras realizadas en la plataforma</p>
+                        </div>
+                        <div class="stat-card text-center px-4" style="background: #d1fae5; border-bottom: 3px solid #10b981;">
+                            <span class="d-block fw-bold h5 mb-0">Bs. {{ total_revenue }}</span>
+                            <small class="text-muted">Ingresos totales</small>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Factura</th>
+                                    <th>Estudiante</th>
+                                    <th>Método</th>
+                                    <th>Monto</th>
+                                    <th>Estado</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payment in payments %}
+                                <tr>
+                                    <td class="fw-semibold">{{ payment.invoice_number|default:"—" }}</td>
+                                    <td>{{ payment.student.username }}</td>
+                                    <td>{{ payment.get_payment_method_display }}</td>
+                                    <td>Bs. {{ payment.final_amount }}</td>
+                                    <td>
+                                        <span class="badge-status {% if payment.status == 'completed' %}published{% elif payment.status == 'pending' or payment.status == 'processing' %}pending{% else %}rejected{% endif %}">
+                                            {{ payment.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>{{ payment.created_at|date:"d/m/Y H:i" }}</td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="6" class="text-center text-muted py-4">No hay pagos registrados.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

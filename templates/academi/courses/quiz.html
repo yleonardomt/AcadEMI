@@ -96,49 +96,7 @@
     .security-badge i {
         color: #10b981;
     }
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-    .toast-custom {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-        padding: 12px 16px;
-        margin-bottom: 8px;
-        border-left: 4px solid #0033a0;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        font-size: 14px;
-        animation: slideIn 0.3s ease;
-        min-width: 280px;
-    }
-    .toast-custom.success { border-left-color: #10b981; }
-    .toast-custom.error { border-left-color: #ef4444; }
-    .toast-custom.warning { border-left-color: #f59e0b; }
-    .toast-custom i { font-size: 18px; }
-    .toast-custom .toast-close {
-        margin-left: auto;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: #718096;
-        font-size: 16px;
-        padding: 0 4px;
-    }
-    .toast-custom .toast-close:hover { color: #1a202c; }
-    @keyframes slideIn {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-    @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    .toast-custom.removing { animation: slideOut 0.3s ease forwards; }
+    /* Toast: usa el sistema único de static/css/components/notifications.css */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -174,7 +132,6 @@
     }
     @media (max-width: 768px) {
         .quiz-container { padding: 16px; }
-        .toast-custom { min-width: auto; max-width: 90vw; }
         .modal-box { padding: 24px; }
     }
 </style>
@@ -182,7 +139,6 @@
 
 {% block content %}
 <!-- TOAST -->
-<div class="toast-container" id="toastContainer"></div>
 
 <!-- MODAL -->
 <div class="modal-overlay" id="modalOverlay">
@@ -283,44 +239,6 @@
 
 <script>
     // ============================================
-    // TOAST
-    // ============================================
-    function showToast(message, type) {
-        var container = document.getElementById('toastContainer');
-        var toast = document.createElement('div');
-        toast.className = 'toast-custom ' + (type || 'info');
-        
-        var icons = {
-            warning: 'fas fa-exclamation-triangle',
-            error: 'fas fa-times-circle',
-            success: 'fas fa-check-circle',
-            info: 'fas fa-info-circle'
-        };
-        var colors = {
-            warning: '#f59e0b',
-            error: '#ef4444',
-            success: '#10b981',
-            info: '#3b82f6'
-        };
-        
-        toast.innerHTML = `
-            <i class="${icons[type] || icons.info}" style="color: ${colors[type] || colors.info};"></i>
-            <span>${message}</span>
-            <button class="toast-close" onclick="this.parentElement.remove();">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        container.appendChild(toast);
-        
-        setTimeout(function() {
-            if (toast.parentElement) {
-                toast.classList.add('removing');
-                setTimeout(function() { toast.remove(); }, 300);
-            }
-        }, 4000);
-    }
-
-    // ============================================
     // MODAL
     // ============================================
     function showModal(icon, title, message) {
@@ -391,17 +309,51 @@
     });
 
     // ============================================
+    // REPORTAR INCIDENTE AL SERVIDOR (RF-53)
+    // ============================================
+    function reportIncident(type, detail, count) {
+        fetch('/quiz/alert/tab-switch/', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                lesson_id: {{ lesson.id }},
+                type: type,
+                detail: detail,
+                count: count || 0
+            })
+        }).then(function(response) { return response.json(); })
+          .then(function(data) {
+              if (data.kicked) {
+                  showModal(
+                      '<i class="fas fa-ban" style="color: #ef4444; font-size: 48px;"></i>',
+                      'Cuestionario bloqueado',
+                      'Has cambiado de pestaña varias veces. El cuestionario ha sido bloqueado por seguridad.'
+                  );
+                  document.getElementById('submitBtn').disabled = true;
+              }
+          })
+          .catch(function() {});
+    }
+
+    // ============================================
     // BLOQUEAR TECLAS
     // ============================================
     document.addEventListener('keydown', function(e) {
         if ((e.ctrlKey && ['c', 'v', 'x', 'u'].includes(e.key.toLowerCase())) || e.key === 'F12') {
             e.preventDefault();
             showToast('Accion no permitida', 'warning');
+            if (e.key === 'F12') {
+                reportIncident('other', 'Intento de abrir herramientas de desarrollador (F12)');
+            }
             return false;
         }
         if (e.ctrlKey && e.shiftKey && e.key === 'I') {
             e.preventDefault();
             showToast('Inspeccionar no permitido', 'warning');
+            reportIncident('other', 'Intento de abrir herramientas de desarrollador (Ctrl+Shift+I)');
             return false;
         }
         if (e.key === 'F11') {
@@ -409,43 +361,27 @@
             showToast('Pantalla completa no permitida', 'warning');
             return false;
         }
+        if (e.key === 'PrintScreen') {
+            showToast('Las capturas de pantalla quedan registradas', 'warning');
+            reportIncident('other', 'Intento de captura de pantalla (Impr Pant)');
+        }
     });
 
     // ============================================
     // DETECTAR CAMBIO DE PESTAÑA
     // ============================================
     var tabSwitchCount = 0;
-    
+
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) {
             tabSwitchCount++;
             showToast('Cambio de pestaña detectado', 'warning');
-            
-            fetch('/quiz/alert/tab-switch/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    lesson_id: {{ lesson.id }},
-                    count: tabSwitchCount
-                })
-            });
-            
-            if (tabSwitchCount >= 3) {
-                showModal(
-                    '<i class="fas fa-ban" style="color: #ef4444; font-size: 48px;"></i>',
-                    'Cuestionario bloqueado',
-                    'Has cambiado de pestaña varias veces. El cuestionario ha sido bloqueado por seguridad.'
-                );
-                document.getElementById('submitBtn').disabled = true;
-            }
+            reportIncident('tab_switch', 'Cambio de pestaña detectado', tabSwitchCount);
         }
     });
 
     // ============================================
-    // ✅ ENVIAR CUESTIONARIO - CORREGIDO
+    // ENVIAR CUESTIONARIO - CORREGIDO
     // ============================================
     function submitQuiz() {
         var answers = {};
@@ -478,14 +414,14 @@
         
         // Obtener el token del campo oculto
         var token = document.getElementById('quizToken').value;
-        console.log('📝 Token a enviar:', token);
+        console.log('Token a enviar:', token);
         
         // Deshabilitar botón
         var btn = document.getElementById('submitBtn');
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Enviando...';
         
-        // ✅ Enviar con fetch
+        // Enviar con fetch
         fetch(window.location.href, {
             method: 'POST',
             headers: {
@@ -502,7 +438,7 @@
         })
         .then(function(data) {
             if (data.success) {
-                // ✅ Redirigir al resultado
+                // Redirigir al resultado
                 window.location.href = '/quiz/result/' + data.result_id + '/';
             } else {
                 showToast(data.error || 'Error al enviar el cuestionario', 'error');

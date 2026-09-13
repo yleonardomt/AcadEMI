@@ -449,11 +449,11 @@
     // ============================================
     function cargarPreguntas(preguntas) {
         if (!preguntas || preguntas.length === 0) {
-            console.log('⚠️ No hay preguntas para cargar');
+            console.log('️ No hay preguntas para cargar');
             return;
         }
         
-        console.log('🔄 Cargando ' + preguntas.length + ' preguntas...');
+        console.log('Cargando ' + preguntas.length + ' preguntas...');
         
         const container = document.getElementById('questionsContainer');
         container.innerHTML = '';
@@ -525,7 +525,7 @@
         });
         
         updateQuestionCount();
-        console.log('✅ ' + preguntas.length + ' preguntas cargadas correctamente');
+        console.log('' + preguntas.length + ' preguntas cargadas correctamente');
     }
 
     // ============================================
@@ -675,23 +675,23 @@
     // INICIALIZAR - CORREGIDO CON preguntas_json
     // ============================================
     document.addEventListener('DOMContentLoaded', function() {
-        // 🔥 CARGAR PREGUNTAS DESDE preguntas_json
+        // CARGAR PREGUNTAS DESDE preguntas_json
         var preguntas = [];
         try {
             preguntas = {{ preguntas_json|default:'[]'|safe }};
         } catch(e) {
-            console.log('❌ Error al cargar preguntas:', e);
+            console.log('Error al cargar preguntas:', e);
             preguntas = [];
         }
         
-        console.log('📝 preguntas desde backend (JSON):', preguntas);
-        console.log('📝 tipo:', typeof preguntas);
-        console.log('📝 longitud:', preguntas ? preguntas.length : 0);
-        console.log('📝 esEdicion:', {{ es_edicion|default:'false'|lower }});
+        console.log('preguntas desde backend (JSON):', preguntas);
+        console.log('tipo:', typeof preguntas);
+        console.log('longitud:', preguntas ? preguntas.length : 0);
+        console.log('esEdicion:', {{ es_edicion|default:'false'|lower }});
         
-        // 🔥 SI HAY PREGUNTAS, CARGARLAS
+        // SI HAY PREGUNTAS, CARGARLAS
         if (preguntas && preguntas.length > 0) {
-            console.log('✅ Cargando ' + preguntas.length + ' preguntas existentes...');
+            console.log('Cargando ' + preguntas.length + ' preguntas existentes...');
             cargarPreguntas(preguntas);
         } else {
             console.log('ℹ️ No hay preguntas, creando 2 por defecto');

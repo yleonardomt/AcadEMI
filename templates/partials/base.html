@@ -1,7 +1,21 @@
-{% load static %}
+{% load static static_extras %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <!-- Aplica el tema guardado ANTES de pintar la página, para que no
+         se vea un parpadeo de modo claro antes de pasar a oscuro. -->
+    <script>
+        (function() {
+            try {
+                var saved = localStorage.getItem('academi-theme');
+                var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                // Sin localStorage disponible: se queda el modo claro por defecto.
+            }
+        })();
+    </script>
+
     <!-- ============================================
          META TAGS BÁSICOS
          ============================================ -->
@@ -71,68 +85,41 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- Estilos personalizados -->
-    <link rel="stylesheet" href="{% static 'css/academia.css' %}">
-    
+    <!-- Estilos propios: base.css (variables/reset) + layout.css (navbar/footer/main)
+         + un componente reutilizable por archivo. static_v agrega ?v=<fecha de
+         modificación> para que el navegador nunca sirva una copia vieja en caché. -->
+    <link rel="stylesheet" href="{% static_v 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/layout.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/buttons.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/cards.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/forms.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/alerts.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/modals.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/tables.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/notifications.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/page-header.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/empty-state.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/list-item.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/tags.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/course-card.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/chatbot-widget.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/particles-bg.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/engagement.css' %}">
+
     <!-- ============================================
-         BLOQUE PARA CSS EXTRA
+         BLOQUE PARA CSS EXTRA (solo para la página actual)
          ============================================ -->
     {% block extra_css %}
     {% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
 <!-- ============================================
-     FONDO EDUCATIVO CON EFECTOS ESPECTACULARES
+     FONDO 3D DE PARTÍCULAS (ver static/js/particles-bg.js)
+     Si Three.js o WebGL no cargan, queda el degradado
+     de base.css como respaldo.
      ============================================ -->
-
-<!-- CAPA 1: PATRÓN DE CUADERNO -->
-<div class="bg-pattern"></div>
-
-<!-- CAPA 2: EFECTO DE BRILLO PULSANTE -->
-<div class="glow-effect"></div>
-
-<!-- CAPA 3: ESTRELLAS/DESTELLOS -->
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-<div class="sparkle"></div>
-
-<!-- CAPA 4: ONDAS ANIMADAS -->
-<div class="waves-container">
-    <svg class="waves-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" preserveAspectRatio="none">
-        <path class="wave wave1" d="M0,192L48,176C96,160,192,128,288,138.7C384,149,480,203,576,213.3C672,224,768,192,864,165.3C960,139,1056,117,1152,128C1248,139,1344,181,1392,202.7L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        <path class="wave wave2" d="M0,256L48,240C96,224,192,192,288,197.3C384,203,480,245,576,245.3C672,245,768,203,864,181.3C960,160,1056,160,1152,170.7C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        <path class="wave wave3" d="M0,288L48,277.3C96,267,192,245,288,240C384,235,480,245,576,245.3C672,245,768,235,864,224C960,213,1056,203,1152,208C1248,213,1344,235,1392,245.3L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-        <path class="wave wave4" d="M0,320L48,304C96,288,192,256,288,256C384,256,480,288,576,277.3C672,267,768,235,864,224C960,213,1056,224,1152,229.3C1248,235,1344,256,1392,266.7L1440,277.3L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
-    </svg>
-</div>
-
-<!-- CAPA 5: PARTÍCULAS FLOTANTES -->
-<div class="particles">
-    <span class="particle" style="left:5%; animation-delay:0s; width:8px; height:8px;"></span>
-    <span class="particle" style="left:12%; animation-delay:2s; width:12px; height:12px;"></span>
-    <span class="particle" style="left:20%; animation-delay:4s; width:6px; height:6px;"></span>
-    <span class="particle" style="left:28%; animation-delay:1s; width:15px; height:15px;"></span>
-    <span class="particle" style="left:35%; animation-delay:3s; width:8px; height:8px;"></span>
-    <span class="particle" style="left:42%; animation-delay:5s; width:10px; height:10px;"></span>
-    <span class="particle" style="left:50%; animation-delay:0.5s; width:18px; height:18px;"></span>
-    <span class="particle" style="left:58%; animation-delay:2.5s; width:9px; height:9px;"></span>
-    <span class="particle" style="left:65%; animation-delay:4.5s; width:12px; height:12px;"></span>
-    <span class="particle" style="left:72%; animation-delay:1.5s; width:6px; height:6px;"></span>
-    <span class="particle" style="left:78%; animation-delay:3.5s; width:14px; height:14px;"></span>
-    <span class="particle" style="left:85%; animation-delay:5.5s; width:7px; height:7px;"></span>
-    <span class="particle" style="left:92%; animation-delay:0.8s; width:10px; height:10px;"></span>
-    <span class="particle" style="left:98%; animation-delay:2.8s; width:5px; height:5px;"></span>
-</div>
+<canvas id="bg-particles"></canvas>
 
 <!-- ============================================
      HEADER (SLIDER LATERAL)
@@ -174,6 +161,17 @@
 {% include 'partials/footer.html' %}
 
 <!-- ============================================
+     ASISTENTE VIRTUAL (WIDGET FLOTANTE)
+     La página de chat de pantalla completa desactiva
+     este bloque para no duplicar la interfaz.
+     ============================================ -->
+{% block chatbot_widget %}
+{% include 'partials/chatbot_widget.html' %}
+{% endblock %}
+
+{% include 'partials/report_modal.html' %}
+
+<!-- ============================================
      SCRIPTS
      ============================================ -->
 <!-- Bootstrap 5 JS -->
@@ -182,290 +180,29 @@
 <!-- jQuery -->
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
-<!-- Scripts personalizados -->
-<script src="{% static 'js/main.js' %}"></script>
+<!-- Three.js (fondo 3D de partículas) -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="{% static_v 'js/particles-bg.js' %}"></script>
 
-<!-- ============================================
-     BLOQUE PARA JS EXTRA
-     ============================================ -->
-{% block extra_js %}
+<!-- Scripts propios: funciones globales (showToast, getCsrfToken, modales) que
+     usan los scripts embebidos en cada template. static_v evita CSS/JS en caché. -->
+<script src="{% static_v 'js/csrf.js' %}"></script>
+<script src="{% static_v 'js/theme-toggle.js' %}"></script>
+<script src="{% static_v 'js/notifications.js' %}"></script>
+<script src="{% static_v 'js/cart-badge.js' %}"></script>
+<script src="{% static_v 'js/modals.js' %}"></script>
+<script src="{% static_v 'js/report.js' %}"></script>
+<script src="{% static_v 'js/tooltips.js' %}"></script>
+<script src="{% static_v 'js/chatbot.js' %}"></script>
+{% block chatbot_widget_js %}
+<script src="{% static_v 'js/chatbot-widget.js' %}"></script>
 {% endblock %}
 
 <!-- ============================================
-     ESTILOS DEL FONDO Y MAIN CONTENT CORREGIDO
+     BLOQUE PARA JS EXTRA (solo para la página actual)
      ============================================ -->
-
-<style>
-    /* ============================================
-       FONDO EDUCATIVO CON EFECTOS PREMIUM
-       ============================================ */
-    
-    .bg-pattern {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-        background-color: #eef7ef;
-        background-image: 
-            repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0, 51, 160, 0.06) 28px, rgba(0, 51, 160, 0.06) 29px),
-            repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(0, 51, 160, 0.03) 28px, rgba(0, 51, 160, 0.03) 29px),
-            radial-gradient(ellipse at 15% 40%, rgba(0, 51, 160, 0.08) 0%, transparent 60%),
-            radial-gradient(ellipse at 85% 60%, rgba(0, 51, 160, 0.04) 0%, transparent 60%),
-            radial-gradient(ellipse at 50% 90%, rgba(0, 51, 160, 0.04) 0%, transparent 50%),
-            radial-gradient(circle at 5% 10%, rgba(0, 51, 160, 0.12) 3px, transparent 3px),
-            radial-gradient(circle at 15% 30%, rgba(0, 51, 160, 0.08) 3px, transparent 3px),
-            radial-gradient(circle at 25% 70%, rgba(0, 51, 160, 0.12) 3px, transparent 3px),
-            radial-gradient(circle at 35% 90%, rgba(0, 51, 160, 0.08) 3px, transparent 3px),
-            radial-gradient(circle at 45% 15%, rgba(0, 51, 160, 0.12) 3px, transparent 3px),
-            radial-gradient(circle at 55% 55%, rgba(0, 51, 160, 0.08) 3px, transparent 3px),
-            radial-gradient(circle at 65% 80%, rgba(0, 51, 160, 0.12) 3px, transparent 3px),
-            radial-gradient(circle at 75% 20%, rgba(0, 51, 160, 0.08) 3px, transparent 3px),
-            radial-gradient(circle at 85% 60%, rgba(0, 51, 160, 0.12) 3px, transparent 3px),
-            radial-gradient(circle at 95% 40%, rgba(0, 51, 160, 0.08) 3px, transparent 3px),
-            radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.5) 0%, transparent 60%),
-            radial-gradient(ellipse at 50% 50%, transparent 0%, rgba(0, 0, 0, 0.03) 100%);
-        background-size: 
-            100% 100%,
-            100% 100%,
-            100% 100%,
-            100% 100%,
-            100% 100%,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            300px 300px,
-            100% 100%,
-            100% 100%;
-        pointer-events: none;
-    }
-
-    .glow-effect {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-        pointer-events: none;
-        background: 
-            radial-gradient(circle at 25% 35%, rgba(0, 51, 160, 0.05) 0%, transparent 55%),
-            radial-gradient(circle at 75% 65%, rgba(0, 51, 160, 0.03) 0%, transparent 55%),
-            radial-gradient(circle at 50% 85%, rgba(0, 51, 160, 0.03) 0%, transparent 40%);
-        animation: glowPulse 6s ease-in-out infinite alternate;
-    }
-
-    @keyframes glowPulse {
-        0% { opacity: 0.4; transform: scale(1); }
-        50% { opacity: 0.8; transform: scale(1.02); }
-        100% { opacity: 0.4; transform: scale(1); }
-    }
-
-    .sparkle {
-        position: fixed;
-        z-index: 0;
-        pointer-events: none;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(0, 51, 160, 0.3), rgba(0, 51, 160, 0.05));
-        animation: sparkleAnim 5s ease-in-out infinite;
-    }
-
-    .sparkle::after {
-        content: '';
-        position: absolute;
-        top: -2px;
-        left: -2px;
-        right: -2px;
-        bottom: -2px;
-        border-radius: 50%;
-        background: radial-gradient(circle, rgba(255, 255, 255, 0.3), transparent);
-        animation: sparkleGlow 2s ease-in-out infinite alternate;
-    }
-
-    @keyframes sparkleGlow {
-        0% { opacity: 0.2; transform: scale(0.8); }
-        100% { opacity: 0.8; transform: scale(1.5); }
-    }
-
-    .sparkle:nth-child(1) { top: 8%; left: 5%; animation-delay: 0s; width: 6px; height: 6px; }
-    .sparkle:nth-child(2) { top: 18%; left: 88%; animation-delay: 0.8s; width: 4px; height: 4px; }
-    .sparkle:nth-child(3) { top: 35%; left: 12%; animation-delay: 1.6s; width: 7px; height: 7px; }
-    .sparkle:nth-child(4) { top: 55%; left: 82%; animation-delay: 0.3s; width: 5px; height: 5px; }
-    .sparkle:nth-child(5) { top: 75%; left: 22%; animation-delay: 1.2s; width: 6px; height: 6px; }
-    .sparkle:nth-child(6) { top: 88%; left: 72%; animation-delay: 2s; width: 4px; height: 4px; }
-    .sparkle:nth-child(7) { top: 25%; left: 45%; animation-delay: 2.5s; width: 8px; height: 8px; }
-    .sparkle:nth-child(8) { top: 65%; left: 40%; animation-delay: 0.6s; width: 5px; height: 5px; }
-    .sparkle:nth-child(9) { top: 45%; left: 55%; animation-delay: 1.8s; width: 6px; height: 6px; }
-    .sparkle:nth-child(10) { top: 10%; left: 65%; animation-delay: 2.2s; width: 4px; height: 4px; }
-    .sparkle:nth-child(11) { top: 80%; left: 10%; animation-delay: 0.5s; width: 7px; height: 7px; }
-    .sparkle:nth-child(12) { top: 50%; left: 30%; animation-delay: 1.4s; width: 5px; height: 5px; }
-
-    @keyframes sparkleAnim {
-        0% { opacity: 0; transform: scale(0) rotate(0deg); }
-        20% { opacity: 1; transform: scale(1.8) rotate(72deg); box-shadow: 0 0 30px rgba(0, 51, 160, 0.3); }
-        40% { opacity: 0.6; transform: scale(1.2) rotate(144deg); box-shadow: 0 0 15px rgba(0, 51, 160, 0.1); }
-        60% { opacity: 1; transform: scale(1.8) rotate(216deg); box-shadow: 0 0 30px rgba(0, 51, 160, 0.3); }
-        80% { opacity: 0.6; transform: scale(1.2) rotate(288deg); box-shadow: 0 0 15px rgba(0, 51, 160, 0.1); }
-        100% { opacity: 0; transform: scale(0) rotate(360deg); }
-    }
-
-    .waves-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        z-index: 0;
-        height: 300px;
-        overflow: hidden;
-        pointer-events: none;
-    }
-
-    .waves-container::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 50px;
-        background: linear-gradient(to bottom, transparent, rgba(238, 242, 247, 0.3));
-        z-index: 1;
-    }
-
-    .waves-svg {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-    }
-
-    .wave {
-        animation: waveMove 12s ease-in-out infinite alternate;
-    }
-
-    .wave1 { fill: rgba(0, 51, 160, 0.08); animation-duration: 14s; animation-delay: 0s; }
-    .wave2 { fill: rgba(0, 51, 160, 0.05); animation-duration: 16s; animation-delay: -2s; }
-    .wave3 { fill: rgba(0, 51, 160, 0.04); animation-duration: 18s; animation-delay: -4s; }
-    .wave4 { fill: rgba(0, 51, 160, 0.03); animation-duration: 20s; animation-delay: -6s; }
-    .wave5 { fill: rgba(0, 51, 160, 0.02); animation-duration: 22s; animation-delay: -8s; }
-
-    @keyframes waveMove {
-        0% { transform: translateX(-80px) translateY(0) scale(1); }
-        25% { transform: translateX(-40px) translateY(15px) scale(1.02); }
-        50% { transform: translateX(0) translateY(-8px) scale(0.98); }
-        75% { transform: translateX(40px) translateY(15px) scale(1.02); }
-        100% { transform: translateX(80px) translateY(0) scale(1); }
-    }
-
-    .particles {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        z-index: 0;
-        pointer-events: none;
-        overflow: hidden;
-    }
-
-    .particle {
-        position: absolute;
-        bottom: -30px;
-        border-radius: 50%;
-        animation: floatUp 25s linear infinite;
-        box-shadow: 0 0 30px rgba(0, 51, 160, 0.08);
-    }
-
-    .particle:nth-child(odd) {
-        background: radial-gradient(circle at 30% 30%, rgba(0, 51, 160, 0.2), rgba(0, 51, 160, 0.02));
-        box-shadow: 0 0 40px rgba(0, 51, 160, 0.05);
-        border: 1px solid rgba(0, 51, 160, 0.03);
-    }
-
-    .particle:nth-child(even) {
-        background: radial-gradient(circle at 30% 30%, rgba(0, 51, 160, 0.2), rgba(0, 51, 160, 0.02));
-        border: 1px solid rgba(0, 51, 160, 0.03);
-    }
-
-    .particle:nth-child(3n) {
-        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.02));
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-
-    @keyframes floatUp {
-        0% { transform: translateY(0) rotate(0deg) scale(0.3); opacity: 0; }
-        10% { opacity: 1; transform: translateY(0) rotate(45deg) scale(0.8); }
-        50% { transform: translateY(-50vh) rotate(180deg) scale(1.3); opacity: 0.9; }
-        90% { opacity: 1; transform: translateY(-95vh) rotate(315deg) scale(0.8); }
-        100% { transform: translateY(-110vh) rotate(360deg) scale(0.1); opacity: 0; }
-    }
-
-    /* ============================================
-       MAIN CONTENT - PADDING CORREGIDO
-       ============================================ */
-    .main-content {
-        position: relative;
-        z-index: 1;
-        min-height: 100vh;
-        padding-top: 80px;  /* Altura del navbar fijo */
-        padding-bottom: 40px;
-        padding-left: 24px;
-        padding-right: 24px;
-    }
-
-    /* Desktop con sidebar visible */
-    @media (min-width: 993px) {
-        .main-content {
-            padding-left: calc(24px + 70px); /* Espacio para el toggle del sidebar */
-        }
-    }
-
-    /* Tablet */
-    @media (max-width: 992px) {
-        .main-content {
-            padding-top: 70px;
-            padding-left: 16px;
-            padding-right: 16px;
-        }
-    }
-
-    /* Móvil */
-    @media (max-width: 768px) {
-        .main-content {
-            padding-top: 60px;
-            padding-left: 12px;
-            padding-right: 12px;
-            padding-bottom: 30px;
-        }
-        .waves-container {
-            height: 120px;
-        }
-        .particle {
-            display: none;
-        }
-        .sparkle {
-            display: none;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .main-content {
-            padding-top: 56px;
-            padding-left: 10px;
-            padding-right: 10px;
-            padding-bottom: 20px;
-        }
-    }
-</style>
+{% block extra_js %}
+{% endblock %}
 
 </body>
 </html>

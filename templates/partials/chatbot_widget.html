@@ -1,0 +1,42 @@
+{% load static %}
+<!-- ============================================
+     WIDGET FLOTANTE DEL ASISTENTE VIRTUAL
+     Ver static/js/chatbot-widget.js y
+     static/css/components/chatbot-widget.css
+     ============================================ -->
+<button type="button" class="chatbot-fab" id="chatbotFab" title="Asistente virtual">
+    <i class="fas fa-comment-dots"></i>
+    <i class="fas fa-times"></i>
+</button>
+
+<div class="chatbot-panel" id="chatbotPanel">
+    <div class="chatbot-panel-header">
+        <div class="avatar"><i class="fas fa-robot"></i></div>
+        <div>
+            <p class="title">Asistente AcadEMI</p>
+            <p class="status"><i class="fas fa-circle"></i> En línea</p>
+        </div>
+        <a href="{% url 'chatbot' %}" class="chatbot-panel-link" title="Abrir en pantalla completa">
+            <i class="fas fa-expand-alt"></i>
+        </a>
+    </div>
+
+    <div class="chatbot-panel-body" id="chatbotWidgetBody">
+        <div class="chatbot-msg bot">
+            <div class="avatar"><i class="fas fa-robot"></i></div>
+            <div class="bubble">¡Hola! Soy el asistente de AcadEMI. Pregúntame sobre cursos, compras, tu progreso o el uso de la plataforma.</div>
+        </div>
+    </div>
+
+    <div class="chatbot-quick">
+        <button type="button" data-msg="¿Qué cursos hay disponibles?"><i class="fas fa-book-open"></i> Cursos</button>
+        <button type="button" data-msg="¿Cómo comprar un curso?"><i class="fas fa-shopping-cart"></i> Comprar</button>
+        <button type="button" data-msg="¿Cómo veo mi progreso?"><i class="fas fa-chart-line"></i> Progreso</button>
+        <button type="button" data-msg="¿Cómo funciona la plataforma?"><i class="fas fa-question-circle"></i> Ayuda</button>
+    </div>
+
+    <div class="chatbot-panel-footer">
+        <input type="text" id="chatbotWidgetInput" placeholder="Escribe tu mensaje..." autocomplete="off">
+        <button type="button" id="chatbotWidgetSend"><i class="fas fa-paper-plane"></i></button>
+    </div>
+</div>

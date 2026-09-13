@@ -1,6 +1,6 @@
-{% load static %}
+{% load static static_extras %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,122 +18,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- ============================================
-         ACADEMI.CSS - VERSION FINAL
-         ============================================ -->
-    <link rel="stylesheet" href="{% static 'css/academia.css' %}">
-    
-    <style>
-        /* ============================================
-           AJUSTES ADICIONALES PARA LOGIN
-           ============================================ */
-        
-        /* Icono más pequeño */
-        .icon-circle {
-            width: 56px;
-            height: 56px;
-            background: var(--primary-gradient);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            color: var(--white);
-            font-size: 22px;
-            box-shadow: 0 4px 20px rgba(0, 51, 160, 0.3);
-        }
-
-        /* Botón volver */
-        .btn-back {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 10;
-            background: var(--white);
-            color: var(--gray-dark);
-            border: 2px solid var(--gray-light);
-            border-radius: var(--border-radius-pill);
-            padding: 8px 16px;
-            font-weight: var(--font-weight-medium);
-            font-size: 14px;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .btn-back:hover {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-            text-decoration: none;
-        }
-
-        /* CAPTCHA */
-        .captcha {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-        .captcha img {
-            border-radius: var(--border-radius-sm);
-            border: 1px solid var(--gray-light);
-            max-width: 100%;
-        }
-        .captcha input {
-            width: 100%;
-            padding: 10px 16px;
-            border: 2px solid var(--gray-light);
-            border-radius: var(--border-radius-sm);
-            font-family: var(--font);
-            transition: all 0.3s ease;
-        }
-        .captcha input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
-            outline: none;
-        }
-
-        /* Main content sin padding lateral excesivo */
-        .main-content {
-            padding: var(--space-6);
-        }
-
-        @media (max-width: 768px) {
-            .main-content {
-                padding: var(--space-3) !important;
-            }
-            .btn-back {
-                top: 12px;
-                left: 12px;
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-            .btn-back span {
-                display: none;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .main-content {
-                padding: var(--space-2) !important;
-            }
-            .icon-circle {
-                width: 48px;
-                height: 48px;
-                font-size: 18px;
-            }
-            .card-body {
-                padding: var(--space-4) !important;
-            }
-        }
-    </style>
+    <!-- Estilos propios: la misma base de todo el sitio + los extras
+         de las páginas de login/registro (tarjeta centrada sin navbar). -->
+    <link rel="stylesheet" href="{% static_v 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/buttons.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/cards.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/forms.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/alerts.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/particles-bg.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/pages/auth.css' %}">
 </head>
 <body>
+
+    <!-- ============================================
+         FONDO 3D DE PARTÍCULAS (ver static/js/particles-bg.js)
+         ============================================ -->
+    <canvas id="bg-particles"></canvas>
 
     <!-- ============================================
          BOTÓN VOLVER
@@ -142,11 +42,6 @@
         <i class="fas fa-arrow-left"></i>
         <span>Volver</span>
     </a>
-
-    <!-- ============================================
-         FONDO EDUCATIVO CON PATRÓN
-         ============================================ -->
-    <div class="bg-pattern"></div>
 
     <!-- ============================================
          CONTENIDO PRINCIPAL
@@ -240,6 +135,9 @@
          SCRIPTS
          ============================================ -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    <!-- Three.js (fondo 3D de partículas) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="{% static_v 'js/particles-bg.js' %}"></script>
 </body>
 </html>

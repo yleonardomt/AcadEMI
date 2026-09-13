@@ -454,157 +454,8 @@
         width: auto;
     }
 
-    /* SECCIÓN COMENTARIOS */
-    .comments-section {
-        background: white;
-        border-radius: 12px;
-        border: 1px solid #e2e8f0;
-        padding: 20px;
-        margin-bottom: 30px;
-    }
-
-    .comment-item {
-        padding: 12px 0;
-        border-bottom: 1px solid #f5f7fa;
-    }
-
-    .comment-item:last-child {
-        border-bottom: none;
-    }
-
-    .comment-item .comment-header {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 4px;
-    }
-
-    .comment-item .comment-avatar {
-        width: 30px;
-        height: 30px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #0033a0, #1a4db8);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 700;
-        font-size: 12px;
-        flex-shrink: 0;
-    }
-
-    .comment-item .comment-name {
-        font-weight: 600;
-        font-size: 13px;
-        color: #2d3748;
-    }
-
-    .comment-item .comment-date {
-        color: #718096;
-        font-size: 11px;
-        margin-left: auto;
-    }
-
-    .comment-item .comment-content {
-        color: #4a5568;
-        font-size: 14px;
-        margin-top: 4px;
-        line-height: 1.6;
-    }
-
-    .comment-item .comment-empty {
-        color: #718096;
-        font-size: 14px;
-        font-style: italic;
-    }
-
-    /* FORMULARIO COMENTARIO */
-    .comment-form {
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px solid #e2e8f0;
-    }
-
-    .comment-form textarea {
-        border-radius: 8px;
-        border: 2px solid #e2e8f0;
-        padding: 10px 14px;
-        font-size: 14px;
-        width: 100%;
-        min-height: 70px;
-        transition: all 0.3s ease;
-        font-family: inherit;
-        resize: vertical;
-    }
-
-    .comment-form textarea:focus {
-        border-color: #0033a0;
-        outline: none;
-        box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.08);
-    }
-
-    /* TOAST */
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-
-    .toast-custom {
-        background: #ffffff;
-        border-radius: 8px;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-        padding: 14px 18px;
-        margin-bottom: 10px;
-        border-left: 4px solid #0033a0;
-        min-width: 260px;
-        animation: slideInRight 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-    }
-
-    .toast-custom.success {
-        border-left-color: #10b981;
-    }
-
-    .toast-custom.error {
-        border-left-color: #ef4444;
-    }
-
-    .toast-custom i {
-        font-size: 18px;
-    }
-
-    .toast-custom .toast-close {
-        margin-left: auto;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: #718096;
-        font-size: 16px;
-        padding: 0 4px;
-    }
-
-    .toast-custom .toast-close:hover {
-        color: #1a202c;
-    }
-
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
-    }
-
-    @keyframes slideOutRight {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-
-    .toast-custom.removing {
-        animation: slideOutRight 0.3s ease forwards;
-    }
+    /* Toast: usa el sistema único de static/css/components/notifications.css */
+    /* Reseñas: usa el componente compartido static/css/components/engagement.css */
 
     /* RESPONSIVE */
     @media (max-width: 768px) {
@@ -650,14 +501,6 @@
             margin-left: 0;
             width: 100%;
         }
-        .toast-container {
-            top: 10px;
-            right: 10px;
-            left: 10px;
-        }
-        .toast-custom {
-            min-width: auto;
-        }
         .video-thumbnail .play-overlay .play-icon {
             width: 56px;
             height: 56px;
@@ -695,7 +538,6 @@
 <div class="container py-4">
 
     <!-- TOAST -->
-    <div class="toast-container" id="toastContainer"></div>
 
     <!-- HERO -->
     <div class="course-hero">
@@ -843,55 +685,75 @@
             </div>
 
             <!-- ============================================
-                 SECCIÓN COMENTARIOS
+                 RESEÑAS Y VALORACIONES (RF-29, RF-40, RF-41)
                  ============================================ -->
-            <div class="comments-section">
-                <h5 class="fw-bold mb-3" style="font-size: 15px;">
-                    <i class="fas fa-comments" style="color: #0033a0;"></i> Comentarios 
-                    <span class="text-muted" style="font-weight: 400; font-size: 14px;">({{ course.comments.all|length }})</span>
-                </h5>
-                
-                {% if course.comments.all %}
-                    {% for comment in course.comments.all|slice:":10" %}
-                    <div class="comment-item">
-                        <div class="comment-header">
-                            <div class="comment-avatar">{{ comment.student.username|first|upper }}</div>
-                            <div>
-                                <span class="comment-name">{{ comment.student.get_full_name|default:comment.student.username }}</span>
-                            </div>
-                            <span class="comment-date">{{ comment.created_at|date:"d/m/Y H:i" }}</span>
-                        </div>
-                        <div class="comment-content">{{ comment.content }}</div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div class="comment-item">
-                        <div class="comment-empty">No hay comentarios aún. ¡Sé el primero en comentar!</div>
-                    </div>
-                {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="engagement-section-title">
+                        <i class="fas fa-star" style="color: var(--secondary-dark);"></i> Reseñas
+                        <span class="text-muted fw-normal" style="font-size: 14px;">
+                            ({{ course.average_rating|floatformat:1 }} · {{ course.total_reviews }} reseña{{ course.total_reviews|pluralize }})
+                        </span>
+                    </h5>
 
-                <!-- FORMULARIO PARA COMENTAR -->
-                {% if user.is_authenticated and user.role == 'student' and course.id in user_enrolled_courses %}
-                <div class="comment-form">
-                    <form method="POST" action="{% url 'add_comment' course.id %}">
-                        {% csrf_token %}
-                        <div class="mb-2">
-                            <textarea name="content" class="form-control" placeholder="Escribe un comentario sobre este curso..." rows="2" required></textarea>
+                    {% if user.is_authenticated %}
+                        {% if user_review %}
+                        <form method="POST" action="{% url 'edit_review' user_review.id %}" class="mb-3 pb-3 border-bottom">
+                            {% csrf_token %}
+                            <p class="small fw-semibold mb-2">Tu reseña</p>
+                            <div class="rating-input mb-2">
+                                {% for i in "54321" %}
+                                <input type="radio" id="star{{ i }}" name="rating" value="{{ i }}" {% if user_review.rating == i|add:"0" %}checked{% endif %} required>
+                                <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                            <textarea class="form-control mb-2" name="comment" rows="2" placeholder="Cuéntanos tu experiencia con este curso...">{{ user_review.comment }}</textarea>
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-save"></i> Actualizar reseña</button>
+                            <button type="submit" form="delete-review-{{ user_review.id }}" class="btn btn-outline-danger btn-sm"><i class="fas fa-trash"></i> Eliminar</button>
+                        </form>
+                        <form method="POST" action="{% url 'delete_review' user_review.id %}" id="delete-review-{{ user_review.id }}" onsubmit="return confirm('¿Eliminar tu reseña?');">{% csrf_token %}</form>
+                        {% elif is_enrolled %}
+                        <form method="POST" action="{% url 'add_review' course.id %}" class="mb-3 pb-3 border-bottom">
+                            {% csrf_token %}
+                            <p class="small fw-semibold mb-2">Deja tu valoración</p>
+                            <div class="rating-input mb-2">
+                                {% for i in "54321" %}
+                                <input type="radio" id="newstar{{ i }}" name="rating" value="{{ i }}" required>
+                                <label for="newstar{{ i }}"><i class="fas fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                            <textarea class="form-control mb-2" name="comment" rows="2" placeholder="Cuéntanos tu experiencia con este curso..."></textarea>
+                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-paper-plane"></i> Publicar reseña</button>
+                        </form>
+                        {% else %}
+                        <p class="text-muted small mb-3"><i class="fas fa-lock"></i> Debes adquirir el curso para reseñarlo.</p>
+                        {% endif %}
+                    {% else %}
+                        <p class="text-muted small mb-3"><i class="fas fa-sign-in-alt"></i> <a href="{% url 'login' %}?next={{ request.path }}">Inicia sesión</a> para dejar una reseña.</p>
+                    {% endif %}
+
+                    {% for review in reviews %}
+                    <div class="review-item">
+                        <div class="engagement-item-header">
+                            <span class="engagement-item-author"><i class="fas fa-user-circle"></i> {{ review.student.get_full_name|default:review.student.username }}</span>
+                            <span class="engagement-item-date">{{ review.created_at|date:"d/m/Y" }}{% if review.is_edited %} · editado{% endif %}</span>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-sm" style="border-radius: 50px; padding: 6px 20px; font-size: 13px;">
-                            <i class="fas fa-paper-plane"></i> Publicar comentario
-                        </button>
-                    </form>
+                        <div class="review-stars mb-1">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                            {% endfor %}
+                        </div>
+                        {% if review.comment %}<p class="mb-1">{{ review.comment }}</p>{% endif %}
+                        <div class="engagement-item-actions">
+                            <a href="javascript:void(0)" class="report-link" onclick="openReportModal('review', {{ review.id }})"><i class="fas fa-flag"></i> Reportar</a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    {% if not user_review %}
+                    <p class="engagement-empty">Este curso aún no tiene reseñas.</p>
+                    {% endif %}
+                    {% endfor %}
                 </div>
-                {% elif user.is_authenticated %}
-                <div class="comment-form">
-                    <p class="text-muted small mb-0"><i class="fas fa-lock"></i> Debes adquirir el curso para comentar.</p>
-                </div>
-                {% else %}
-                <div class="comment-form">
-                    <p class="text-muted small mb-0"><i class="fas fa-sign-in-alt"></i> <a href="{% url 'login' %}?next={{ request.path }}">Inicia sesión</a> para comentar.</p>
-                </div>
-                {% endif %}
             </div>
 
         </div>
@@ -970,7 +832,7 @@
             </div>
             <div class="modal-body">
                 <video controls autoplay style="width:100%; max-height:80vh; display: block;">
-                    <source src="{{ course.video_promo.url }}" type="video/mp4">
+                    {% if course.video_promo %}<source src="{{ course.video_promo.url }}" type="video/mp4">{% endif %}
                     Tu navegador no soporta videos HTML5.
                 </video>
                 <!-- BOTÓN DE CERRAR FLOTANTE DENTRO DEL VIDEO -->
@@ -1018,42 +880,6 @@
 {% block extra_js %}
 <script>
     // ============================================
-    // TOAST
-    // ============================================
-    function showToast(message, type) {
-        var container = document.getElementById('toastContainer');
-        var toast = document.createElement('div');
-        toast.className = 'toast-custom ' + type;
-
-        var icon = type === 'error' ? 'fas fa-times-circle' :
-                   type === 'success' ? 'fas fa-check-circle' :
-                   'fas fa-info-circle';
-        var iconColor = type === 'error' ? '#ef4444' :
-                        type === 'success' ? '#10b981' :
-                        '#0033a0';
-
-        toast.innerHTML = `
-            <i class="${icon}" style="color: ${iconColor};"></i>
-            <span>${message}</span>
-            <button class="toast-close" onclick="this.parentElement.remove();">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        container.appendChild(toast);
-
-        setTimeout(function() {
-            if (toast.parentElement) {
-                toast.classList.add('removing');
-                setTimeout(function() {
-                    if (toast.parentElement) {
-                        toast.remove();
-                    }
-                }, 300);
-            }
-        }, 5000);
-    }
-
-    // ============================================
     // ABRIR MODAL VIDEO
     // ============================================
     function openVideoModal() {
@@ -1089,13 +915,27 @@
         if (!btn) return;
 
         if (cartItems.includes(courseId)) {
-            cartItems = cartItems.filter(function(id) { return id !== courseId; });
-            btn.classList.remove('in-cart');
-            btn.style.borderColor = 'rgba(255,255,255,0.3)';
-            btn.style.background = 'transparent';
-            if (txt) txt.textContent = 'Agregar al carrito';
-            showToast('Curso "' + courseTitle + '" eliminado del carrito', 'error');
-            updateCartCount();
+            fetch('/cart/remove/' + courseId + '/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    cartItems = cartItems.filter(function(id) { return id !== courseId; });
+                    btn.classList.remove('in-cart');
+                    btn.style.borderColor = 'rgba(255,255,255,0.3)';
+                    btn.style.background = 'transparent';
+                    if (txt) txt.textContent = 'Agregar al carrito';
+                    showToast('Curso "' + courseTitle + '" eliminado del carrito', 'error');
+                    updateCartCount();
+                } else {
+                    showToast(data.message || 'Error al quitar del carrito', 'error');
+                }
+            })
+            .catch(function() {
+                showToast('Error de conexión al servidor', 'error');
+            });
             return;
         }
 
@@ -1127,16 +967,7 @@
     }
 
     function updateCartCount() {
-        var count = cartItems.length;
-        var badge = document.querySelector('.badge-cart');
-        if (badge) {
-            if (count > 0) {
-                badge.textContent = count;
-                badge.style.display = 'inline';
-            } else {
-                badge.style.display = 'none';
-            }
-        }
+        refreshCartBadge(cartItems.length);
     }
 
     // ============================================

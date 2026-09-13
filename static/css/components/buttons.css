@@ -1,0 +1,105 @@
+/* ============================================
+   BOTONES
+   ============================================ */
+.btn {
+    border-radius: var(--border-radius-pill);
+    padding: var(--button-padding-y) var(--button-padding-x);
+    font-weight: var(--button-font-weight);
+    font-size: var(--button-font-size);
+    transition: var(--transition);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+}
+
+.btn-primary {
+    background: var(--primary-gradient);
+    color: var(--white);
+    box-shadow: 0 4px 15px rgba(0, 51, 160, 0.2);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 51, 160, 0.3);
+    color: var(--white);
+}
+
+.btn-outline-primary {
+    border: 2px solid var(--primary-text);
+    color: var(--primary-text);
+    background: transparent;
+}
+
+.btn-outline-primary:hover {
+    background: var(--primary);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+/* Variante de acento en amarillo (color secundario de marca) para
+   llamadas a la acción destacadas. No se llama "btn-secondary" para
+   no chocar con el gris neutro de Bootstrap que ya se usa en todo el
+   sitio para botones como "Volver" o "Cancelar". */
+.btn-accent {
+    background: var(--secondary-gradient);
+    color: var(--primary-dark);
+    box-shadow: 0 4px 15px rgba(247, 198, 0, 0.3);
+}
+
+.btn-accent:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(247, 198, 0, 0.4);
+    color: var(--primary-dark);
+}
+
+.btn-outline-accent {
+    border: 2px solid var(--secondary-dark);
+    color: var(--secondary-dark);
+    background: transparent;
+}
+
+.btn-outline-accent:hover {
+    background: var(--secondary);
+    color: var(--primary-dark);
+    border-color: var(--secondary);
+    transform: translateY(-2px);
+}
+
+.btn-sm {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-xs);
+}
+
+.btn-lg {
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--font-size-h4);
+}
+
+.btn.w-100 {
+    border-radius: var(--border-radius-sm);
+    padding: var(--space-3);
+}
+
+.btn.w-100 i {
+    font-size: var(--icon-lg) !important;
+    display: block;
+    margin-bottom: var(--space-1);
+}
+
+.btn-group .btn {
+    border-radius: var(--border-radius-pill) !important;
+    padding: 4px 12px;
+}
+
+@media (max-width: 768px) {
+    .btn.w-100 {
+        padding: var(--space-2);
+    }
+
+    .btn.w-100 i {
+        font-size: var(--icon-md) !important;
+    }
+}

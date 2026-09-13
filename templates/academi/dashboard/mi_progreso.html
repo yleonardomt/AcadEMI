@@ -1,0 +1,52 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Mi progreso - AcadEMI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="page-header">
+        <div class="page-header-icon"><i class="fas fa-tasks"></i></div>
+        <div class="page-header-text">
+            <h1 class="page-title">Mi progreso</h1>
+            <p class="page-subtitle">Tu avance en cada curso adquirido</p>
+        </div>
+    </div>
+
+    {% if enrollments %}
+        {% for enrollment in enrollments %}
+        <div class="list-item">
+            <div class="list-item-icon {% if enrollment.status == 'completed' %}success{% elif enrollment.status == 'in_progress' %}warning{% endif %}">
+                <i class="fas fa-{% if enrollment.status == 'completed' %}check-circle{% elif enrollment.status == 'in_progress' %}spinner{% else %}hourglass-half{% endif %}"></i>
+            </div>
+            <div class="list-item-body">
+                <p class="list-item-title">{{ enrollment.course.title }}</p>
+                <div class="list-item-meta mb-2">
+                    <span><i class="fas fa-calendar"></i> Inscrito el {{ enrollment.enrollment_date|date:"d/m/Y" }}</span>
+                    <span><i class="fas fa-book"></i> {{ enrollment.course.total_lessons }} lecciones</span>
+                    <span class="badge-status {{ enrollment.status }}">{{ enrollment.get_status_display }}</span>
+                </div>
+                <div class="course-progress">
+                    <div class="progress-bar" style="width: {{ enrollment.progress_percentage }}%;"></div>
+                </div>
+            </div>
+            <div class="list-item-actions">
+                <span class="fw-bold text-primary">{{ enrollment.progress_percentage }}%</span>
+                <a href="{% url 'course_learn' enrollment.course.id %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-play"></i> Continuar
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-tasks"></i></div>
+            <h4>Todavía no tienes cursos en progreso</h4>
+            <p>Explora el catálogo y comienza a aprender para ver tu avance aquí.</p>
+            <a href="{% url 'catalog' %}" class="btn btn-primary"><i class="fas fa-book-open"></i> Ver catálogo</a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -5,16 +5,20 @@ Django settings for core project.
 from pathlib import Path
 import os
 
+from dotenv import load_dotenv
+
 # ============================================
 # CONFIGURACIÓN BASE
 # ============================================
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-tu-clave-secreta-aqui'
+load_dotenv(BASE_DIR / '.env')
 
-DEBUG = True
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-tu-clave-secreta-aqui')
 
-ALLOWED_HOSTS = []
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
 
 
 # ============================================
@@ -63,6 +67,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'academi.context_processors.header_counters',
             ],
         },
     },
@@ -76,8 +81,12 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # ============================================
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.environ.get('DB_NAME', 'academi_db'),
+        'USER': os.environ.get('DB_USER', 'academi_user'),
+        'PASSWORD': os.environ.get('DB_PASSWORD', ''),
+        'HOST': os.environ.get('DB_HOST', 'localhost'),
+        'PORT': os.environ.get('DB_PORT', '5432'),
     }
 }
 
@@ -155,18 +164,28 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
 # CREDENCIALES DE GMAIL
-EMAIL_HOST_USER = 'yonconortorez@gmail.com'
-EMAIL_HOST_PASSWORD = 'tpphpjlragfqspuu'  # Contraseña de aplicación (SIN ESPACIOS)
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')  # Contraseña de aplicación (SIN ESPACIOS)
 
 # EMAIL DE ORIGEN
-DEFAULT_FROM_EMAIL = 'AcadEMI <yonconortorez@gmail.com>'
+DEFAULT_FROM_EMAIL = f'AcadEMI <{EMAIL_HOST_USER}>'
 
 # URL DEL SITIO (PARA ENLACES EN CORREOS)
-SITE_URL = 'http://127.0.0.1:8001'
+SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8001')
 
 # OPCIÓN PARA DESARROLLO (MUESTRA CORREOS EN CONSOLA)
 # DESCOMENTAR PARA DESARROLLO SIN ENVIAR CORREOS REALES
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# ============================================
+# ASISTENTE VIRTUAL CON IA (RF-77 al RF-82)
+# ============================================
+# Clave de Groq (https://console.groq.com/keys) — tiene una capa gratuita
+# generosa. Si se deja vacía, el chatbot sigue funcionando con la base de
+# conocimiento propia (academi.models.ChatKnowledgeBase / ChatIntent) en
+# vez de generar respuestas con IA. Ver README para cómo obtener la clave.
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+GROQ_MODEL = os.environ.get('GROQ_MODEL', 'llama-3.1-8b-instant')
 
 
 # ============================================
@@ -217,11 +236,11 @@ CSP_IMG_SRC = ("'self'", "data:", "https:")
 CSP_FRAME_SRC = ("'self'", "https://www.youtube.com", "https://player.vimeo.com")
 CSP_CONNECT_SRC = ("'self'",)
 
-# Seguridad de sesión
-SESSION_COOKIE_SECURE = True
+# Seguridad de sesión (cookies "Secure" solo tienen sentido bajo HTTPS, es decir, cuando DEBUG=False)
+SESSION_COOKIE_SECURE = not DEBUG
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Strict'
-CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 

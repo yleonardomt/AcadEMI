@@ -1,0 +1,241 @@
+/* ============================================
+   LOGIN Y REGISTRO
+   Estas dos páginas se muestran como una tarjeta
+   centrada sin navbar/footer (a propósito, para no
+   distraer durante el login/registro), por eso
+   necesitan su propio icon-circle y padding de página.
+   El fondo 3D de partículas vive en
+   static/js/particles-bg.js y se comparte con todo
+   el sitio, incluidas estas dos páginas.
+   ============================================ */
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    padding: var(--space-6);
+}
+
+.main-content .container { width: 100%; }
+
+.card.shadow-lg.border-0 {
+    position: relative;
+    border-radius: var(--border-radius-lg) !important;
+    box-shadow: 0 30px 80px rgba(0, 51, 160, 0.14) !important;
+    animation: authCardIn 0.5s ease;
+    overflow: hidden;
+}
+
+.card.shadow-lg.border-0::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary), var(--primary));
+}
+
+@keyframes authCardIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.icon-circle {
+    width: 56px;
+    height: 56px;
+    background: var(--primary-gradient);
+    color: var(--white);
+    font-size: 22px;
+    box-shadow: 0 4px 20px rgba(0, 51, 160, 0.3);
+    position: relative;
+}
+
+.icon-circle::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 1px solid rgba(0, 51, 160, 0.15);
+}
+
+.btn-back {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    background: var(--white);
+    color: var(--gray-dark);
+    border: 2px solid var(--gray-light);
+    border-radius: var(--border-radius-pill);
+    padding: 8px 16px;
+    font-weight: var(--font-weight-medium);
+    font-size: 14px;
+    transition: var(--transition);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: var(--shadow-card);
+}
+
+.btn-back:hover {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    text-decoration: none;
+}
+
+.captcha,
+.captcha-section .captcha {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.captcha img,
+.captcha-section .captcha img {
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--gray-light);
+    max-width: 100%;
+}
+
+.captcha input,
+.captcha-section .captcha input {
+    width: 100%;
+    padding: 10px 16px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--border-radius-sm);
+    font-family: var(--font);
+    transition: var(--transition);
+}
+
+.captcha input:focus,
+.captcha-section .captcha input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
+    outline: none;
+}
+
+.form-text {
+    font-size: 12px;
+    color: var(--gray);
+}
+
+/* ============================================
+   SELECTOR VISUAL DE ROL (registro)
+   El <select> original (#id_role) sigue existiendo
+   para el envío del formulario; forms-validation.js
+   lo sincroniza con estas tarjetas.
+   ============================================ */
+.role-picker {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+#id_role {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.role-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+    padding: 18px 12px;
+    background: var(--white);
+    border: 2px solid var(--gray-light);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.role-card i {
+    font-size: 26px;
+    color: var(--primary);
+    margin-bottom: 4px;
+}
+
+.role-card-title {
+    font-weight: var(--font-weight-semibold);
+    font-size: 14px;
+    color: var(--dark);
+}
+
+.role-card-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.role-card:hover {
+    border-color: var(--primary-light);
+    transform: translateY(-2px);
+}
+
+.role-card.selected {
+    border-color: var(--primary);
+    background: var(--primary-lighter);
+    box-shadow: 0 6px 20px rgba(0, 51, 160, 0.12);
+}
+
+.role-card.selected i,
+.role-card.selected .role-card-title {
+    color: var(--primary);
+}
+
+@media (max-width: 480px) {
+    .role-card { padding: 14px 8px; }
+    .role-card i { font-size: 22px; }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: var(--space-3) !important;
+    }
+    .btn-back {
+        top: 12px;
+        left: 12px;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+    .btn-back span {
+        display: none;
+    }
+    .card-body {
+        padding: 20px !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .main-content {
+        padding: var(--space-2) !important;
+    }
+    .icon-circle {
+        width: 48px;
+        height: 48px;
+        font-size: 18px;
+    }
+    .card-body {
+        padding: var(--space-4) !important;
+    }
+}

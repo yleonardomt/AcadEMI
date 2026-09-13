@@ -1,0 +1,80 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Gestión de Categorías - Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle" style="color: var(--primary);"></i> Nueva categoría</h5>
+                    <form method="POST" action="{% url 'admin_categories' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="name" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Descripción</label>
+                            <textarea name="description" class="form-control" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Crear categoría</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0"><i class="fas fa-tags" style="color: var(--primary);"></i> Categorías</h4>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr><th>Nombre</th><th>Descripción</th><th>Cursos</th><th style="width:120px;">Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for category in categories %}
+                                <tr>
+                                    <td class="fw-semibold">{{ category.name }}</td>
+                                    <td class="text-muted small">{{ category.description|truncatechars:60|default:"—" }}</td>
+                                    <td>{{ category.course_count }}</td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-outline-primary btn-sm" title="Editar"
+                                                onclick="document.getElementById('edit-{{ category.id }}').classList.toggle('d-none')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form method="POST" action="{% url 'admin_category_delete' category.id %}" onsubmit="return confirm('¿Eliminar esta categoría?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar"><i class="fas fa-trash"></i></button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr id="edit-{{ category.id }}" class="d-none">
+                                    <td colspan="4">
+                                        <form method="POST" action="{% url 'admin_category_edit' category.id %}" class="d-flex gap-2 align-items-start">
+                                            {% csrf_token %}
+                                            <input type="text" name="name" class="form-control form-control-sm" value="{{ category.name }}" required>
+                                            <input type="text" name="description" class="form-control form-control-sm" value="{{ category.description|default:'' }}" placeholder="Descripción">
+                                            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-check"></i></button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="4" class="text-center text-muted py-4">No hay categorías registradas.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

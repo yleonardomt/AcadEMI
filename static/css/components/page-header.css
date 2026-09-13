@@ -1,0 +1,56 @@
+/* ============================================
+   ENCABEZADO DE PÁGINA
+   Usado por las páginas de listado del dashboard
+   (mi progreso, calificaciones, certificados,
+   favoritos, categorías, paneles de admin, etc.)
+   ============================================ */
+.page-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    flex-wrap: wrap;
+}
+
+.page-header-icon {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: var(--border-radius-sm);
+    background: var(--primary-gradient);
+    color: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 19px;
+    box-shadow: var(--shadow);
+}
+
+.page-header-text {
+    flex: 1;
+    min-width: 200px;
+}
+
+.page-title {
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-bold);
+    color: var(--dark);
+    margin: 0;
+}
+
+.page-subtitle {
+    font-size: var(--font-size-small);
+    color: var(--text-muted);
+    margin: 2px 0 0;
+}
+
+.page-header-actions {
+    display: flex;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+    .page-header-icon { width: 40px; height: 40px; font-size: 16px; }
+    .page-title { font-size: var(--font-size-h3); }
+}

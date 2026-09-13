@@ -1,0 +1,139 @@
+/* ============================================
+   COMENTARIOS, PREGUNTAS Y RESEÑAS
+   Usado en leccion_detalle.html (comentarios y
+   preguntas/respuestas) y curso_detalle.html
+   (reseñas). Ver academi/views/engagement.py.
+   ============================================ */
+.engagement-section {
+    margin-top: var(--space-6);
+}
+
+.engagement-section-title {
+    font-weight: var(--font-weight-bold);
+    color: var(--dark);
+    margin-bottom: var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.engagement-item {
+    background: var(--white-smoke);
+    border-radius: var(--border-radius-sm);
+    padding: var(--space-4);
+    margin-bottom: var(--space-3);
+}
+
+.engagement-item-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+    flex-wrap: wrap;
+}
+
+.engagement-item-author {
+    font-weight: var(--font-weight-semibold);
+    color: var(--dark);
+}
+
+.engagement-item-date {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.engagement-item-body {
+    color: var(--text-secondary);
+    white-space: pre-line;
+    word-break: break-word;
+}
+
+.engagement-item-actions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+}
+
+.engagement-item-actions button,
+.engagement-item-actions a {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.engagement-item-actions button:hover,
+.engagement-item-actions a:hover {
+    color: var(--primary-text);
+}
+
+.engagement-item-actions .report-link:hover {
+    color: var(--danger);
+}
+
+.engagement-reply {
+    margin-top: var(--space-3);
+    margin-left: var(--space-6);
+    padding: var(--space-3) var(--space-4);
+    background: var(--primary-lighter);
+    border-left: 3px solid var(--primary);
+    border-radius: var(--border-radius-sm);
+    /* Este fondo pálido no cambia con el modo noche/día (ver nota en
+       base.css), así que su texto tampoco debe cambiar: se fija en
+       oscuro siempre para mantener el contraste con ese fondo claro. */
+    color: #2d3748;
+}
+
+.engagement-reply-author {
+    font-weight: var(--font-weight-semibold);
+    color: var(--primary);
+    font-size: var(--font-size-small);
+}
+
+.engagement-empty {
+    color: var(--text-muted);
+    font-size: var(--font-size-small);
+    padding: var(--space-3) 0;
+}
+
+/* Reseñas */
+.review-item {
+    border-bottom: 1px solid var(--gray-light);
+    padding: var(--space-4) 0;
+}
+
+.review-item:last-child {
+    border-bottom: none;
+}
+
+.review-stars {
+    color: var(--secondary);
+    letter-spacing: 2px;
+}
+
+/* Selector de estrellas en el formulario de reseña */
+.rating-input {
+    display: inline-flex;
+    flex-direction: row-reverse;
+    gap: 4px;
+}
+
+.rating-input input {
+    display: none;
+}
+
+.rating-input label {
+    font-size: 26px;
+    color: var(--gray-light);
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+
+.rating-input input:checked ~ label,
+.rating-input label:hover,
+.rating-input label:hover ~ label {
+    color: var(--secondary);
+}

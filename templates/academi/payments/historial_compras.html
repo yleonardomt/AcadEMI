@@ -5,28 +5,12 @@
 
 {% block extra_css %}
 <style>
+    /* Usa las variables globales de base.css (que ya cambian con el
+       modo noche/día); antes esta página las redefinía con valores
+       fijos, lo que impedía que el modo oscuro se aplicara aquí. */
     :root {
-        --primary: #0033a0;
-        --primary-dark: #002277;
-        --primary-light: #1a4db8;
-        --primary-lighter: #e8edf5;
-        --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
-        --white: #ffffff;
-        --white-smoke: #f5f7fa;
-        --gray-light: #e2e8f0;
-        --gray: #718096;
-        --gray-dark: #2d3748;
-        --dark: #1a202c;
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --info: #3b82f6;
-        --font: 'Inter', sans-serif;
-        --shadow: 0 4px 20px rgba(0,51,160,0.08);
-        --shadow-hover: 0 8px 40px rgba(0,51,160,0.15);
-        --radius: 16px;
-        --radius-sm: 8px;
-        --transition: all 0.3s ease;
+        --radius: var(--border-radius);
+        --radius-sm: var(--border-radius-sm);
     }
 
     .page-header {
@@ -47,7 +31,7 @@
     }
 
     .filter-section {
-        background: white;
+        background: var(--surface);
         border-radius: var(--radius);
         padding: 20px;
         box-shadow: var(--shadow);
@@ -65,7 +49,7 @@
     }
 
     .payment-card {
-        background: white;
+        background: var(--surface);
         border-radius: var(--radius);
         padding: 20px;
         box-shadow: var(--shadow);
@@ -149,7 +133,7 @@
     .empty-state {
         text-align: center;
         padding: 60px 20px;
-        background: white;
+        background: var(--surface);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         border: 1px solid var(--gray-light);
@@ -262,7 +246,7 @@
             </div>
 
             <div class="payment-items">
-                {% for item in payment.cart_items.all %}
+                {% for item in payment.items.all %}
                 <div class="item">
                     <span class="course-name">
                         <i class="fas fa-book-open" style="color: var(--primary);"></i>
@@ -294,7 +278,7 @@
                 </div>
                 <div>
                     {% if payment.status == 'completed' %}
-                    <a href="#" class="btn btn-outline-primary btn-invoice">
+                    <a href="{% url 'invoice' payment.id %}" class="btn btn-outline-primary btn-invoice">
                         <i class="fas fa-file-pdf"></i> Comprobante
                     </a>
                     {% endif %}

@@ -7,22 +7,14 @@
 <style>
     /* ============================================
        CARRITO - ESTILOS COMPLETOS
+       Usa las variables globales de base.css (que ya
+       cambian con el modo noche/día); antes esta página
+       las redefinía con valores fijos, lo que impedía
+       que el modo oscuro se aplicara aquí.
        ============================================ */
-    
     :root {
-        --primary: #0033a0;
-        --primary-light: #1a4db8;
-        --primary-lighter: #e8edf5;
-        --secondary: #f7c600;
-        --success: #10b981;
-        --danger: #ef4444;
-        --gray-light: #e2e8f0;
-        --gray: #718096;
-        --dark: #1a202c;
-        --shadow: 0 4px 20px rgba(0, 51, 160, 0.06);
-        --shadow-hover: 0 8px 40px rgba(0, 51, 160, 0.12);
-        --radius: 16px;
-        --radius-sm: 8px;
+        --radius: var(--border-radius);
+        --radius-sm: var(--border-radius-sm);
     }
 
     .cart-wrapper {
@@ -48,7 +40,7 @@
        SECCIÓN DE ITEMS
        ============================================ */
     .cart-items-section {
-        background: #ffffff;
+        background: var(--surface);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         border: 1px solid var(--gray-light);
@@ -179,7 +171,7 @@
        RESÚMEN
        ============================================ */
     .cart-summary {
-        background: #ffffff;
+        background: var(--surface);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         border: 1px solid var(--gray-light);
@@ -362,7 +354,7 @@
         text-align: center;
         cursor: pointer;
         transition: all 0.3s ease;
-        background: #fff;
+        background: var(--surface);
         font-weight: 500;
         font-size: 14px;
     }
@@ -558,81 +550,8 @@
         color: #fff;
     }
 
-    /* ============================================
-       TOAST (MENSAJES EMERGENTES)
-       ============================================ */
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        max-width: 380px;
-        width: 100%;
-    }
-
-    .toast-custom {
-        background: #fff;
-        border-radius: var(--radius-sm);
-        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
-        padding: 14px 18px;
-        border-left: 4px solid var(--primary);
-        animation: slideInRight 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-        color: var(--dark);
-    }
-
-    .toast-custom.success { border-left-color: var(--success); }
-    .toast-custom.error { border-left-color: var(--danger); }
-    .toast-custom.warning { border-left-color: var(--secondary); }
-
-    .toast-custom .toast-icon {
-        font-size: 18px;
-        flex-shrink: 0;
-    }
-
-    .toast-custom.success .toast-icon { color: var(--success); }
-    .toast-custom.error .toast-icon { color: var(--danger); }
-    .toast-custom.warning .toast-icon { color: var(--secondary); }
-
-    .toast-custom .toast-message {
-        flex: 1;
-        line-height: 1.4;
-    }
-
-    .toast-custom .toast-close {
-        margin-left: auto;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: var(--gray);
-        font-size: 16px;
-        padding: 0 4px;
-        transition: color 0.3s ease;
-    }
-
-    .toast-custom .toast-close:hover {
-        color: var(--dark);
-    }
-
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0%); opacity: 1; }
-    }
-
-    @keyframes slideOutRight {
-        from { transform: translateX(0%); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-
-    .toast-custom.removing {
-        animation: slideOutRight 0.3s ease forwards;
-    }
+    /* Toast: usa el sistema único de static/css/components/notifications.css
+       (no se redefine aquí, ver academi-modularity-standard). */
 
     /* ============================================
        RESPONSIVE
@@ -649,7 +568,6 @@
         .payment-options { flex-direction: column; }
         .payment-option { min-width: auto; }
         .payment-form .row-2 { grid-template-columns: 1fr; }
-        .toast-container { top: 10px; right: 10px; left: 10px; max-width: none; }
     }
 
     @media (max-width: 480px) {
@@ -750,9 +668,6 @@
 
 {% block content %}
 <div class="cart-wrapper">
-
-    <!-- TOAST CONTAINER -->
-    <div class="toast-container" id="toastContainer"></div>
 
     <div class="cart-grid">
 
@@ -957,46 +872,6 @@
 {% block extra_js %}
 <script>
     // ============================================
-    // TOAST SYSTEM
-    // ============================================
-    function showToast(message, type) {
-        type = type || 'info';
-        var container = document.getElementById('toastContainer');
-        if (!container) return;
-        
-        var toast = document.createElement('div');
-        toast.className = 'toast-custom ' + type;
-
-        var iconMap = {
-            success: 'fa-check-circle',
-            error: 'fa-times-circle',
-            warning: 'fa-exclamation-triangle',
-            info: 'fa-info-circle'
-        };
-        var icon = iconMap[type] || iconMap.info;
-
-        toast.innerHTML = `
-            <i class="fas ${icon} toast-icon"></i>
-            <span class="toast-message">${message}</span>
-            <button class="toast-close" onclick="this.parentElement.remove();">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        container.appendChild(toast);
-
-        setTimeout(function() {
-            if (toast.parentElement) {
-                toast.classList.add('removing');
-                setTimeout(function() {
-                    if (toast.parentElement) {
-                        toast.remove();
-                    }
-                }, 300);
-            }
-        }, 5000);
-    }
-
-    // ============================================
     // ESTADO GLOBAL
     // ============================================
     var cartState = {
@@ -1105,7 +980,7 @@
             };
             btn.onclick = function() {
                 // Simular escaneo y pago
-                showToast('📱 QR escaneado! Procesando pago...', 'info');
+                showToast('QR escaneado. Procesando pago...', 'info');
                 setTimeout(function() {
                     processCheckout();
                 }, 1500);
@@ -1189,6 +1064,9 @@
         })
         .then(function(data) {
             if (data.success) {
+                if (typeof refreshCartBadge === 'function') {
+                    refreshCartBadge(data.items_count);
+                }
                 var item = document.getElementById('cart-item-' + courseId);
                 if (item) {
                     item.style.opacity = '0';
@@ -1305,7 +1183,7 @@
     // CARGAR CUPÓN DESDE SESIÓN
     // ============================================
     function loadCouponFromSession() {
-        fetch('/api/get-active-coupon/', {
+        fetch('/api/get-active-coupon/?subtotal=' + encodeURIComponent(cartState.subtotal), {
             headers: { 'X-CSRFToken': '{{ csrf_token }}' }
         })
         .then(function(response) { return response.json(); })

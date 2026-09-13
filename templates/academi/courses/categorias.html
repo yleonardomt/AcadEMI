@@ -1,0 +1,84 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Categorías - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .category-card {
+        display: flex;
+        align-items: center;
+        gap: var(--space-4);
+        background: var(--surface);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-card);
+        padding: var(--space-5);
+        height: 100%;
+        transition: var(--transition);
+    }
+    .category-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+    }
+    .category-card-icon {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        border-radius: var(--border-radius-sm);
+        background: var(--primary-gradient);
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+    .category-card h5 {
+        margin: 0 0 2px;
+        font-weight: var(--font-weight-semibold);
+        color: var(--dark);
+    }
+    .category-card p {
+        margin: 0;
+        font-size: var(--font-size-xs);
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="page-header">
+        <div class="page-header-icon"><i class="fas fa-tags"></i></div>
+        <div class="page-header-text">
+            <h1 class="page-title">Categorías</h1>
+            <p class="page-subtitle">Explora los cursos de AcadEMI organizados por área</p>
+        </div>
+    </div>
+
+    {% if categories %}
+        <div class="row g-4">
+            {% for category in categories %}
+            <div class="col-md-6 col-lg-4">
+                <a href="{% url 'catalog' %}?category={{ category.id }}" class="text-decoration-none">
+                    <div class="category-card">
+                        <div class="category-card-icon"><i class="fas fa-book"></i></div>
+                        <div>
+                            <h5>{{ category.name }}</h5>
+                            <p>{{ category.course_count }} curso{{ category.course_count|pluralize }} disponible{{ category.course_count|pluralize }}</p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-tags"></i></div>
+            <h4>Todavía no hay categorías</h4>
+            <p>Pronto se agregarán categorías de cursos.</p>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

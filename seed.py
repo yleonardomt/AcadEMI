@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Script para llenar la base de datos con datos de prueba
-Ejecutar: python3 manage.py shell < seed_data.py
+Ejecutar: python3 manage.py shell < seed.py
 """
 
 import os
@@ -23,10 +23,13 @@ User = get_user_model()
 
 # Importar modelos - CORREGIDO: 'academi' en lugar de 'academics'
 from academi.models import (
-    Category, Course, Module, Lesson, Enrollment, 
-    LessonProgress, Comment, Question, Answer, Review, 
-    Favorite, Notification, ActivityLog, SystemSetting
+    Category, Course, Module, Lesson, Enrollment,
+    LessonProgress, Comment, Question, Answer, Review,
+    Favorite, Notification, ActivityLog, SystemSetting, Certificate,
+    Evaluation, QuestionEvaluation, QuestionOption, EvaluationResult,
+    UserAnswer, Coupon, Cart, CartItem,
 )
+from academi.utils import issue_certificate
 
 print("=" * 70)
 print("🎯 LLENANDO BASE DE DATOS CON DATOS DE PRUEBA")
@@ -59,10 +62,12 @@ print("\n📝 Creando usuarios...")
 
 # Crear administradores
 admin_data = [
-    {'username': 'admin', 'email': 'admin@academi.com', 'password': 'admin123', 
-     'role': 'admin', 'full_name': 'Administrador Principal', 'email_verified': True, 'is_active': True},
-    {'username': 'admin2', 'email': 'admin2@academi.com', 'password': 'admin123', 
-     'role': 'admin', 'full_name': 'Administrador Soporte', 'email_verified': True, 'is_active': True},
+    {'username': 'admin', 'email': 'admin@academi.com', 'password': 'admin',
+     'role': 'admin', 'full_name': 'Administrador Principal', 'email_verified': True, 'is_active': True,
+     'is_staff': True, 'is_superuser': True},
+    {'username': 'admin2', 'email': 'admin2@academi.com', 'password': 'admin123',
+     'role': 'admin', 'full_name': 'Administrador Soporte', 'email_verified': True, 'is_active': True,
+     'is_staff': True, 'is_superuser': True},
 ]
 
 admins = []
@@ -80,6 +85,12 @@ for data in admin_data:
 
 # Crear docentes
 teacher_data = [
+    {'username': 'docente', 'email': 'docente@academi.com', 'password': 'docente',
+     'role': 'teacher', 'teacher_full_name': 'Prof. Docente Demo', 'teacher_email': 'docente@academi.com',
+     'specialty': 'Demostración general', 'experience_years': '5', 'institution': 'AcadEMI',
+     'teacher_bio': 'Cuenta de docente para pruebas: tiene cursos propios, cupones y preguntas respondidas.',
+     'email_verified': True, 'is_active': True},
+
     {'username': 'teacher1', 'email': 'teacher1@academi.com', 'password': 'teacher123',
      'role': 'teacher', 'teacher_full_name': 'Dra. María González', 'teacher_email': 'maria@academi.com',
      'specialty': 'Matemáticas y Física', 'experience_years': '12', 'institution': 'UMSA',
@@ -119,8 +130,36 @@ for data in teacher_data:
     teachers.append(user)
     print(f"  ✅ Docente: {user.username}")
 
-# Crear estudiantes (20)
+# Crear estudiante de prueba principal (credenciales simples para demo)
 students = []
+demo_student_data = {
+    'username': 'estudiante',
+    'email': 'estudiante@academi.com',
+    'password': 'estudiante',
+    'role': 'student',
+    'full_name': 'Estudiante Demo',
+    'birth_date': datetime.date(1999, 5, 14),
+    'city': 'La Paz',
+    'education_level': 'Universitario',
+    'university': 'UMSA',
+    'career': 'Ingeniería de Sistemas',
+    'semester': '6° Semestre',
+    'interests': 'Programación, IA',
+    'email_verified': True,
+    'is_active': True,
+}
+password = demo_student_data.pop('password')
+demo_student, created = User.objects.get_or_create(
+    username=demo_student_data['username'],
+    defaults=demo_student_data
+)
+if created:
+    demo_student.set_password(password)
+    demo_student.save()
+students.append(demo_student)
+print(f"  ✅ Estudiante demo: {demo_student.username}")
+
+# Crear estudiantes numerados (20 más, para tener volumen de datos)
 for i in range(1, 21):
     student_username = f'estudiante{i:02d}'
     student_data = {
@@ -377,6 +416,23 @@ for i in range(2):
         'approved_by': admins[0],
     })
 
+# El primer docente ('docente'/'docente') es la cuenta de prueba principal:
+# le forzamos la autoría de un par de cursos (uno gratis, uno de pago) en
+# categorías distintas, publicados y destacados, para que siempre tenga
+# contenido propio listo para gestionar (cupones, preguntas, estudiantes).
+docente_user = teachers[0]
+courses_data[0]['teacher'] = docente_user
+courses_data[0]['status'] = 'published'
+courses_data[0]['is_featured'] = True
+courses_data[0]['is_free'] = False
+courses_data[0]['price'] = Decimal('49.99')
+
+courses_data[5]['teacher'] = docente_user
+courses_data[5]['status'] = 'published'
+courses_data[5]['is_featured'] = True
+courses_data[5]['is_free'] = True
+courses_data[5]['price'] = Decimal('0.00')
+
 # Guardar cursos
 courses = []
 for course_data in courses_data:
@@ -397,6 +453,38 @@ print(f"✅ Total cursos: {len(courses)}")
 # ============================================
 print("\n📖 Creando módulos y lecciones...")
 
+def create_evaluation_for_lesson(lesson, num_questions=5):
+    """RF-44 al RF-46: toda lección de tipo quiz/examen necesita una
+    Evaluation con preguntas y opciones reales, o el estudiante nunca
+    podrá rendirla (ver academi/decorators/quiz_decorators.py)."""
+    evaluation = Evaluation.objects.create(
+        lesson=lesson,
+        title=f'{lesson.get_lesson_type_display()}: {lesson.title}',
+        description=lesson.description,
+        evaluation_type=lesson.lesson_type,
+        time_limit_minutes=60 if lesson.lesson_type == 'exam' else 30,
+        passing_score=70,
+        max_attempts=1 if lesson.lesson_type == 'exam' else 3,
+        is_active=True,
+    )
+    for q in range(1, num_questions + 1):
+        question = QuestionEvaluation.objects.create(
+            evaluation=evaluation,
+            question_type='single',
+            text=f'Pregunta {q} sobre {lesson.title}',
+            points=1,
+            order=q,
+        )
+        correct_index = random.randint(0, 3)
+        for i, letter in enumerate('ABCD'):
+            QuestionOption.objects.create(
+                question=question,
+                text=f'Opción {letter}',
+                is_correct=(i == correct_index),
+            )
+    return evaluation
+
+
 def create_lessons_for_course(course, num_modules=2, lessons_per_module=3):
     """Crea módulos y lecciones para un curso"""
     for i in range(num_modules):
@@ -406,10 +494,10 @@ def create_lessons_for_course(course, num_modules=2, lessons_per_module=3):
             description=f'Contenido del módulo {i+1} del curso {course.title}',
             order=i+1
         )
-        
+
         for j in range(lessons_per_module):
             lesson_type = random.choice(['video', 'video', 'video', 'quiz', 'exam', 'assignment'])
-            Lesson.objects.create(
+            lesson = Lesson.objects.create(
                 module=module,
                 title=f'Lección {j+1}: {random.choice(["Introducción", "Conceptos Básicos", "Ejercicios Prácticos", "Aplicaciones", "Evaluación", "Proyecto"])}',
                 description=f'Descripción de la lección {j+1} del módulo {i+1}',
@@ -419,6 +507,8 @@ def create_lessons_for_course(course, num_modules=2, lessons_per_module=3):
                 duration_minutes=random.randint(10, 45),
                 is_free=course.is_free
             )
+            if lesson_type in ('quiz', 'exam'):
+                create_evaluation_for_lesson(lesson)
 
 for course in courses:
     num_modules = random.randint(2, 4)
@@ -428,6 +518,133 @@ for course in courses:
 
 print(f"✅ Total módulos: {Module.objects.count()}")
 print(f"✅ Total lecciones: {Lesson.objects.count()}")
+
+# ============================================
+# 5.5 DATOS DE LA CUENTA DEMO (estudiante <-> docente)
+# ============================================
+# Todo lo que necesitás para probar la plataforma de punta a punta con
+# las credenciales simples (admin/admin, docente/docente,
+# estudiante/estudiante) sin tener que navegar generando datos a mano:
+# un curso completado con certificado, uno en progreso, una pregunta ya
+# respondida por el docente, cupones activos e inactivos, un favorito y
+# un curso en el carrito.
+print("\n🎬 Creando escenario de demostración (estudiante <-> docente)...")
+
+docente_courses = list(Course.objects.filter(teacher=docente_user).order_by('id'))
+course_completed = docente_courses[0] if len(docente_courses) > 0 else None
+course_in_progress = docente_courses[1] if len(docente_courses) > 1 else None
+other_courses = [c for c in courses if c not in docente_courses]
+
+if course_completed:
+    enrollment_a, _ = Enrollment.objects.get_or_create(
+        student=demo_student,
+        course=course_completed,
+        defaults={
+            'status': 'completed',
+            'progress_percentage': 100,
+            'payment_amount': course_completed.price,
+            'payment_status': 'paid',
+            'payment_method': 'stripe',
+            'payment_date': timezone.now() - datetime.timedelta(days=20),
+            'completed_date': timezone.now() - datetime.timedelta(days=2),
+        }
+    )
+    for lesson in Lesson.objects.filter(module__course=course_completed):
+        LessonProgress.objects.get_or_create(
+            enrollment=enrollment_a, lesson=lesson,
+            defaults={'completed': True, 'completed_at': timezone.now() - datetime.timedelta(days=3)}
+        )
+    certificate, _ = issue_certificate(enrollment_a)
+    print(f"  🎓 Certificado demo: {demo_student.username} -> {course_completed.title}")
+
+    Review.objects.get_or_create(
+        student=demo_student, course=course_completed,
+        defaults={'rating': 5, 'comment': 'Excelente curso, el docente responde rápido a las preguntas.'}
+    )
+
+    # RF-37/RF-38: pregunta del estudiante ya respondida por el docente,
+    # para que "hablar con el docente" se vea funcionando desde el inicio.
+    demo_lesson = Lesson.objects.filter(module__course=course_completed).order_by('module__order', 'order').first()
+    if demo_lesson:
+        question, q_created = Question.objects.get_or_create(
+            lesson=demo_lesson, student=demo_student,
+            defaults={'content': '¿Este contenido sirve para principiantes o necesito experiencia previa?', 'is_answered': True}
+        )
+        if q_created:
+            Answer.objects.create(
+                question=question, teacher=docente_user,
+                content='¡Hola! Sí, está pensado para principiantes, cada lección parte desde cero.'
+            )
+
+    # RF-60: cupones del docente sobre su propio curso — uno activo por
+    # tiempo/cupo limitado ("primeros 10"), y uno vencido/inactivo, para
+    # ver ambos estados en "Mis cupones".
+    Coupon.objects.get_or_create(
+        code='BIENVENIDA10', course=course_completed,
+        defaults={
+            'discount_type': 'percentage', 'discount_value': Decimal('20.00'),
+            'max_uses': 10, 'used_count': 3, 'is_active': True,
+            'expires_at': timezone.now() + datetime.timedelta(days=30),
+            'created_by': docente_user,
+        }
+    )
+    Coupon.objects.get_or_create(
+        code='PROMOVENCIDA', course=course_completed,
+        defaults={
+            'discount_type': 'fixed', 'discount_value': Decimal('10.00'),
+            'max_uses': 5, 'used_count': 5, 'is_active': False,
+            'expires_at': timezone.now() - datetime.timedelta(days=5),
+            'created_by': docente_user,
+        }
+    )
+
+    # RF-50/51: intento de evaluación ya rendido, para que "Mis
+    # calificaciones" tenga contenido real desde el primer login.
+    demo_evaluation = Evaluation.objects.filter(lesson__module__course=course_completed).first()
+    if demo_evaluation:
+        questions = list(demo_evaluation.questions.all())
+        total_points = sum(q.points for q in questions) or len(questions)
+        result, r_created = EvaluationResult.objects.get_or_create(
+            enrollment=enrollment_a, evaluation=demo_evaluation, attempt_number=1,
+            defaults={
+                'score': max(1, round(total_points * 0.8)),
+                'total_points': total_points,
+                'passed': True,
+                'completed_at': timezone.now() - datetime.timedelta(days=2),
+                'time_spent': 480,
+            }
+        )
+        if r_created:
+            for q in questions:
+                correct_option = q.options.filter(is_correct=True).first()
+                UserAnswer.objects.create(
+                    evaluation_result=result, question=q,
+                    selected_option=correct_option,
+                    is_correct=bool(correct_option),
+                    points_obtained=q.points if correct_option else 0,
+                )
+            print(f"  📝 Evaluación demo respondida: {demo_student.username} -> {demo_evaluation.title}")
+
+if course_in_progress:
+    Enrollment.objects.get_or_create(
+        student=demo_student,
+        course=course_in_progress,
+        defaults={
+            'status': 'in_progress',
+            'progress_percentage': 45,
+            'payment_amount': course_in_progress.price,
+            'payment_status': 'paid',
+            'payment_method': 'paypal',
+            'payment_date': timezone.now() - datetime.timedelta(days=5),
+        }
+    )
+    print(f"  📖 Curso en progreso demo: {demo_student.username} -> {course_in_progress.title}")
+
+if len(other_courses) >= 2:
+    Favorite.objects.get_or_create(student=demo_student, course=other_courses[0])
+    cart, _ = Cart.objects.get_or_create(student=demo_student)
+    CartItem.objects.get_or_create(cart=cart, course=other_courses[1])
+    print(f"  🛒 Favorito y carrito demo listos para {demo_student.username}")
 
 # ============================================
 # 6. CREAR INSCRIPCIONES
@@ -440,20 +657,36 @@ for student in students[:15]:
     selected_courses = random.sample(courses, min(num_courses, len(courses)))
     
     for course in selected_courses:
+        status = random.choice(['enrolled', 'in_progress', 'completed'])
         enrollment, created = Enrollment.objects.get_or_create(
             student=student,
             course=course,
             defaults={
-                'status': random.choice(['enrolled', 'in_progress', 'completed']),
-                'progress_percentage': random.randint(0, 100),
+                'status': status,
+                'progress_percentage': 100 if status == 'completed' else random.randint(0, 90),
                 'payment_amount': course.price,
                 'payment_status': 'paid',
                 'payment_method': random.choice(['stripe', 'paypal']),
                 'payment_date': timezone.now() - datetime.timedelta(days=random.randint(1, 30)),
+                'completed_date': timezone.now() if status == 'completed' else None,
             }
         )
         if created:
             print(f"  ✅ Inscripción: {student.username} -> {course.title[:20]}")
+
+        if enrollment.status == 'completed':
+            # RF-10, RF-34: el progreso registrado debe respaldar el estado 'completed'.
+            lessons = Lesson.objects.filter(module__course=course)
+            for lesson in lessons:
+                LessonProgress.objects.get_or_create(
+                    enrollment=enrollment,
+                    lesson=lesson,
+                    defaults={'completed': True, 'completed_at': timezone.now()}
+                )
+            # RF-64: todo curso completado debe emitir su certificado.
+            certificate, cert_created = issue_certificate(enrollment)
+            if cert_created:
+                print(f"  🎓 Certificado emitido: {student.username} -> {course.title[:20]}")
 
 print(f"✅ Total inscripciones: {Enrollment.objects.count()}")
 
@@ -551,13 +784,30 @@ print(f"   - Borradores: {Course.objects.filter(status='draft').count()}")
 print(f"   - Gratuitos: {Course.objects.filter(is_free=True).count()}")
 print(f"✅ Módulos: {Module.objects.count()}")
 print(f"✅ Lecciones: {Lesson.objects.count()}")
+print(f"✅ Evaluaciones: {Evaluation.objects.count()}")
 print(f"✅ Inscripciones: {Enrollment.objects.count()}")
+print(f"✅ Certificados: {Certificate.objects.count()}")
 print(f"✅ Reseñas: {Review.objects.count()}")
 print(f"✅ Favoritos: {Favorite.objects.count()}")
 print(f"✅ Notificaciones: {Notification.objects.count()}")
 print(f"✅ Actividades: {ActivityLog.objects.count()}")
+print(f"✅ Cupones: {Coupon.objects.count()}")
+print(f"✅ Preguntas al docente: {Question.objects.count()} ({Answer.objects.count()} respondidas)")
+print(f"✅ Intentos de evaluación: {EvaluationResult.objects.count()}")
 print("=" * 70)
 print("🎉 ¡BASE DE DATOS LLENADA EXITOSAMENTE!")
+print("=" * 70)
+
+print("\n🔑 CREDENCIALES DE PRUEBA")
+print("-" * 70)
+print("  Administrador  ->  usuario: admin       contraseña: admin")
+print("  Docente        ->  usuario: docente     contraseña: docente")
+print("  Estudiante     ->  usuario: estudiante  contraseña: estudiante")
+print("-" * 70)
+print("  Otros usuarios de ejemplo (misma contraseña dentro de cada grupo):")
+print("    Admins:      admin2                        / admin123")
+print("    Docentes:    teacher1 .. teacher5           / teacher123")
+print("    Estudiantes: estudiante01 .. estudiante20   / student123")
 print("=" * 70)
 
 # Mostrar algunos ejemplos

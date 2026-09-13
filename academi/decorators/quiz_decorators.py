@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.utils import timezone
-from ..models import Evaluation, Enrollment, EvaluationResult, Lesson
+from ..models import Evaluation, Enrollment, Lesson
 from ..utils import QuizSecurityManager, AntiCheatingMonitor
 
 
@@ -72,16 +72,19 @@ def prevent_cheating(view_func):
                 except:
                     pass  # Si falla, continuar
             
-            # Verificar trampas
+            # Verificar trampas: solo se bloquea el envío cuando se supera
+            # el límite de cambios de pestaña (quiz_kicked), no ante el primer
+            # cambio de pestaña — un solo cambio ya queda registrado como
+            # incidente al enviar, pero no debe impedir que el estudiante
+            # entregue sus respuestas.
             try:
-                monitor = AntiCheatingMonitor(None)
-                
-                if monitor.check_tab_switch(request):
+                if request.session.get('quiz_kicked', False):
                     return JsonResponse({
-                        'error': 'Cambio de pestaña detectado',
+                        'error': 'Cuestionario bloqueado por demasiados cambios de pestaña',
                         'code': 'TAB_SWITCH'
                     }, status=403)
-                
+
+                monitor = AntiCheatingMonitor(None)
                 if monitor.check_copy_paste(request):
                     return JsonResponse({
                         'error': 'Copiar/pegar no permitido',
@@ -122,6 +125,8 @@ def validate_quiz_token(view_func):
 # ============================================
 # RATE LIMIT - Limitar intentos de envío
 # ============================================
+# Única definición de este decorador en el proyecto (antes existía una
+# copia duplicada, y sin usar, en academi/utils.py).
 def rate_limit_quiz(max_attempts=5, period=60):
     """
     Decorador para limitar intentos de envío de cuestionarios.

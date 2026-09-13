@@ -1,0 +1,121 @@
+/* ============================================
+   MODALES - SIN BACKDROP NEGRO DE BOOTSTRAP
+   ============================================ */
+.modal-backdrop {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: fixed !important;
+    z-index: -999 !important;
+}
+
+.modal {
+    z-index: 99999 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    pointer-events: none !important;
+}
+
+.modal .modal-dialog {
+    pointer-events: auto !important;
+}
+
+.modal-dialog {
+    z-index: 99999 !important;
+    position: relative !important;
+    margin: 1.75rem auto !important;
+}
+
+.modal-content {
+    z-index: 99999 !important;
+    position: relative !important;
+    background: var(--surface) !important;
+    border-radius: var(--border-radius-lg) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3) !important;
+    border: none !important;
+    pointer-events: auto !important;
+}
+
+.modal.fade .modal-dialog {
+    transform: scale(0.9) translateY(-20px);
+    transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: scale(1) translateY(0);
+}
+
+.modal .btn {
+    padding: 10px 30px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 600;
+    transition: var(--transition);
+    min-width: 120px;
+    border: none !important;
+}
+
+.modal .btn-success {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
+}
+
+.modal .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(16, 185, 129, 0.4) !important;
+}
+
+.modal .btn-success:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.modal .btn-outline-secondary {
+    border: 2px solid var(--gray-light) !important;
+    background: transparent !important;
+    color: var(--gray-dark) !important;
+}
+
+.modal .btn-outline-secondary:hover {
+    background: #f7fafc !important;
+    border-color: #cbd5e0 !important;
+    transform: translateY(-2px);
+}
+
+.modal .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    color: white !important;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
+}
+
+.modal .btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(239, 68, 68, 0.4) !important;
+}
+
+.modal-icon {
+    font-size: 64px;
+    margin-bottom: 16px;
+}
+
+.modal-icon.success { color: var(--success); }
+.modal-icon.warning { color: var(--secondary); }
+.modal-icon.error { color: var(--danger); }
+
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem auto !important;
+        max-width: 95% !important;
+    }
+    .modal-body {
+        padding: 24px !important;
+    }
+    .modal-icon {
+        font-size: 48px !important;
+    }
+    .modal .btn {
+        padding: 8px 20px !important;
+        font-size: 14px !important;
+        min-width: 100px !important;
+    }
+}

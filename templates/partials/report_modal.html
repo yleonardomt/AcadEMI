@@ -1,0 +1,30 @@
+{% if user.is_authenticated %}
+<!-- ============================================
+     MODAL COMPARTIDO PARA REPORTAR CONTENIDO (RF-42)
+     Se abre con openReportModal(tipo, id) desde
+     comentarios, preguntas y reseñas.
+     ============================================ -->
+<div class="modal fade" id="reportContentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'report_content' %}">
+                {% csrf_token %}
+                <input type="hidden" name="report_type" id="reportContentType">
+                <input type="hidden" name="content_id" id="reportContentId">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-flag" style="color: var(--danger);"></i> Reportar contenido</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label" for="reportContentReason">¿Por qué reportas este contenido?</label>
+                    <textarea class="form-control" id="reportContentReason" name="reason" rows="3" required placeholder="Explica brevemente el motivo del reporte..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-danger"><i class="fas fa-flag"></i> Enviar reporte</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}

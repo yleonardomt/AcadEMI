@@ -3,40 +3,156 @@
 {% block title %}Mis cupones - AcadEMI{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold"><i class="fas fa-ticket-alt" style="color: var(--secondary);"></i> Mis cupones</h2>
-        <button class="btn btn-primary">
-            <i class="fas fa-plus-circle"></i> Crear cupón
-        </button>
-    </div>
-    
-    <div class="card shadow-lg border-0">
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Código</th>
-                            <th>Descuento</th>
-                            <th>Curso</th>
-                            <th>Usos</th>
-                            <th>Estado</th>
-                            <th>Expira</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="7" class="text-center text-muted py-4">
-                                <i class="fas fa-ticket-alt fa-2x d-block mb-2"></i>
-                                No tienes cupones creados
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-plus-circle" style="color: var(--primary);"></i> Nuevo cupón</h5>
+                    {% if teacher_courses %}
+                    <form method="POST" action="{% url 'teacher_coupons' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Curso</label>
+                            <select name="course" class="form-select" required>
+                                <option value="">Selecciona un curso</option>
+                                {% for course in teacher_courses %}
+                                <option value="{{ course.id }}">{{ course.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Código</label>
+                            <input type="text" name="code" class="form-control text-uppercase" placeholder="VERANO2026" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de descuento</label>
+                            <select name="discount_type" class="form-select">
+                                <option value="percentage">Porcentaje (%)</option>
+                                <option value="fixed">Monto fijo (Bs.)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Valor del descuento</label>
+                            <input type="number" step="0.01" name="discount_value" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Usos máximos</label>
+                            <input type="number" name="max_uses" class="form-control" value="1" min="1">
+                            <small class="text-muted">Ej: pon 10 para un cupón válido solo para las primeras 10 personas que lo usen.</small>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Fecha de expiración</label>
+                            <input type="datetime-local" name="expires_at" class="form-control" required>
+                            <small class="text-muted">El cupón deja de funcionar automáticamente después de esta fecha/hora.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Crear cupón</button>
+                    </form>
+                    {% else %}
+                    <p class="text-muted small mb-0">Necesitas al menos un curso creado para poder generar cupones.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0"><i class="fas fa-ticket-alt" style="color: var(--primary);"></i> Mis cupones</h4>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr><th>Código</th><th>Curso</th><th>Descuento</th><th>Usos</th><th>Expira</th><th>Estado</th><th style="width:130px;">Acciones</th></tr>
+                            </thead>
+                            <tbody>
+                                {% for coupon in coupons %}
+                                <tr>
+                                    <td class="fw-semibold">{{ coupon.code }}</td>
+                                    <td>{{ coupon.course.title|truncatechars:25 }}</td>
+                                    <td>{% if coupon.discount_type == 'percentage' %}{{ coupon.discount_value }}%{% else %}Bs. {{ coupon.discount_value }}{% endif %}</td>
+                                    <td>{{ coupon.used_count }} / {{ coupon.max_uses }}</td>
+                                    <td>{{ coupon.expires_at|date:"d/m/Y" }}</td>
+                                    <td>
+                                        {% if coupon.is_active %}
+                                            <span class="badge-status published">Activo</span>
+                                        {% else %}
+                                            <span class="badge-status archived">Inactivo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="openModalWithoutBackdrop('editCouponModal{{ coupon.id }}')" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <form method="POST" action="{% url 'teacher_coupon_toggle' coupon.id %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-primary btn-sm" title="Activar/desactivar">
+                                                    <i class="fas fa-power-off"></i>
+                                                </button>
+                                            </form>
+                                            <form method="POST" action="{% url 'teacher_coupon_delete' coupon.id %}" onsubmit="return confirm('¿Eliminar el cupón {{ coupon.code }}? Esta acción no se puede deshacer.');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" class="text-center text-muted py-4">No tienes cupones creados.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- MODALES DE EDICIÓN -->
+{% for coupon in coupons %}
+<div class="modal fade" id="editCouponModal{{ coupon.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{% url 'teacher_coupon_edit' coupon.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit"></i> Editar cupón {{ coupon.code }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de descuento</label>
+                        <select name="discount_type" class="form-select">
+                            <option value="percentage" {% if coupon.discount_type == 'percentage' %}selected{% endif %}>Porcentaje (%)</option>
+                            <option value="fixed" {% if coupon.discount_type == 'fixed' %}selected{% endif %}>Monto fijo (Bs.)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Valor del descuento</label>
+                        <input type="number" step="0.01" name="discount_value" class="form-control" value="{{ coupon.discount_value }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Usos máximos</label>
+                        <input type="number" name="max_uses" class="form-control" value="{{ coupon.max_uses }}" min="{{ coupon.used_count }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de expiración</label>
+                        <input type="datetime-local" name="expires_at" class="form-control" value="{{ coupon.expires_at|date:'Y-m-d\TH:i' }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Guardar cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
 {% endblock %}

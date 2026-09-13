@@ -1,0 +1,39 @@
+/* ============================================
+   ALERTAS
+   ============================================ */
+.alert {
+    border-radius: var(--border-radius) !important;
+    padding: var(--space-4) var(--space-5) !important;
+    font-weight: var(--font-weight-medium);
+    border: none !important;
+    box-shadow: var(--shadow-card);
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0) !important;
+    color: #065f46 !important;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #fee2e2, #fca5a5) !important;
+    color: #991b1b !important;
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, #fef3c7, #fcd34d) !important;
+    color: #92400e !important;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #dbeafe, #93c5fd) !important;
+    color: #1e40af !important;
+}
+
+.alert .btn-close {
+    filter: none !important;
+    opacity: 0.7;
+}
+
+.alert .btn-close:hover {
+    opacity: 1;
+}

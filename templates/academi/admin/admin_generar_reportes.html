@@ -1,0 +1,88 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Generar Reportes - Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3"><i class="fas fa-file-alt" style="color: var(--primary);"></i> Generar reporte</h5>
+                    <form method="POST" action="{% url 'admin_reports_generate' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de reporte</label>
+                            <select name="report_type" class="form-select">
+                                <option value="ventas">Ventas e ingresos</option>
+                                <option value="usuarios">Usuarios registrados</option>
+                                <option value="cursos">Rendimiento académico</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Desde</label>
+                            <input type="date" name="date_from" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Hasta</label>
+                            <input type="date" name="date_to" class="form-control">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100"><i class="fas fa-cogs"></i> Generar reporte</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="fw-bold mb-0"><i class="fas fa-chart-bar" style="color: var(--primary);"></i> Resultado</h4>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
+                    </div>
+
+                    {% if generated %}
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <div class="stat-card p-3 text-center rounded" style="background: var(--primary-lighter); border-bottom: 3px solid var(--primary);">
+                                    <span class="d-block fw-bold h4">{{ total_users }}</span>
+                                    <small class="text-muted">Usuarios totales</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card p-3 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid #3b82f6;">
+                                    <span class="d-block fw-bold h4">{{ total_courses }}</span>
+                                    <small class="text-muted">Cursos totales</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card p-3 text-center rounded" style="background: #fef3c7; border-bottom: 3px solid var(--secondary);">
+                                    <span class="d-block fw-bold h4">{{ total_sales }}</span>
+                                    <small class="text-muted">Ventas en el período</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="stat-card p-3 text-center rounded" style="background: #d1fae5; border-bottom: 3px solid #10b981;">
+                                    <span class="d-block fw-bold h4">Bs. {{ total_revenue }}</span>
+                                    <small class="text-muted">Ingresos del período</small>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted small mt-3 mb-0">
+                            Reporte de <strong>{{ report_type }}</strong>
+                            {% if date_from %} desde {{ date_from }}{% endif %}
+                            {% if date_to %} hasta {{ date_to }}{% endif %}.
+                        </p>
+                    {% else %}
+                        <div class="empty-state">
+                            <div class="empty-state-icon"><i class="fas fa-chart-bar"></i></div>
+                            <h4>Todavía no generaste ningún reporte</h4>
+                            <p>Selecciona un tipo de reporte y un rango de fechas para ver los resultados aquí.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

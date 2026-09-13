@@ -1,0 +1,48 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Mis certificados - AcadEMI{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="page-header">
+        <div class="page-header-icon"><i class="fas fa-certificate"></i></div>
+        <div class="page-header-text">
+            <h1 class="page-title">Mis certificados</h1>
+            <p class="page-subtitle">Certificados obtenidos al finalizar tus cursos</p>
+        </div>
+    </div>
+
+    {% if certificates %}
+        {% for certificate in certificates %}
+        <div class="list-item">
+            <div class="list-item-icon gold"><i class="fas fa-award"></i></div>
+            <div class="list-item-body">
+                <p class="list-item-title">{{ certificate.enrollment.course.title }}</p>
+                <div class="list-item-meta">
+                    <span><i class="fas fa-calendar"></i> Emitido el {{ certificate.issued_at|date:"d/m/Y" }}</span>
+                    <span><i class="fas fa-barcode"></i> {{ certificate.certificate_code }}</span>
+                    {% if certificate.is_verified %}
+                        <span class="badge-status published">Verificado</span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="list-item-actions">
+                <a href="{% url 'certificate_detail' certificate.id %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-eye"></i> Ver / descargar
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon"><i class="fas fa-certificate"></i></div>
+            <h4>Todavía no tienes certificados</h4>
+            <p>Completa el 100% de un curso para obtener tu certificado de finalización.</p>
+            <a href="{% url 'my_courses' %}" class="btn btn-primary"><i class="fas fa-book-open"></i> Ir a mis cursos</a>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

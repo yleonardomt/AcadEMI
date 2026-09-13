@@ -1,6 +1,6 @@
-{% load static %}
+{% load static static_extras %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -18,156 +18,22 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
-    <!-- ============================================
-         ACADEMI.CSS - VERSION FINAL
-         ============================================ -->
-    <link rel="stylesheet" href="{% static 'css/academia.css' %}">
-    
-    <style>
-        /* ============================================
-           AJUSTES ADICIONALES PARA REGISTRO
-           ============================================ */
-        
-        /* Icono más pequeño */
-        .icon-circle {
-            width: 56px;
-            height: 56px;
-            background: var(--primary-gradient);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto;
-            color: var(--white);
-            font-size: 22px;
-            box-shadow: 0 4px 20px rgba(0, 51, 160, 0.3);
-        }
-
-        /* Botón volver */
-        .btn-back {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 10;
-            background: var(--white);
-            color: var(--gray-dark);
-            border: 2px solid var(--gray-light);
-            border-radius: var(--border-radius-pill);
-            padding: 8px 16px;
-            font-weight: var(--font-weight-medium);
-            font-size: 14px;
-            transition: var(--transition);
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            box-shadow: var(--shadow-card);
-        }
-
-        .btn-back:hover {
-            background: var(--primary);
-            color: var(--white);
-            border-color: var(--primary);
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-hover);
-            text-decoration: none;
-        }
-
-        /* Password strength */
-        .password-strength {
-            margin-top: 5px;
-        }
-
-        .strength-bar {
-            height: 4px;
-            border-radius: 4px;
-            background: var(--gray-light);
-            transition: all 0.3s ease;
-            width: 0%;
-        }
-
-        .strength-text {
-            font-size: 12px;
-            transition: color 0.3s ease;
-        }
-
-        /* CAPTCHA */
-        .captcha-section .captcha {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .captcha-section .captcha img {
-            border-radius: var(--border-radius-sm);
-            border: 1px solid var(--gray-light);
-            max-width: 100%;
-        }
-
-        .captcha-section .captcha input {
-            width: 100%;
-            padding: 10px 16px;
-            border: 2px solid var(--gray-light);
-            border-radius: var(--border-radius-sm);
-            font-family: var(--font);
-            transition: all 0.3s ease;
-        }
-
-        .captcha-section .captcha input:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
-            outline: none;
-        }
-
-        /* Main content */
-        .main-content {
-            padding: var(--space-6);
-        }
-
-        .form-text {
-            font-size: 12px;
-            color: var(--gray);
-        }
-
-        .text-danger {
-            color: #dc3545 !important;
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .main-content {
-                padding: var(--space-3) !important;
-            }
-            .btn-back {
-                top: 12px;
-                left: 12px;
-                padding: 6px 12px;
-                font-size: 12px;
-            }
-            .btn-back span {
-                display: none;
-            }
-            .card-body {
-                padding: 20px !important;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .main-content {
-                padding: var(--space-2) !important;
-            }
-            .icon-circle {
-                width: 48px;
-                height: 48px;
-                font-size: 18px;
-            }
-            .card-body {
-                padding: var(--space-4) !important;
-            }
-        }
-    </style>
+    <!-- Estilos propios: la misma base de todo el sitio + los extras
+         de las páginas de login/registro (tarjeta centrada sin navbar). -->
+    <link rel="stylesheet" href="{% static_v 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/buttons.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/cards.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/forms.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/alerts.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/particles-bg.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/pages/auth.css' %}">
 </head>
 <body>
+
+    <!-- ============================================
+         FONDO 3D DE PARTÍCULAS (ver static/js/particles-bg.js)
+         ============================================ -->
+    <canvas id="bg-particles"></canvas>
 
     <!-- ============================================
          BOTÓN VOLVER
@@ -176,11 +42,6 @@
         <i class="fas fa-arrow-left"></i>
         <span>Volver</span>
     </a>
-
-    <!-- ============================================
-         FONDO EDUCATIVO CON PATRÓN
-         ============================================ -->
-    <div class="bg-pattern"></div>
 
     <!-- ============================================
          CONTENIDO PRINCIPAL
@@ -256,8 +117,23 @@
                                     <label class="form-label fw-bold small">
                                         <i class="fas fa-user-tag me-1"></i> Tipo de usuario <span class="text-danger">*</span>
                                     </label>
+                                    <div class="role-picker" id="rolePicker">
+                                        <button type="button" class="role-card" data-role="student">
+                                            <i class="fas fa-graduation-cap"></i>
+                                            <span class="role-card-title">Estudiante</span>
+                                            <span class="role-card-desc">Quiero aprender con cursos</span>
+                                        </button>
+                                        <button type="button" class="role-card" data-role="teacher">
+                                            <i class="fas fa-chalkboard-teacher"></i>
+                                            <span class="role-card-title">Docente</span>
+                                            <span class="role-card-desc">Quiero crear y vender cursos</span>
+                                        </button>
+                                    </div>
                                     {{ form.role }}
                                     <div class="form-text">Selecciona tu rol para personalizar tu experiencia</div>
+                                    {% if form.role.errors %}
+                                        <div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>
+                                    {% endif %}
                                 </div>
 
                                 <!-- ===== CAMPOS ESTUDIANTE ===== -->
@@ -473,134 +349,10 @@
          SCRIPTS
          ============================================ -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ====== TIPO DE USUARIO ======
-        var roleSelect = document.getElementById('id_role');
-        var studentFields = document.getElementById('studentFields');
-        var teacherFields = document.getElementById('teacherFields');
+    <script src="{% static_v 'js/forms-validation.js' %}"></script>
 
-        function toggleRoleFields() {
-            if (roleSelect.value === 'student') {
-                studentFields.style.display = 'block';
-                teacherFields.style.display = 'none';
-                // Marcar campos requeridos para estudiante
-                studentFields.querySelectorAll('input, select').forEach(function(el) {
-                    if (el.name && ['full_name', 'university', 'career'].includes(el.name)) {
-                        el.setAttribute('required', 'required');
-                    }
-                });
-                teacherFields.querySelectorAll('input, select').forEach(function(el) {
-                    el.removeAttribute('required');
-                });
-            } else if (roleSelect.value === 'teacher') {
-                studentFields.style.display = 'none';
-                teacherFields.style.display = 'block';
-                // Marcar campos requeridos para docente
-                teacherFields.querySelectorAll('input, select').forEach(function(el) {
-                    if (el.name && ['teacher_full_name', 'specialty', 'experience_years'].includes(el.name)) {
-                        el.setAttribute('required', 'required');
-                    }
-                });
-                studentFields.querySelectorAll('input, select').forEach(function(el) {
-                    el.removeAttribute('required');
-                });
-            } else {
-                studentFields.style.display = 'none';
-                teacherFields.style.display = 'none';
-            }
-        }
-
-        if (roleSelect) {
-            roleSelect.addEventListener('change', toggleRoleFields);
-            toggleRoleFields(); // Ejecutar al cargar
-        }
-
-        // ====== BARRA DE CONTRASEÑA ======
-        var passwordInput = document.querySelector('#id_password1');
-        var strengthBar = document.querySelector('.strength-bar');
-        var strengthText = document.querySelector('.strength-text');
-
-        if (passwordInput) {
-            passwordInput.addEventListener('input', function() {
-                var password = this.value;
-                var strength = 0;
-                
-                if (password.length >= 8) strength++;
-                if (password.match(/[A-Z]/)) strength++;
-                if (password.match(/[a-z]/)) strength++;
-                if (password.match(/[0-9]/)) strength++;
-                if (password.match(/[!@#$%^&*(),.?":{}|<>]/)) strength++;
-                
-                var width = (strength / 5) * 100;
-                var color = '#dc3545';
-                var text = 'Débil';
-                
-                if (strength >= 4) {
-                    color = '#00b894';
-                    text = 'Fuerte';
-                } else if (strength >= 3) {
-                    color = '#ffc107';
-                    text = 'Media';
-                } else if (strength >= 2) {
-                    color = '#fd7e14';
-                    text = 'Regular';
-                }
-                
-                if (strengthBar) {
-                    strengthBar.style.width = width + '%';
-                    strengthBar.style.background = color;
-                }
-                if (strengthText) {
-                    strengthText.textContent = text + ' - ' + Math.round(width) + '%';
-                    strengthText.style.color = color;
-                }
-            });
-        }
-
-        // ====== CONFIRMAR CONTRASEÑA ======
-        var password2Input = document.querySelector('#id_password2');
-        if (password2Input && passwordInput) {
-            password2Input.addEventListener('input', function() {
-                if (this.value && this.value !== passwordInput.value) {
-                    this.style.borderColor = '#dc3545';
-                    var errorDiv = this.parentElement.querySelector('.text-danger') || document.createElement('div');
-                    errorDiv.className = 'text-danger small mt-1';
-                    errorDiv.textContent = 'Las contraseñas no coinciden';
-                    if (!this.parentElement.querySelector('.text-danger')) {
-                        this.parentElement.appendChild(errorDiv);
-                    }
-                } else {
-                    this.style.borderColor = '';
-                    var errorDiv = this.parentElement.querySelector('.text-danger');
-                    if (errorDiv) errorDiv.remove();
-                }
-            });
-        }
-
-        // ====== VALIDAR EMAIL ======
-        var emailInput = document.querySelector('#id_email');
-        if (emailInput) {
-            emailInput.addEventListener('blur', function() {
-                var re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (this.value && !re.test(this.value)) {
-                    this.style.borderColor = '#dc3545';
-                    var errorDiv = this.parentElement.querySelector('.text-danger') || document.createElement('div');
-                    errorDiv.className = 'text-danger small mt-1';
-                    errorDiv.textContent = 'Ingresa un email válido';
-                    if (!this.parentElement.querySelector('.text-danger')) {
-                        this.parentElement.appendChild(errorDiv);
-                    }
-                } else {
-                    this.style.borderColor = '';
-                    var errorDiv = this.parentElement.querySelector('.text-danger');
-                    if (errorDiv) errorDiv.remove();
-                }
-            });
-        }
-    });
-    </script>
+    <!-- Three.js (fondo 3D de partículas) -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+    <script src="{% static_v 'js/particles-bg.js' %}"></script>
 </body>
 </html>

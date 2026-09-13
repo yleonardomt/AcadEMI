@@ -1,0 +1,38 @@
+/* ============================================
+   ESTADO VACÍO
+   Usado cuando un listado (progreso, favoritos,
+   certificados, cupones, etc.) no tiene elementos.
+   ============================================ */
+.empty-state {
+    text-align: center;
+    padding: var(--space-10) var(--space-5);
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-card);
+}
+
+.empty-state-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto var(--space-5);
+    border-radius: 50%;
+    background: var(--primary-lighter);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+}
+
+.empty-state h4 {
+    font-weight: var(--font-weight-semibold);
+    color: var(--dark);
+    margin-bottom: var(--space-2);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    font-size: var(--font-size-small);
+    max-width: 380px;
+    margin: 0 auto var(--space-5);
+}

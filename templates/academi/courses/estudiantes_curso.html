@@ -26,6 +26,7 @@
                             <th>Email</th>
                             <th>Progreso</th>
                             <th>Estado</th>
+                            <th>Calificaciones</th>
                             <th>Inscrito</th>
                         </tr>
                     </thead>
@@ -46,8 +47,49 @@
                                     {{ enrollment.get_status_display }}
                                 </span>
                             </td>
+                            <td>
+                                {% if enrollment.results_count %}
+                                <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#grades-{{ enrollment.id }}">
+                                    <i class="fas fa-chart-bar"></i> {{ enrollment.average_score }}% prom. ({{ enrollment.results_count }})
+                                </button>
+                                {% else %}
+                                <span class="text-muted small">Sin evaluaciones</span>
+                                {% endif %}
+                            </td>
                             <td>{{ enrollment.enrollment_date|date:"d/m/Y" }}</td>
                         </tr>
+                        {% if enrollment.results_count %}
+                        <tr class="collapse" id="grades-{{ enrollment.id }}">
+                            <td colspan="7" class="bg-light">
+                                <table class="table table-sm mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Evaluación</th>
+                                            <th>Intento</th>
+                                            <th>Puntaje</th>
+                                            <th>Resultado</th>
+                                            <th>Fecha</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for result in enrollment.results_list %}
+                                        <tr>
+                                            <td>{{ result.evaluation.lesson.title }}</td>
+                                            <td>#{{ result.attempt_number }}</td>
+                                            <td>{{ result.score }}/{{ result.total_points }} ({% widthratio result.score result.total_points 100 %}%)</td>
+                                            <td>
+                                                <span class="badge {% if result.passed %}bg-success{% else %}bg-danger{% endif %}">
+                                                    {% if result.passed %}Aprobado{% else %}Reprobado{% endif %}
+                                                </span>
+                                            </td>
+                                            <td>{{ result.completed_at|date:"d/m/Y H:i" }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>

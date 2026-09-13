@@ -5,34 +5,16 @@
 
 {% block extra_css %}
 <style>
+    /* Usa las variables globales de base.css (que ya cambian con el
+       modo noche/día); antes esta página las redefinía con valores
+       fijos, lo que impedía que el modo oscuro se aplicara aquí. */
     :root {
-        --primary: #0033a0;
-        --primary-dark: #002277;
-        --primary-light: #1a4db8;
-        --primary-lighter: #e8edf5;
-        --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
-        --secondary: #f7c600;
-        --secondary-dark: #d4a800;
-        --white: #ffffff;
-        --white-smoke: #f5f7fa;
-        --gray-light: #e2e8f0;
-        --gray: #718096;
-        --gray-dark: #2d3748;
-        --dark: #1a202c;
-        --success: #10b981;
-        --danger: #ef4444;
-        --warning: #f59e0b;
-        --info: #3b82f6;
-        --font: 'Inter', sans-serif;
-        --shadow: 0 4px 20px rgba(0,51,160,0.08);
-        --shadow-hover: 0 8px 40px rgba(0,51,160,0.15);
-        --radius: 16px;
-        --radius-sm: 8px;
-        --transition: all 0.3s ease;
+        --radius: var(--border-radius);
+        --radius-sm: var(--border-radius-sm);
     }
 
     .lesson-container {
-        background: var(--white);
+        background: var(--surface);
         border-radius: var(--radius);
         padding: 30px;
         box-shadow: var(--shadow);
@@ -136,49 +118,8 @@
         border: none;
     }
     
-    .toast-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 9999;
-    }
-    .toast-custom {
-        background: var(--white);
-        border-radius: var(--radius-sm);
-        box-shadow: var(--shadow-hover);
-        padding: 14px 18px;
-        margin-bottom: 10px;
-        border-left: 4px solid var(--primary);
-        min-width: 260px;
-        animation: slideInRight 0.3s ease;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        font-size: 14px;
-    }
-    .toast-custom.success { border-left-color: var(--success); }
-    .toast-custom.error { border-left-color: var(--danger); }
-    .toast-custom i { font-size: 18px; }
-    .toast-custom .toast-close {
-        margin-left: auto;
-        cursor: pointer;
-        background: none;
-        border: none;
-        color: var(--gray);
-        font-size: 16px;
-        padding: 0 4px;
-    }
-    .toast-custom .toast-close:hover { color: var(--dark); }
-    @keyframes slideInRight {
-        from { transform: translateX(100%); opacity: 0; }
-        to { transform: translateX(0%); opacity: 1; }
-    }
-    @keyframes slideOutRight {
-        from { transform: translateX(0%); opacity: 1; }
-        to { transform: translateX(100%); opacity: 0; }
-    }
-    .toast-custom.removing { animation: slideOutRight 0.3s ease forwards; }
-    
+    /* Toast: usa el sistema único de static/css/components/notifications.css */
+
     @media (max-width: 768px) {
         .lesson-container { padding: 16px; }
         .lesson-actions { flex-direction: column; }
@@ -188,8 +129,6 @@
 {% endblock %}
 
 {% block content %}
-
-<div class="toast-container" id="toastContainer"></div>
 
 <div class="container py-4">
     <div class="row justify-content-center">
@@ -313,20 +252,76 @@
                         
                     {% elif lesson.lesson_type == 'assignment' %}
                         <div class="alert alert-warning" style="border-radius: 12px; border-left: 4px solid var(--warning);">
-                            <i class="fas fa-tasks"></i> 
+                            <i class="fas fa-tasks"></i>
                             <strong>Tarea:</strong>
                             {{ lesson.content|safe }}
+                            {% if lesson.assignment_deadline_days %}
+                            <br><small><i class="fas fa-hourglass-half"></i> Plazo de entrega: {{ lesson.assignment_deadline_days }} día{{ lesson.assignment_deadline_days|pluralize }}{% if lesson.assignment_deadline_hours %} y {{ lesson.assignment_deadline_hours }}h{% endif %} desde que se habilita la lección.</small>
+                            {% endif %}
                         </div>
+
+                        {% if is_teacher_of_course %}
                         <div class="text-center p-4" style="background: var(--white-smoke); border-radius: 12px;">
-                            <i class="fas fa-upload" style="font-size: 48px; color: var(--warning);"></i>
-                            <p class="mt-2 text-muted">Sube tu tarea para recibir retroalimentaci&oacute;n.</p>
-                            <button class="btn btn-primary btn-lg" onclick="showToast('Funci&oacute;n de tarea en desarrollo', 'info')">
-                                <i class="fas fa-upload"></i> Subir tarea
-                            </button>
+                            <i class="fas fa-inbox" style="font-size: 48px; color: var(--primary);"></i>
+                            <p class="mt-2 text-muted">Consulta y califica las entregas de tus estudiantes.</p>
+                            <a href="{% url 'assignment_submissions' lesson.id %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-list"></i> Ver entregas
+                            </a>
                         </div>
+                        {% else %}
+                            {% if my_submission %}
+                            <div class="p-4" style="background: var(--white-smoke); border-radius: 12px;">
+                                <p class="mb-1"><i class="fas fa-check-circle" style="color: var(--success);"></i> Ya entregaste esta tarea el {{ my_submission.submitted_at|date:"d/m/Y H:i" }}.</p>
+                                <p class="mb-2"><a href="{{ my_submission.file.url }}" target="_blank"><i class="fas fa-paperclip"></i> {{ my_submission.file.name|cut:"assignments/" }}</a></p>
+                                {% if my_submission.grade is not None %}
+                                <div class="alert alert-success mb-3">
+                                    <strong>Calificación: {{ my_submission.grade }}/100</strong>
+                                    {% if my_submission.feedback %}<p class="mb-0 mt-1">{{ my_submission.feedback }}</p>{% endif %}
+                                </div>
+                                {% else %}
+                                <p class="text-muted small mb-3"><i class="fas fa-clock"></i> Pendiente de calificación.</p>
+                                {% endif %}
+                                <details>
+                                    <summary class="text-muted small" style="cursor: pointer;">Volver a subir otro archivo</summary>
+                                    <form method="POST" action="{% url 'submit_assignment' lesson.id %}" enctype="multipart/form-data" class="mt-2">
+                                        {% csrf_token %}
+                                        <input type="file" name="file" class="form-control mb-2" required>
+                                        <textarea name="comment" class="form-control mb-2" rows="2" placeholder="Comentario opcional para tu docente...">{{ my_submission.comment }}</textarea>
+                                        <button type="submit" class="btn btn-outline-primary btn-sm"><i class="fas fa-upload"></i> Reemplazar entrega</button>
+                                    </form>
+                                </details>
+                            </div>
+                            {% else %}
+                            <div class="p-4" style="background: var(--white-smoke); border-radius: 12px;">
+                                <div class="text-center mb-3">
+                                    <i class="fas fa-upload" style="font-size: 48px; color: var(--warning);"></i>
+                                    <p class="mt-2 text-muted">Sube tu tarea para recibir retroalimentación.</p>
+                                </div>
+                                <form method="POST" action="{% url 'submit_assignment' lesson.id %}" enctype="multipart/form-data">
+                                    {% csrf_token %}
+                                    <input type="file" name="file" class="form-control mb-2" required>
+                                    <textarea name="comment" class="form-control mb-2" rows="2" placeholder="Comentario opcional para tu docente..."></textarea>
+                                    <button type="submit" class="btn btn-primary w-100"><i class="fas fa-upload"></i> Subir tarea</button>
+                                </form>
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
                 </div>
 
+                {% if is_teacher_of_course %}
+                <!-- ACCIONES (DOCENTE) -->
+                <div class="lesson-actions">
+                    <a href="{% url 'manage_course' course.id %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Volver a gestionar curso
+                    </a>
+                    {% if next_lesson %}
+                        <a href="{% url 'lesson_view' next_lesson.id %}" class="btn btn-primary">
+                            Siguiente lecci&oacute;n <i class="fas fa-arrow-right"></i>
+                        </a>
+                    {% endif %}
+                </div>
+                {% else %}
                 <!-- PROGRESO MINI -->
                 <div class="progress-mini">
                     <div class="d-flex justify-content-between mb-1">
@@ -337,7 +332,7 @@
                         <div class="progress-bar" style="width: {{ progress }}%;"></div>
                     </div>
                     <small class="text-muted">
-                        <i class="fas fa-check-circle" style="color: var(--success);"></i> 
+                        <i class="fas fa-check-circle" style="color: var(--success);"></i>
                         {{ completed_count }} de {{ total_lessons }} lecciones completadas
                         {% if progress == 100 %}
                             <span class="badge bg-success ms-2"><i class="fas fa-award"></i> Completado</span>
@@ -350,11 +345,11 @@
                     <a href="{% url 'course_learn' course.id %}" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left"></i> Volver al curso
                     </a>
-                    
+
                     <button class="btn btn-success" onclick="markComplete({{ lesson.id }})" id="completeBtn">
                         <i class="fas fa-check"></i> Marcar como completada
                     </button>
-                    
+
                     {% if next_lesson %}
                         <a href="{% url 'lesson_view' next_lesson.id %}" class="btn btn-primary">
                             Siguiente lecci&oacute;n <i class="fas fa-arrow-right"></i>
@@ -365,6 +360,104 @@
                         </a>
                     {% endif %}
                 </div>
+                {% endif %}
+            </div>
+
+            <!-- COMENTARIOS (RF-35, RF-36) -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="engagement-section-title"><i class="fas fa-comments" style="color: var(--primary);"></i> Comentarios</h5>
+
+                    <form method="POST" action="{% url 'add_comment' lesson.id %}" class="mb-3">
+                        {% csrf_token %}
+                        <div class="input-group">
+                            <textarea class="form-control" name="content" rows="2" placeholder="Escribe un comentario sobre esta lección..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm mt-2"><i class="fas fa-paper-plane"></i> Comentar</button>
+                    </form>
+
+                    {% for comment in comments %}
+                    <div class="engagement-item">
+                        <div class="engagement-item-header">
+                            <span class="engagement-item-author"><i class="fas fa-user-circle"></i> {{ comment.student.get_full_name|default:comment.student.username }}</span>
+                            <span class="engagement-item-date">{{ comment.created_at|date:"d/m/Y H:i" }}{% if comment.is_edited %} · editado{% endif %}</span>
+                        </div>
+
+                        {% if comment.student == request.user %}
+                        <form method="POST" action="{% url 'edit_comment' comment.id %}" class="edit-form" id="edit-comment-{{ comment.id }}" style="display:none;">
+                            {% csrf_token %}
+                            <textarea class="form-control form-control-sm mb-2" name="content" rows="2" required>{{ comment.content }}</textarea>
+                            <button type="submit" class="btn btn-primary btn-sm">Guardar</button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('edit-comment-{{ comment.id }}').style.display='none'; document.getElementById('view-comment-{{ comment.id }}').style.display='block';">Cancelar</button>
+                        </form>
+                        {% endif %}
+
+                        <div id="view-comment-{{ comment.id }}">
+                            <p class="engagement-item-body mb-0">{{ comment.content }}</p>
+                            <div class="engagement-item-actions">
+                                {% if comment.student == request.user %}
+                                <button type="button" onclick="document.getElementById('view-comment-{{ comment.id }}').style.display='none'; document.getElementById('edit-comment-{{ comment.id }}').style.display='block';"><i class="fas fa-edit"></i> Editar</button>
+                                <form method="POST" action="{% url 'delete_comment' comment.id %}" onsubmit="return confirm('¿Eliminar este comentario?');" style="display:inline;">
+                                    {% csrf_token %}
+                                    <button type="submit"><i class="fas fa-trash"></i> Eliminar</button>
+                                </form>
+                                {% else %}
+                                <a href="javascript:void(0)" class="report-link" onclick="openReportModal('comment', {{ comment.id }})"><i class="fas fa-flag"></i> Reportar</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p class="engagement-empty">Aún no hay comentarios en esta lección. ¡Sé el primero en comentar!</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- PREGUNTAS Y RESPUESTAS (RF-37, RF-38, RF-39) -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="engagement-section-title"><i class="fas fa-question-circle" style="color: var(--primary);"></i> Preguntas y respuestas</h5>
+
+                    {% if not is_teacher_of_course %}
+                    <form method="POST" action="{% url 'add_question' lesson.id %}" class="mb-3">
+                        {% csrf_token %}
+                        <textarea class="form-control" name="content" rows="2" placeholder="¿Tienes alguna duda sobre esta lección? Pregúntale al docente..." required></textarea>
+                        <button type="submit" class="btn btn-primary btn-sm mt-2"><i class="fas fa-paper-plane"></i> Preguntar</button>
+                    </form>
+                    {% endif %}
+
+                    {% for question in questions %}
+                    <div class="engagement-item">
+                        <div class="engagement-item-header">
+                            <span class="engagement-item-author"><i class="fas fa-user-circle"></i> {{ question.student.get_full_name|default:question.student.username }}</span>
+                            <span class="engagement-item-date">{{ question.created_at|date:"d/m/Y H:i" }}</span>
+                        </div>
+                        <p class="engagement-item-body mb-0">{{ question.content }}</p>
+                        {% if question.student != request.user %}
+                        <div class="engagement-item-actions">
+                            <a href="javascript:void(0)" class="report-link" onclick="openReportModal('question', {{ question.id }})"><i class="fas fa-flag"></i> Reportar</a>
+                        </div>
+                        {% endif %}
+
+                        {% for answer in question.answers.all %}
+                        <div class="engagement-reply">
+                            <div class="engagement-reply-author"><i class="fas fa-chalkboard-teacher"></i> {{ answer.teacher.get_full_name|default:answer.teacher.username }} <span class="text-muted fw-normal">· docente</span></div>
+                            <p class="mb-0">{{ answer.content }}</p>
+                        </div>
+                        {% endfor %}
+
+                        {% if is_teacher_of_course and not question.answers.all %}
+                        <form method="POST" action="{% url 'answer_question' question.id %}" class="mt-2">
+                            {% csrf_token %}
+                            <textarea class="form-control form-control-sm mb-2" name="content" rows="2" placeholder="Escribe tu respuesta..." required></textarea>
+                            <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-reply"></i> Responder</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="engagement-empty">Aún no hay preguntas en esta lección.</p>
+                    {% endfor %}
+                </div>
             </div>
 
         </div>
@@ -372,45 +465,6 @@
 </div>
 
 <script>
-    function showToast(message, type) {
-        type = type || 'info';
-        var container = document.getElementById('toastContainer');
-        var toast = document.createElement('div');
-        toast.className = 'toast-custom ' + type;
-
-        var icons = {
-            error: 'fas fa-times-circle',
-            success: 'fas fa-check-circle',
-            warning: 'fas fa-exclamation-triangle',
-            info: 'fas fa-info-circle'
-        };
-        var colors = {
-            error: '#ef4444',
-            success: '#10b981',
-            warning: '#f59e0b',
-            info: '#3b82f6'
-        };
-
-        toast.innerHTML = `
-            <i class="${icons[type]}" style="color: ${colors[type]};"></i>
-            <span>${message}</span>
-            <button class="toast-close" onclick="this.parentElement.remove();">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        container.appendChild(toast);
-
-        setTimeout(function() {
-            if (toast.parentElement) {
-                toast.classList.add('removing');
-                setTimeout(function() {
-                    if (toast.parentElement) {
-                        toast.remove();
-                    }
-                }, 300);
-            }
-        }, 5000);
-    }
 
     function markComplete(lessonId) {
         var btn = document.getElementById('completeBtn');

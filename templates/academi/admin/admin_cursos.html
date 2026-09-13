@@ -1,0 +1,78 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Gestión de Cursos - Administrador{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
+                        <div>
+                            <h4 class="fw-bold">
+                                <i class="fas fa-book" style="color: var(--primary);"></i>
+                                Gestión de Cursos
+                            </h4>
+                            <p class="text-muted mb-0">Aprueba, rechaza o retira cursos del catálogo</p>
+                        </div>
+                        <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Volver
+                        </a>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead>
+                                <tr>
+                                    <th>Curso</th>
+                                    <th>Docente</th>
+                                    <th>Categoría</th>
+                                    <th>Precio</th>
+                                    <th>Estudiantes</th>
+                                    <th>Estado</th>
+                                    <th style="width: 260px;">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for course in courses %}
+                                <tr>
+                                    <td class="fw-semibold">{{ course.title }}</td>
+                                    <td>{{ course.teacher.username }}</td>
+                                    <td>{{ course.category.name|default:"—" }}</td>
+                                    <td>{{ course.get_price_display }}</td>
+                                    <td>{{ course.total_students }}</td>
+                                    <td><span class="badge-status {{ course.status }}">{{ course.get_status_display }}</span></td>
+                                    <td>
+                                        <div class="d-flex gap-1 flex-wrap">
+                                            <a href="{% url 'course_detail' course.id %}" class="btn btn-outline-primary btn-sm" title="Ver"><i class="fas fa-eye"></i></a>
+                                            {% if course.status == 'pending' or course.status == 'draft' %}
+                                            <form method="POST" action="{% url 'admin_course_moderate' course.id 'approve' %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-success btn-sm" title="Aprobar"><i class="fas fa-check"></i></button>
+                                            </form>
+                                            <form method="POST" action="{% url 'admin_course_moderate' course.id 'reject' %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Rechazar"><i class="fas fa-times"></i></button>
+                                            </form>
+                                            {% elif course.status == 'published' %}
+                                            <form method="POST" action="{% url 'admin_course_moderate' course.id 'retire' %}" class="d-inline" onsubmit="return confirm('¿Retirar este curso del catálogo?');">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Retirar"><i class="fas fa-ban"></i></button>
+                                            </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr><td colspan="7" class="text-center text-muted py-4">No hay cursos registrados.</td></tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

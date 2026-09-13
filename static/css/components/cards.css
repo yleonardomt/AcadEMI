@@ -1,0 +1,64 @@
+/* ============================================
+   TARJETAS Y CARDS
+   ============================================ */
+.card {
+    border-radius: var(--card-radius);
+    border: none;
+    background: var(--card-background);
+    backdrop-filter: blur(var(--card-blur));
+    -webkit-backdrop-filter: blur(var(--card-blur));
+    box-shadow: var(--card-shadow);
+    transition: var(--transition);
+    margin-bottom: var(--space-5);
+    overflow: hidden;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.card-body {
+    padding: var(--card-padding);
+}
+
+/* ============================================
+   ESTADÍSTICAS
+   ============================================ */
+.stat-card {
+    background: var(--card-background);
+    backdrop-filter: blur(var(--card-blur));
+    -webkit-backdrop-filter: blur(var(--card-blur));
+    padding: var(--space-4);
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+    box-shadow: var(--shadow-card);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.stat-card h4 {
+    font-size: var(--font-size-h2);
+    font-weight: var(--font-weight-bold);
+    color: var(--primary-text);
+    margin: 0;
+}
+
+.stat-card p {
+    font-size: var(--font-size-small);
+    color: var(--text-muted);
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .stat-card h4 {
+        font-size: var(--font-size-h3);
+    }
+
+    .card-body {
+        padding: var(--space-4) !important;
+    }
+}

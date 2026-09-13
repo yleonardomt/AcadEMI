@@ -1,0 +1,133 @@
+{% extends 'partials/base.html' %}
+{% load static %}
+
+{% block title %}Comprobante {{ payment.invoice_number }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .invoice-actions {
+        display: flex;
+        justify-content: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-6);
+    }
+    .invoice-paper {
+        max-width: 700px;
+        margin: 0 auto;
+        background: var(--surface);
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+        padding: var(--space-8);
+    }
+    .invoice-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid var(--primary-lighter);
+        padding-bottom: var(--space-5);
+        margin-bottom: var(--space-5);
+        flex-wrap: wrap;
+        gap: var(--space-3);
+    }
+    .invoice-brand { font-size: 24px; font-weight: 800; color: var(--primary); }
+    .invoice-number { text-align: right; font-size: var(--font-size-small); color: var(--text-muted); }
+    .invoice-number strong { display: block; color: var(--dark); font-size: 18px; }
+    .invoice-status {
+        display: inline-block;
+        padding: 3px 14px;
+        border-radius: 50px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        margin-top: 6px;
+    }
+    .invoice-status.completed { background: #d1fae5; color: #065f46; }
+    .invoice-status.pending { background: #fef3c7; color: #92400e; }
+    .invoice-status.refunded, .invoice-status.cancelled { background: #fee2e2; color: #991b1b; }
+    .invoice-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--text-muted); margin-bottom: 6px; }
+    table.invoice-items { width: 100%; border-collapse: collapse; margin: var(--space-5) 0; }
+    table.invoice-items th { text-align: left; font-size: 12px; color: var(--text-muted); padding: 8px 0; border-bottom: 1px solid var(--gray-light); }
+    table.invoice-items td { padding: 10px 0; border-bottom: 1px solid var(--gray-light); font-size: 14px; }
+    .invoice-totals { margin-left: auto; width: 260px; }
+    .invoice-totals .row-item { display: flex; justify-content: space-between; padding: 4px 0; font-size: 14px; }
+    .invoice-totals .row-item.total { font-weight: 700; font-size: 18px; color: var(--primary); border-top: 2px solid var(--primary-lighter); padding-top: 10px; margin-top: 6px; }
+
+    @media print {
+        .navbar, .footer, .invoice-actions, .page-header { display: none !important; }
+        .main-content { padding: 0 !important; }
+        .invoice-paper { box-shadow: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+
+    <div class="page-header">
+        <div class="page-header-icon"><i class="fas fa-file-invoice"></i></div>
+        <div class="page-header-text">
+            <h1 class="page-title">Comprobante de pago</h1>
+            <p class="page-subtitle">Factura {{ payment.invoice_number }}</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{% url 'purchase_history' %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
+        </div>
+    </div>
+
+    <div class="invoice-actions">
+        <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-download"></i> Descargar / Imprimir</button>
+    </div>
+
+    <div class="invoice-paper">
+        <div class="invoice-header">
+            <div>
+                <div class="invoice-brand"><i class="fas fa-graduation-cap"></i> AcadEMI</div>
+                <p class="text-muted small mb-0">Plataforma educativa online</p>
+            </div>
+            <div class="invoice-number">
+                <strong>{{ payment.invoice_number }}</strong>
+                {{ payment.created_at|date:"d/m/Y H:i" }}
+                <br>
+                <span class="invoice-status {{ payment.status }}">{{ payment.get_status_display }}</span>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-6">
+                <p class="invoice-section-title">Facturado a</p>
+                <p class="mb-0 fw-bold">{{ payment.billing_name|default:payment.student.get_full_name|default:payment.student.username }}</p>
+                <p class="mb-0 text-muted small">{{ payment.billing_email|default:payment.student.email }}</p>
+                {% if payment.billing_nit %}<p class="mb-0 text-muted small">NIT: {{ payment.billing_nit }}</p>{% endif %}
+            </div>
+            <div class="col-6 text-end">
+                <p class="invoice-section-title">Método de pago</p>
+                <p class="mb-0">{{ payment.get_payment_method_display }}</p>
+                {% if payment.transaction_id %}<p class="mb-0 text-muted small">Ref: {{ payment.transaction_id }}</p>{% endif %}
+            </div>
+        </div>
+
+        <table class="invoice-items">
+            <thead>
+                <tr><th>Curso</th><th class="text-end">Precio</th><th class="text-end">Descuento</th><th class="text-end">Total</th></tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.course.title }}</td>
+                    <td class="text-end">Bs. {{ item.price }}</td>
+                    <td class="text-end">Bs. {{ item.discount_applied }}</td>
+                    <td class="text-end">Bs. {{ item.final_price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div class="invoice-totals">
+            <div class="row-item"><span>Subtotal</span><span>Bs. {{ subtotal }}</span></div>
+            <div class="row-item"><span>Descuento</span><span>- Bs. {{ discount }}</span></div>
+            <div class="row-item total"><span>Total</span><span>Bs. {{ total }}</span></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

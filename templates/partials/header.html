@@ -19,11 +19,23 @@
         
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto align-items-center">
-                
+
+                <!-- ===== MODO NOCHE / DÍA ===== -->
+                <li class="nav-item">
+                    <button type="button" class="nav-link icon-link theme-toggle-btn" title="Cambiar a modo noche/día">
+                        <i class="fas fa-moon"></i>
+                    </button>
+                </li>
+
                 <!-- ===== ENLACES PÚBLICOS ===== -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'catalog' %}">
                         <i class="fas fa-book-open"></i> Catálogo
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'categories' %}">
+                        <i class="fas fa-tags"></i> Categorías
                     </a>
                 </li>
                 <li class="nav-item">
@@ -43,20 +55,16 @@
                 <li class="nav-item">
                     <a class="nav-link icon-link" href="{% url 'notifications' %}" title="Notificaciones">
                         <i class="fas fa-bell"></i>
-                        {% if unread_notifications > 0 %}
-                        <span class="badge-icon pulse">{{ unread_notifications }}</span>
-                        {% endif %}
+                        <span class="badge-icon pulse nav-notif-badge" {% if not unread_notifications %}hidden{% endif %}>{{ unread_notifications|default:0 }}</span>
                     </a>
                 </li>
-                
+
                 <!-- ===== CARRITO (SOLO ESTUDIANTES) ===== -->
                 {% if user.role == 'student' %}
                 <li class="nav-item">
                     <a class="nav-link icon-link" href="{% url 'cart' %}" title="Carrito de compras">
                         <i class="fas fa-shopping-cart"></i>
-                        {% if cart_items > 0 %}
-                        <span class="badge-icon cart-pulse">{{ cart_items }}</span>
-                        {% endif %}
+                        <span class="badge-icon cart-pulse nav-cart-badge" {% if not cart_items %}hidden{% endif %}>{{ cart_items|default:0 }}</span>
                     </a>
                 </li>
                 {% endif %}
@@ -78,7 +86,6 @@
                         <li><h6 class="dropdown-header"><i class="fas fa-user-circle"></i> Mi cuenta</h6></li>
                         <li><a class="dropdown-item" href="{% url 'dashboard' %}"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
                         <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user-edit"></i> Mi perfil</a></li>
-                        <li><a class="dropdown-item" href="{% url 'change_password' %}"><i class="fas fa-key"></i> Cambiar contraseña</a></li>
                         <li><a class="dropdown-item" href="{% url 'notifications' %}"><i class="fas fa-bell"></i> Notificaciones</a></li>
                         <li><hr class="dropdown-divider"></li>
                         
@@ -184,7 +191,14 @@
                     <i class="fas fa-book-open"></i> Catálogo
                 </a>
             </li>
-            
+
+            <!-- Categorías -->
+            <li class="nav-item">
+                <a href="{% url 'categories' %}" class="nav-link">
+                    <i class="fas fa-tags"></i> Categorías
+                </a>
+            </li>
+
             <!-- Buscar -->
             <li class="nav-item">
                 <a href="{% url 'search_courses' %}" class="nav-link">
@@ -198,7 +212,14 @@
                     <i class="fas fa-robot"></i> Asistente virtual
                 </a>
             </li>
-            
+
+            <!-- Modo noche / día -->
+            <li class="nav-item">
+                <button type="button" class="nav-link theme-toggle-btn w-100 text-start">
+                    <i class="fas fa-moon"></i> <span class="theme-toggle-label">Modo noche</span>
+                </button>
+            </li>
+
             <hr>
             
             {% if user.is_authenticated %}
@@ -221,9 +242,7 @@
             <li class="nav-item">
                 <a href="{% url 'notifications' %}" class="nav-link position-relative">
                     <i class="fas fa-bell"></i> Notificaciones
-                    {% if unread_notifications > 0 %}
-                    <span class="badge bg-danger rounded-pill ms-2">{{ unread_notifications }}</span>
-                    {% endif %}
+                    <span class="badge bg-danger rounded-pill ms-2 nav-notif-badge" {% if not unread_notifications %}hidden{% endif %}>{{ unread_notifications|default:0 }}</span>
                 </a>
             </li>
             
@@ -263,8 +282,9 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a href="{% url 'cart' %}" class="nav-link">
+                <a href="{% url 'cart' %}" class="nav-link position-relative">
                     <i class="fas fa-shopping-cart"></i> Carrito
+                    <span class="badge rounded-pill ms-2 nav-cart-badge" style="background: var(--secondary); color: var(--primary);" {% if not cart_items %}hidden{% endif %}>{{ cart_items|default:0 }}</span>
                 </a>
             </li>
             
@@ -358,514 +378,7 @@
         <hr>
         <div class="text-center text-muted small">
             <i class="fas fa-code"></i> v1.0.0
-            <br>
-            <i class="fas fa-heart" style="color: #f7c600;"></i> Hecho en Bolivia
         </div>
     </div>
 </div>
 
-<!-- ============================================
-     ESTILOS - FONDO CLARO CON TOQUE AZUL NATURAL
-     ============================================ -->
-<style>
-/* ============================================
-   NAVBAR - FONDO CLARO CON ONDAS
-   ============================================ */
-.navbar {
-    background: rgba(255, 255, 255, 0.92);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    padding: 10px 0;
-    box-shadow: 0 2px 24px rgba(0, 51, 160, 0.04);
-    border-bottom: 1px solid rgba(0, 51, 160, 0.06);
-    transition: all 0.3s ease;
-}
-
-/* ONDA AZUL SUTIL EN EL BORDE */
-.navbar::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, 
-        transparent 0%, 
-        rgba(0, 51, 160, 0.05) 20%, 
-        rgba(0, 51, 160, 0.15) 40%, 
-        rgba(0, 51, 160, 0.2) 50%,
-        rgba(0, 51, 160, 0.15) 60%,
-        rgba(0, 51, 160, 0.05) 80%,
-        transparent 100%
-    );
-    animation: waveBorder 8s ease-in-out infinite;
-}
-
-@keyframes waveBorder {
-    0% { transform: scaleX(1); opacity: 0.5; }
-    50% { transform: scaleX(1.2); opacity: 1; }
-    100% { transform: scaleX(1); opacity: 0.5; }
-}
-
-.navbar-brand {
-    font-weight: 800;
-    font-size: 24px;
-    color: #0033a0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-}
-
-.navbar-brand i {
-    color: #f7c600;
-    font-size: 28px;
-}
-
-.navbar-brand span {
-    color: #0033a0;
-}
-
-.brand-badge {
-    font-size: 10px;
-    font-weight: 700;
-    background: #f7c600;
-    color: #0033a0;
-    padding: 2px 10px;
-    border-radius: 50px;
-    margin-left: 4px;
-}
-
-.nav-link {
-    color: #4a5568;
-    font-weight: 500;
-    font-size: 14px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    position: relative;
-}
-
-.nav-link i {
-    font-size: 16px;
-    color: #0033a0;
-    opacity: 0.6;
-    transition: all 0.3s ease;
-}
-
-.nav-link:hover {
-    color: #0033a0;
-    background: rgba(0, 51, 160, 0.04);
-}
-
-.nav-link:hover i {
-    opacity: 1;
-    transform: scale(1.1);
-}
-
-/* Efecto azul natural al hover */
-.nav-link::after {
-    content: '';
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, #0033a0, transparent);
-    transition: all 0.3s ease;
-    border-radius: 10px;
-}
-
-.nav-link:hover::after {
-    width: 60%;
-}
-
-.icon-link {
-    padding: 8px 12px !important;
-    position: relative;
-}
-
-.icon-link i {
-    font-size: 20px !important;
-    color: #0033a0;
-    opacity: 0.6;
-    transition: all 0.3s ease;
-}
-
-.icon-link:hover i {
-    opacity: 1;
-    transform: scale(1.15);
-    color: #0033a0;
-}
-
-.badge-icon {
-    position: absolute;
-    top: -4px;
-    right: -2px;
-    background: #ef4444;
-    color: white;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 50px;
-    min-width: 18px;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
-    animation: bounceIn 0.5s ease;
-}
-
-.badge-icon.cart-pulse {
-    background: #f7c600;
-    color: #0033a0;
-    box-shadow: 0 2px 8px rgba(247, 198, 0, 0.4);
-}
-
-.pulse {
-    animation: pulse 2s infinite;
-}
-
-.cart-pulse {
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
-}
-
-@keyframes bounceIn {
-    0% { transform: scale(0); opacity: 0; }
-    60% { transform: scale(1.3); opacity: 1; }
-    100% { transform: scale(1); }
-}
-
-.user-avatar {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #e8edf5;
-    transition: all 0.3s ease;
-}
-
-.user-avatar:hover {
-    border-color: #0033a0;
-    transform: scale(1.05);
-}
-
-.user-avatar-placeholder {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f7c600, #f59e0b);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 14px;
-    font-weight: 700;
-    transition: all 0.3s ease;
-}
-
-.user-avatar-placeholder:hover {
-    transform: scale(1.05);
-    box-shadow: 0 4px 15px rgba(247, 198, 0, 0.3);
-}
-
-.user-name {
-    font-weight: 500;
-    font-size: 14px;
-    color: #2d3748;
-}
-
-.btn-nav {
-    border-radius: 50px;
-    padding: 8px 22px;
-    font-weight: 600;
-    font-size: 13px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none;
-}
-
-.btn-outline-primary {
-    border: 2px solid #0033a0;
-    color: #0033a0;
-    background: transparent;
-}
-
-.btn-outline-primary:hover {
-    background: #0033a0;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(0, 51, 160, 0.25);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #0033a0, #1a4db8);
-    border: none;
-    color: white;
-    box-shadow: 0 4px 15px rgba(0, 51, 160, 0.2);
-}
-
-.btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0, 51, 160, 0.3);
-    color: white;
-}
-
-.dropdown-menu {
-    border-radius: 16px;
-    padding: 8px;
-    min-width: 280px;
-    margin-top: 10px;
-    border: none;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
-    background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(10px);
-}
-
-.dropdown-header {
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: #718096;
-    padding: 8px 16px;
-    font-weight: 700;
-}
-
-.dropdown-header i {
-    margin-right: 6px;
-}
-
-.dropdown-item {
-    border-radius: 8px;
-    padding: 10px 16px;
-    font-weight: 500;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-}
-
-.dropdown-item i {
-    width: 20px;
-    text-align: center;
-    color: #718096;
-    font-size: 14px;
-}
-
-.dropdown-item:hover {
-    background: rgba(0, 51, 160, 0.04);
-    color: #0033a0;
-}
-
-.dropdown-item:hover i {
-    color: #0033a0;
-}
-
-.dropdown-item.text-danger:hover {
-    background: #fee2e2;
-    color: #ef4444;
-}
-
-.dropdown-divider {
-    margin: 6px 0;
-    border-color: #e8edf5;
-}
-
-/* ============================================
-   SIDEBAR (OFFCANVAS) - CON TOQUE AZUL
-   ============================================ */
-.offcanvas {
-    background: linear-gradient(180deg, #ffffff 0%, #f0f4ff 100%);
-    color: #2d3748;
-    width: 300px !important;
-    border-right: 1px solid rgba(0, 51, 160, 0.06);
-}
-
-/* Onda azul en el borde del sidebar */
-.offcanvas::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: -2px;
-    height: 100%;
-    width: 4px;
-    background: linear-gradient(180deg, 
-        transparent 0%, 
-        rgba(0, 51, 160, 0.05) 20%, 
-        rgba(0, 51, 160, 0.15) 40%, 
-        rgba(0, 51, 160, 0.2) 50%,
-        rgba(0, 51, 160, 0.15) 60%,
-        rgba(0, 51, 160, 0.05) 80%,
-        transparent 100%
-    );
-}
-
-.offcanvas-header {
-    border-bottom: 1px solid rgba(0, 51, 160, 0.06);
-}
-
-.offcanvas-title {
-    color: #0033a0;
-    font-weight: 700;
-}
-
-.offcanvas-title i {
-    color: #f7c600;
-}
-
-.offcanvas .btn-close {
-    opacity: 0.6;
-}
-
-.offcanvas .btn-close:hover {
-    opacity: 1;
-}
-
-.offcanvas-body {
-    padding: 20px;
-}
-
-.sidebar-user {
-    text-align: center;
-    padding-bottom: 16px;
-    border-bottom: 1px solid rgba(0, 51, 160, 0.06);
-}
-
-.sidebar-avatar {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #0033a0;
-}
-
-.sidebar-avatar-placeholder {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #f7c600, #f59e0b);
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 28px;
-    font-weight: 800;
-    margin: 0 auto;
-}
-
-.sidebar-user h6 {
-    color: #1a202c;
-    font-weight: 600;
-    margin-top: 8px;
-}
-
-.sidebar-user small {
-    color: #718096;
-}
-
-.offcanvas-body .nav-link {
-    color: #4a5568;
-    padding: 10px 16px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.offcanvas-body .nav-link i {
-    color: #718096;
-    width: 20px;
-    text-align: center;
-}
-
-.offcanvas-body .nav-link:hover {
-    background: rgba(0, 51, 160, 0.04);
-    color: #0033a0;
-}
-
-.offcanvas-body .nav-link:hover i {
-    color: #f7c600;
-}
-
-.offcanvas-body .nav-link.active {
-    background: rgba(0, 51, 160, 0.06);
-    color: #0033a0;
-}
-
-.offcanvas-body .nav-link.active i {
-    color: #f7c600;
-}
-
-.offcanvas-body .nav-link.text-danger {
-    color: #ef4444;
-}
-
-.offcanvas-body .nav-link.text-danger:hover {
-    background: #fee2e2;
-    color: #dc2626;
-}
-
-.offcanvas-body hr {
-    border-color: rgba(0, 51, 160, 0.06);
-    margin: 12px 0;
-}
-
-.offcanvas-body .nav-pills {
-    margin-bottom: 12px;
-}
-
-.offcanvas-body .badge {
-    background: #ef4444 !important;
-    color: white;
-}
-
-/* ============================================
-   RESPONSIVE
-   ============================================ */
-@media (max-width: 992px) {
-    .navbar-nav { padding-top: 10px; }
-    .nav-item { width: 100%; }
-    .nav-link { padding: 10px 16px; justify-content: center; }
-    .nav-link::after { display: none; }
-    .icon-link { justify-content: center; }
-    .btn-nav { width: 100%; justify-content: center; margin: 4px 0; }
-    .dropdown-menu { 
-        margin-top: 0; 
-        box-shadow: none; 
-        border: none; 
-        background: transparent; 
-    }
-    .dropdown-item { padding: 10px 16px; }
-    .user-name { display: none; }
-    .navbar-toggler.me-2 { display: flex; }
-}
-
-@media (min-width: 993px) {
-    .navbar-toggler.me-2 { display: none; }
-}
-
-@media (max-width: 768px) {
-    .navbar-brand { font-size: 20px; }
-    .navbar-brand i { font-size: 22px; }
-    .brand-badge { font-size: 8px; padding: 1px 8px; }
-    .offcanvas { width: 280px !important; }
-    .navbar::after { height: 3px; }
-}
-
-@media (max-width: 576px) {
-    .navbar { padding: 8px 0; }
-    .navbar-brand { font-size: 18px; }
-    .navbar-brand i { font-size: 18px; }
-    .navbar::after { height: 2px; }
-}
-</style>
