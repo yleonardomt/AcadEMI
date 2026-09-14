@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 
 from ..models import (
     Module, Lesson, LessonResource, Evaluation, QuestionEvaluation,
@@ -373,12 +373,16 @@ def lesson_view(request, lesson_id):
 
     enrollment = None
     if not is_teacher_of_course:
-        enrollment = get_object_or_404(
-            Enrollment,
+        enrollment = Enrollment.objects.filter(
             student=request.user,
             course=course,
             status__in=['enrolled', 'in_progress', 'completed']
-        )
+        ).first()
+        # Una lección marcada como gratuita se puede previsualizar sin
+        # estar inscrito (esa es su razón de ser); cualquier otra
+        # lección sigue exigiendo una inscripción real.
+        if not enrollment and not lesson.is_free:
+            raise Http404('Debes inscribirte en el curso para ver esta lección.')
 
     # ============================================
     # PROCESAR URL DE YOUTUBE

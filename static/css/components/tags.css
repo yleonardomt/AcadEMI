@@ -20,3 +20,40 @@
     background: var(--primary);
     color: var(--white);
 }
+
+/* ============================================
+   BADGE DE ESTADO (curso en mis-cursos, certificados en el panel
+   admin, y cualquier otra lista con un estado tipo pill). Compartido
+   porque más de una página lo necesita.
+   Fondo saturado + texto blanco fijo (no cambia con el modo
+   noche/día): el color de fondo ya da suficiente contraste en
+   ambos modos, no hace falta invertirlo.
+   ============================================ */
+.badge-status {
+    font-size: 11px;
+    padding: 4px 12px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 600;
+    text-transform: capitalize;
+}
+.badge-status.published {
+    background: var(--success);
+    color: var(--white);
+}
+.badge-status.draft {
+    background: var(--warning);
+    color: var(--white);
+}
+.badge-status.pending {
+    background: var(--info);
+    color: var(--white);
+}
+.badge-status.rejected,
+.badge-status.revoked {
+    background: var(--danger);
+    color: var(--white);
+}
+.badge-status.archived {
+    background: var(--gray);
+    color: var(--white);
+}

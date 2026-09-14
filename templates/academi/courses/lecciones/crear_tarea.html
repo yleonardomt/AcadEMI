@@ -1,221 +1,10 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}Crear tarea - {{ module.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    .form-container {
-        background: #ffffff;
-        border-radius: 16px;
-        box-shadow: 0 4px 20px rgba(0, 51, 160, 0.08);
-        border: none;
-        overflow: hidden;
-    }
-    .form-header {
-        background: #e8edf5;
-        padding: 20px 28px;
-        border-bottom: 3px solid #0033a0;
-    }
-    .form-body {
-        padding: 28px 32px;
-    }
-    .form-label {
-        font-weight: 600;
-        color: #2d3748;
-        font-size: 0.9rem;
-        margin-bottom: 6px;
-    }
-    .form-label .required {
-        color: #dc3545;
-        margin-left: 2px;
-    }
-    .form-control, .form-select {
-        border-radius: 8px;
-        border: 1.5px solid #e2e8f0;
-        padding: 10px 14px;
-        transition: all 0.3s ease;
-        font-size: 0.95rem;
-        background: #ffffff;
-        color: #1a202c;
-    }
-    .form-control:focus, .form-select:focus {
-        border-color: #0033a0;
-        box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.1);
-        outline: none;
-    }
-    .form-control.is-invalid, .form-select.is-invalid {
-        border-color: #dc3545;
-    }
-    .invalid-feedback {
-        color: #dc3545;
-        font-size: 0.8rem;
-        margin-top: 4px;
-        display: block;
-    }
-    .form-text {
-        color: #718096;
-        font-size: 0.8rem;
-        margin-top: 4px;
-    }
-    .icon-circle {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        background: #e8edf5;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-    }
-    .icon-circle i {
-        font-size: 22px;
-        color: #0033a0;
-    }
-    .btn-primary-custom {
-        background: #0033a0;
-        color: #ffffff;
-        border: none;
-        padding: 10px 28px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: pointer;
-    }
-    .btn-primary-custom:hover {
-        background: #002277;
-        color: #ffffff;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 30px rgba(0, 51, 160, 0.3);
-    }
-    .btn-primary-custom:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-    }
-    .btn-outline-custom {
-        background: transparent;
-        color: #2d3748;
-        border: 1.5px solid #e2e8f0;
-        padding: 10px 28px;
-        border-radius: 8px;
-        font-weight: 600;
-        font-size: 0.95rem;
-        transition: all 0.3s ease;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        cursor: pointer;
-        text-decoration: none;
-    }
-    .btn-outline-custom:hover {
-        background: #f5f7fa;
-        border-color: #718096;
-        color: #2d3748;
-        text-decoration: none;
-    }
-    .form-switch .form-check-input {
-        width: 44px;
-        height: 22px;
-        cursor: pointer;
-    }
-    .form-switch .form-check-input:checked {
-        background-color: #0033a0;
-        border-color: #0033a0;
-    }
-    .free-badge {
-        background: #f7c600;
-        color: #002277;
-        padding: 2px 10px;
-        border-radius: 50px;
-        font-size: 11px;
-        font-weight: 700;
-    }
-    .header-title {
-        color: #002277;
-        font-weight: 700;
-        margin-bottom: 0;
-        font-size: 1.25rem;
-    }
-    .header-subtitle {
-        color: #718096;
-        margin-bottom: 0;
-        font-size: 0.9rem;
-    }
-    .header-subtitle strong {
-        color: #2d3748;
-    }
-    .free-section {
-        background: #f5f7fa;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        padding: 16px 20px;
-    }
-    .deadline-section {
-        background: #f0f4ff;
-        border: 1px solid #c5d5f0;
-        border-radius: 8px;
-        padding: 16px 20px;
-    }
-    .d-flex {
-        display: flex;
-    }
-    .align-items-center {
-        align-items: center;
-    }
-    .gap-3 {
-        gap: 12px;
-    }
-    .flex-wrap {
-        flex-wrap: wrap;
-    }
-    .flex-grow-1 {
-        flex-grow: 1;
-    }
-    .mb-0 {
-        margin-bottom: 0;
-    }
-    .mb-3 {
-        margin-bottom: 16px;
-    }
-    .mb-4 {
-        margin-bottom: 24px;
-    }
-    .p-3 {
-        padding: 16px;
-    }
-    .py-4 {
-        padding-top: 24px;
-        padding-bottom: 24px;
-    }
-    .fw-bold {
-        font-weight: 700;
-    }
-    .fw-semibold {
-        font-weight: 600;
-    }
-    .text-muted {
-        color: #718096 !important;
-    }
-    .text-danger {
-        color: #dc3545 !important;
-    }
-    .text-primary {
-        color: #0033a0 !important;
-    }
-    @media (max-width: 576px) {
-        .form-header { padding: 16px 20px; }
-        .form-body { padding: 20px; }
-        .d-flex.gap-3 { flex-direction: column; }
-        .btn-primary-custom, .btn-outline-custom { width: 100%; justify-content: center; }
-    }
-</style>
+<link rel="stylesheet" href="{% static_v 'css/pages/crear-tarea.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -231,7 +20,7 @@
                         <h4 class="header-title">Crear tarea</h4>
                         <p class="header-subtitle">
                             <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
-                            <span style="margin: 0 4px; color: #718096;">|</span>
+                            <span style="margin: 0 4px; color: var(--gray);">|</span>
                             <i class="far fa-file-alt"></i> {{ module.lessons.count }} lecciones
                         </p>
                     </div>
@@ -325,17 +114,17 @@
                                 </div>
                             </div>
                             <div class="form-text mt-2">
-                                <i class="fas fa-info-circle" style="color: #0033a0;"></i>
+                                <i class="fas fa-info-circle" style="color: var(--primary);"></i>
                                 El estudiante tendrá este tiempo para entregar <strong>desde que inicia la tarea</strong>.
                                 <br>
                                 <span class="text-muted">Ejemplo: 7 días = 7 días para entregar desde que la abre.</span>
                             </div>
                         </div>
 
-                        <div class="mb-4 p-3 rounded" style="background: #e8edf5; border: 1px solid #1a4db8;">
+                        <div class="mb-4 p-3 rounded" style="background: var(--primary-lighter); border: 1px solid var(--primary-light);">
                             <div class="d-flex align-items-center gap-2">
-                                <i class="fas fa-info-circle" style="color: #0033a0;"></i>
-                                <span class="fw-semibold" style="color: #002277;">Recomendación:</span>
+                                <i class="fas fa-info-circle" style="color: var(--primary);"></i>
+                                <span class="fw-semibold" style="color: var(--primary-dark);">Recomendación:</span>
                                 <span class="text-muted small">Los estudiantes podrán subir archivos como evidencia de la tarea.</span>
                             </div>
                         </div>
@@ -350,7 +139,7 @@
                                            style="width: 44px; height: 22px; cursor: pointer;"
                                            {% if form_data.is_free %}checked{% endif %}>
                                     <label class="form-check-label fw-semibold" for="is_free" style="cursor: pointer;">
-                                        <i class="fas fa-star" style="color: #f7c600;"></i>
+                                        <i class="fas fa-star" style="color: var(--secondary);"></i>
                                         Lección gratuita
                                     </label>
                                 </div>
@@ -378,99 +167,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-        const titleInput = document.getElementById('title');
-        const submitBtn = document.getElementById('submitBtn');
-
-        form.addEventListener('submit', function(e) {
-            let valid = true;
-
-            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-
-            function showError(input, message) {
-                input.classList.add('is-invalid');
-                let feedback = input.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.insertBefore(feedback, input.nextSibling);
-                }
-                feedback.textContent = message;
-                valid = false;
-            }
-
-            const title = titleInput.value.trim();
-            if (!title) {
-                showError(titleInput, 'El título es obligatorio.');
-            } else if (title.length < 3) {
-                showError(titleInput, 'El título debe tener al menos 3 caracteres.');
-            }
-
-            const content = document.getElementById('content').value.trim();
-            if (!content) {
-                const input = document.getElementById('content');
-                input.classList.add('is-invalid');
-                let feedback = input.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.insertBefore(feedback, input.nextSibling);
-                }
-                feedback.textContent = 'La descripción de la tarea es obligatoria.';
-                valid = false;
-            }
-
-            const days = document.getElementById('assignment_deadline_days').value;
-            const hours = document.getElementById('assignment_deadline_hours').value;
-
-            if (!days || parseInt(days) < 1) {
-                const input = document.getElementById('assignment_deadline_days');
-                input.classList.add('is-invalid');
-                let feedback = input.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.insertBefore(feedback, input.nextSibling);
-                }
-                feedback.textContent = 'Debes establecer al menos 1 día para entregar.';
-                valid = false;
-            }
-
-            if (hours && (parseInt(hours) < 0 || parseInt(hours) > 23)) {
-                const input = document.getElementById('assignment_deadline_hours');
-                input.classList.add('is-invalid');
-                let feedback = input.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.insertBefore(feedback, input.nextSibling);
-                }
-                feedback.textContent = 'Las horas deben ser entre 0 y 23.';
-                valid = false;
-            }
-
-            if (!valid) {
-                e.preventDefault();
-                const firstError = form.querySelector('.is-invalid');
-                if (firstError) firstError.focus();
-                return false;
-            }
-
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
-            submitBtn.disabled = true;
-            return true;
-        });
-
-        titleInput.addEventListener('input', function() {
-            if (this.value.trim().length >= 3) {
-                this.classList.remove('is-invalid');
-                const feedback = this.parentNode.querySelector('.invalid-feedback');
-                if (feedback) feedback.remove();
-            }
-        });
-    });
-</script>
+<script src="{% static_v 'js/crear-tarea.js' %}"></script>
 {% endblock %}

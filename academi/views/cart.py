@@ -2,7 +2,10 @@ from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 
-from ..models import Cart, CartItem, Course, Enrollment
+from ..models import (
+    Cart, CartItem, Course, Enrollment,
+    EMI_STUDENT_DISCOUNT_PERCENT, is_eligible_for_emi_first_purchase_discount,
+)
 
 
 # ============================================
@@ -112,5 +115,7 @@ def cart_view(request):
         'items': items,
         'items_count': items.count(),
         'total': total,
+        'emi_discount_eligible': is_eligible_for_emi_first_purchase_discount(request.user),
+        'emi_discount_percent': EMI_STUDENT_DISCOUNT_PERCENT,
     }
     return render(request, 'academi/payments/carrito.html', context)

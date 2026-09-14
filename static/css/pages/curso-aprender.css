@@ -1,0 +1,245 @@
+/* ============================================
+   APRENDER CURSO (templates/academi/courses/curso_aprender.html)
+   Estilos exclusivos de la página de módulos/lecciones del curso.
+   ============================================ */
+.course-header {
+    background: var(--primary-gradient);
+    color: var(--white);
+    padding: 30px 0;
+    margin-bottom: 30px;
+}
+
+.course-header .course-title {
+    font-weight: 800;
+    font-size: 28px;
+}
+
+.course-header .course-meta {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+.course-header .course-meta i {
+    margin-right: 4px;
+}
+
+.module-card {
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.module-card .module-header {
+    padding: 16px 20px;
+    background: var(--white-smoke);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.module-card .module-header:hover {
+    background: var(--primary-lighter);
+}
+
+.module-card .module-header h5 {
+    font-weight: 600;
+    margin: 0;
+    font-size: 16px;
+    color: var(--ink);
+}
+
+.module-card .module-header .module-badge {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.module-card .module-body {
+    padding: 0;
+}
+
+.lesson-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--white-smoke);
+    transition: var(--transition);
+    text-decoration: none;
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.lesson-item:last-child {
+    border-bottom: none;
+}
+
+.lesson-item:hover {
+    background: var(--white-smoke);
+    text-decoration: none;
+    color: var(--ink);
+}
+
+.lesson-item .lesson-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 14px;
+    flex-shrink: 0;
+}
+
+.lesson-item .lesson-icon.completed {
+    background: var(--success);
+    color: var(--white);
+}
+
+.lesson-item .lesson-icon.pending {
+    background: var(--gray-light);
+    color: var(--text-muted);
+}
+
+.lesson-item .lesson-icon.current {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.lesson-item .lesson-info {
+    flex: 1;
+}
+
+.lesson-item .lesson-info .lesson-title {
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.lesson-item .lesson-info .lesson-type {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.lesson-item .lesson-status {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: var(--border-radius-pill);
+    white-space: nowrap;
+}
+
+.lesson-item .lesson-status.completed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.lesson-item .lesson-status.pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.progress-container {
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    padding: 20px;
+    border: 1px solid var(--border-color);
+    margin-bottom: 24px;
+}
+
+.progress-container .progress {
+    height: 8px;
+    border-radius: var(--border-radius-pill);
+    background: var(--gray-light);
+}
+
+.progress-container .progress .progress-bar {
+    background: var(--primary-gradient);
+    border-radius: var(--border-radius-pill);
+    transition: width 0.6s ease;
+}
+
+/* ============================================
+   TARJETA DE CERTIFICADO
+   Aparece solo cuando el curso ya está completado y tiene
+   certificado emitido: acceso directo a verlo/descargarlo o
+   reenviarlo por correo, sin tener que ir hasta "Mis certificados".
+   ============================================ */
+.certificate-callout {
+    background: linear-gradient(135deg, var(--secondary-light), #fff7d6);
+    border: 1px solid var(--secondary);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.certificate-callout .certificate-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: var(--secondary);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    box-shadow: 0 6px 20px rgba(247, 198, 0, 0.35);
+}
+
+.certificate-callout .certificate-body {
+    flex: 1;
+    min-width: 200px;
+}
+
+.certificate-callout .certificate-body h5 {
+    margin: 0 0 4px;
+    color: var(--gray-dark);
+    font-weight: 800;
+}
+
+.certificate-callout .certificate-body p {
+    margin: 0;
+    color: var(--gray);
+    font-size: 14px;
+}
+
+.certificate-callout .certificate-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .course-header .course-title {
+        font-size: 20px;
+    }
+
+    .course-header {
+        padding: 20px 0;
+    }
+
+    .lesson-item {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .lesson-item .lesson-status {
+        font-size: 10px;
+        padding: 2px 8px;
+    }
+
+    .progress-container {
+        padding: 16px;
+    }
+
+    .certificate-callout {
+        padding: 18px;
+    }
+}

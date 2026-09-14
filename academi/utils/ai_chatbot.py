@@ -74,7 +74,16 @@ def get_ai_response(user_message, platform_context, history=None):
             },
             timeout=REQUEST_TIMEOUT,
         )
-        response.raise_for_status()
+        if not response.ok:
+            # El texto de la respuesta trae el motivo real (modelo inválido,
+            # cuota agotada, IP bloqueada por Groq, etc.) — Response.raise_for_status()
+            # por sí solo no lo deja en el traceback, así que se registra aparte
+            # para poder diagnosticar sin tener que reproducir la llamada a mano.
+            logger.error(
+                'La IA del chatbot respondió %s: %s. Se usa el respaldo por palabras clave.',
+                response.status_code, response.text[:500],
+            )
+            return None
         data = response.json()
         return data['choices'][0]['message']['content'].strip()
     except Exception:

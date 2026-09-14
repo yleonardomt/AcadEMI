@@ -107,6 +107,12 @@
                         <li><h6 class="dropdown-header"><i class="fas fa-chalkboard-teacher"></i> Gestión</h6></li>
                         <li><a class="dropdown-item" href="{% url 'my_courses' %}"><i class="fas fa-list"></i> Mis cursos</a></li>
                         <li><a class="dropdown-item" href="{% url 'create_course' %}"><i class="fas fa-plus-circle"></i> Crear curso</a></li>
+                        <li>
+                            <a class="dropdown-item d-flex align-items-center justify-content-between" href="{% url 'teacher_questions' %}">
+                                <span><i class="fas fa-question-circle"></i> Preguntas de estudiantes</span>
+                                {% if pending_questions %}<span class="badge bg-warning text-dark rounded-pill">{{ pending_questions }}</span>{% endif %}
+                            </a>
+                        </li>
                         <li><hr class="dropdown-divider"></li>
                         {% endif %}
                         
@@ -153,7 +159,7 @@
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="sidebarMenuLabel">
-            <i class="fas fa-graduation-cap" style="color: #f7c600;"></i> AcadEMI
+            <i class="fas fa-graduation-cap" style="color: var(--secondary);"></i> AcadEMI
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>
@@ -301,7 +307,13 @@
                     <i class="fas fa-plus-circle"></i> Crear curso
                 </a>
             </li>
-            
+            <li class="nav-item">
+                <a href="{% url 'teacher_questions' %}" class="nav-link position-relative">
+                    <i class="fas fa-question-circle"></i> Preguntas de estudiantes
+                    <span class="badge bg-warning text-dark rounded-pill ms-2" {% if not pending_questions %}hidden{% endif %}>{{ pending_questions|default:0 }}</span>
+                </a>
+            </li>
+
             {% elif user.role == 'admin' %}
             
             <!-- SECCIÓN ADMIN -->

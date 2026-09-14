@@ -13,7 +13,8 @@ from django.http import JsonResponse
 
 from ..models import (
     Cart, Coupon, Payment, PaymentItem, Enrollment, Notification,
-    ActivityLog, Course,
+    ActivityLog, Course, is_eligible_for_emi_first_purchase_discount,
+    EMI_STUDENT_DISCOUNT_PERCENT,
 )
 from ..utils import get_client_ip, send_purchase_confirmation_email
 
@@ -70,6 +71,7 @@ def checkout_view(request):
     discount = Decimal('0.00')
     coupon_code = data.get('coupon_code')
     coupon = None
+    discount_label = None
 
     if coupon_code:
         try:
@@ -81,8 +83,20 @@ def checkout_view(request):
                     discount = Decimal(str(coupon.discount_value))
                 if discount > subtotal:
                     discount = subtotal
+                discount_label = f'Cupón {coupon.code}'
         except Coupon.DoesNotExist:
             pass
+
+    # DESCUENTO AUTOMÁTICO POR PRIMERA COMPRA DE ESTUDIANTE EMI: no se
+    # acumula con un cupón manual, se queda el que dé mayor descuento.
+    if is_eligible_for_emi_first_purchase_discount(request.user):
+        emi_discount = subtotal * (EMI_STUDENT_DISCOUNT_PERCENT / Decimal('100'))
+        if emi_discount > subtotal:
+            emi_discount = subtotal
+        if emi_discount > discount:
+            discount = emi_discount
+            coupon = None  # el descuento EMI no está ligado a un Coupon
+            discount_label = 'Descuento estudiante EMI (primera compra)'
 
     total = subtotal - discount
 
@@ -148,7 +162,8 @@ def checkout_view(request):
                 },
                 confirmed_at=timezone.now(),
                 ip_address=get_client_ip(request),
-                user_agent=request.META.get('HTTP_USER_AGENT', '')
+                user_agent=request.META.get('HTTP_USER_AGENT', ''),
+                notes=discount_label or ''
             )
 
             # CREAR ENROLLMENTS Y PAYMENT ITEMS
@@ -246,6 +261,7 @@ def checkout_view(request):
             'message': f'Compra realizada con éxito. {len(created_courses)} curso(s) adquirido(s).',
             'invoice_number': payment.invoice_number,
             'total': str(total),
+            'discount_label': discount_label,
             'courses': created_courses
         })
 

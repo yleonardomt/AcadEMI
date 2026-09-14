@@ -7,7 +7,7 @@ from django.utils import timezone
 
 from ..models import (
     Notification, Enrollment, Certificate, Course, Review, Payment,
-    Coupon, Report, EvaluationResult, Favorite,
+    Coupon, Report, EvaluationResult, Favorite, Question,
 )
 
 User = get_user_model()
@@ -84,6 +84,11 @@ def dashboard_view(request):
     teacher_reviews = Review.objects.filter(course__in=teacher_courses)
     teacher_total_reviews = teacher_reviews.count()
     teacher_avg_rating = teacher_reviews.aggregate(Avg('rating'))['rating__avg'] or 0
+
+    # Preguntas de estudiantes sin responder (RF-38)
+    teacher_pending_questions = Question.objects.filter(
+        lesson__module__course__in=teacher_courses, is_answered=False
+    ).count()
 
     # ============================================
     # MÉTRICAS GLOBALES (para admin)
@@ -195,6 +200,7 @@ def dashboard_view(request):
         'recent_courses': recent_courses,
         'teacher_total_reviews': teacher_total_reviews,
         'teacher_avg_rating': round(teacher_avg_rating, 1),
+        'teacher_pending_questions': teacher_pending_questions,
 
         # ===== MÉTRICAS GLOBALES =====
         'total_users': total_users,
@@ -292,21 +298,6 @@ def certificate_detail_view(request, certificate_id):
         Certificate, id=certificate_id, enrollment__student=request.user
     )
     return render(request, 'academi/dashboard/certificado_detalle.html', {'certificate': certificate})
-
-
-@login_required
-def certificate_send_email_view(request, certificate_id):
-    """RF-66: enviar el certificado al correo registrado."""
-    certificate = get_object_or_404(
-        Certificate, id=certificate_id, enrollment__student=request.user
-    )
-    from ..utils import send_certificate_email
-    try:
-        send_certificate_email(certificate, request)
-        messages.success(request, f'Certificado enviado a {request.user.email}.')
-    except Exception:
-        messages.error(request, 'No se pudo enviar el correo. Intenta más tarde.')
-    return redirect('my_certificates')
 
 
 def verify_certificate_view(request, code):

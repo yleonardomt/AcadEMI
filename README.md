@@ -180,7 +180,7 @@ Copiá `.env.example` a `.env` y completá:
 | `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | Cuenta de Gmail y [contraseña de aplicación](https://myaccount.google.com/apppasswords) para enviar correos reales (verificación, recuperación de contraseña, certificados, comprobantes de compra). Si se dejan vacías, Django lanzará un error al intentar enviar un correo — para desarrollo sin correos reales, descomentá la línea de `EMAIL_BACKEND` de consola en `core/settings.py`. | No |
 | `SITE_URL` | URL base usada en los enlaces de los correos. | No |
 | `GROQ_API_KEY` | Clave gratuita de [Groq](https://console.groq.com/keys) para que el chatbot responda con IA real. Ver sección de abajo. | No |
-| `GROQ_MODEL` | Modelo de Groq a usar (por defecto `llama-3.1-8b-instant`). | No |
+| `GROQ_MODEL` | Modelo de Groq a usar (por defecto `groq/compound-mini`). Los modelos de Groq cambian con el tiempo — si el chatbot deja de responder con IA, revisá los modelos disponibles para tu cuenta en [console.groq.com](https://console.groq.com/docs/models). | No |
 
 ## Credenciales de prueba
 

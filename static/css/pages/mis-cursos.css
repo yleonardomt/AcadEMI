@@ -1,0 +1,197 @@
+/* ============================================
+   MIS CURSOS (templates/academi/courses/mis_cursos.html)
+   ============================================ */
+
+/* ============================================
+   CARD DE CURSO
+   ============================================ */
+.course-card {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: var(--transition);
+    border: none;
+    box-shadow: var(--shadow-card);
+    background: var(--surface);
+    height: 100%;
+}
+.course-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+}
+.course-card .card-img-top {
+    height: 180px;
+    object-fit: cover;
+    background: var(--primary-lighter);
+}
+.course-card .card-img-placeholder {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-gradient);
+    color: var(--white);
+    font-size: 48px;
+}
+.course-card .card-body {
+    padding: 20px;
+}
+.course-card .card-footer {
+    background: transparent;
+    border-top: 1px solid var(--border-color);
+    padding: 16px 20px;
+}
+
+/* ============================================
+   ESTADÍSTICAS DEL CURSO
+   ============================================ */
+.course-stats {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-top: 8px;
+}
+.course-stats i {
+    width: 16px;
+    color: var(--primary-text);
+}
+
+/* ============================================
+   BARRA DE PROGRESO
+   ============================================ */
+.course-progress {
+    height: 4px;
+    background: var(--gray-light);
+    border-radius: var(--border-radius-pill);
+    margin-top: 12px;
+    overflow: hidden;
+}
+.course-progress .progress-bar {
+    height: 100%;
+    background: var(--primary-gradient);
+    border-radius: var(--border-radius-pill);
+    transition: width 0.8s ease;
+}
+
+/* ============================================
+   PRECIO
+   ============================================ */
+.price-tag {
+    font-weight: 700;
+    color: var(--primary-text);
+    font-size: 18px;
+}
+.price-tag.free {
+    color: var(--success);
+}
+
+/* ============================================
+   BADGES DE ESTADO
+   .badge-status ahora vive en static/css/components/tags.css (lo usa
+   también el panel admin de certificados), cargado globalmente desde
+   partials/base.html — no se duplica acá.
+   ============================================ */
+
+/* ============================================
+   BOTONES DE ACCIÓN
+   ============================================ */
+.action-btns {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.action-btns .btn {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition);
+}
+.action-btns .btn:hover {
+    transform: translateY(-2px);
+}
+
+/* Toast: usa el sistema único de static/css/components/notifications.css.
+   Estado vacío: usa el componente compartido
+   static/css/components/empty-state.css (.empty-state/-icon), no
+   redefine sus estilos acá. */
+
+/* ============================================
+   MODAL DE CONFIRMACIÓN
+   Modal propio (no el .modal de Bootstrap que usa
+   static/css/components/modals.css) para la confirmación de
+   borrado con overlay simple vía la clase .active.
+   ============================================ */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 10000;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+.modal-overlay.active {
+    display: flex;
+}
+.modal-box {
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    padding: 32px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    box-shadow: var(--shadow-modal);
+    animation: modalIn 0.3s ease;
+}
+.modal-box .modal-icon {
+    font-size: 48px;
+    color: var(--danger);
+    margin-bottom: 16px;
+}
+.modal-box h4 {
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+.modal-box p {
+    color: var(--text-muted);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+.modal-box .modal-buttons {
+    display: flex;
+    gap: 12px;
+}
+.modal-box .modal-buttons .btn {
+    flex: 1;
+    border-radius: var(--border-radius-pill);
+    padding: 10px;
+}
+@keyframes modalIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 576px) {
+    .course-card .card-img-top,
+    .course-card .card-img-placeholder {
+        height: 140px;
+    }
+    .action-btns .btn {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+    .price-tag {
+        font-size: 15px;
+    }
+    .modal-box {
+        padding: 24px;
+    }
+}

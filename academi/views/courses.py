@@ -5,7 +5,7 @@ from django.db.models import Q, Count, Prefetch
 from django.utils import timezone
 from django.http import JsonResponse
 
-from ..models import Category, Course, Module, Enrollment, LessonProgress, Favorite, Review, EvaluationResult
+from ..models import Category, Course, Module, Enrollment, LessonProgress, Favorite, Review, EvaluationResult, Certificate, Coupon
 from ..utils import issue_certificate
 
 
@@ -305,6 +305,27 @@ def course_students_view(request, course_id):
 # ============================================
 # MÓDULO 4: CATÁLOGO Y EXPLORACIÓN
 # ============================================
+def attach_active_coupons(*course_lists):
+    """Le pone a cada curso un atributo .active_coupon (o None) con la
+    mejor promoción vigente (global o específica del curso), para que
+    _course_card.html pueda mostrar el badge de descuento y "válido
+    hasta" sin tener que hacer lookups por id en el template. Reutiliza
+    Coupon.is_valid() en vez de repetir sus reglas acá."""
+    candidates = [
+        c for c in Coupon.objects.filter(is_active=True).select_related('course').order_by('-discount_value')
+        if c.is_valid()
+    ]
+    global_coupons = [c for c in candidates if c.course_id is None]
+    per_course = {}
+    for c in candidates:
+        if c.course_id is not None:
+            per_course.setdefault(c.course_id, c)
+
+    for course_list in course_lists:
+        for course in course_list:
+            course.active_coupon = per_course.get(course.id) or (global_coupons[0] if global_coupons else None)
+
+
 def catalog_view(request):
     all_published = Course.objects.filter(status='published')
     courses = all_published.annotate(student_count=Count('enrollments', distinct=True))
@@ -341,6 +362,8 @@ def catalog_view(request):
         user_favorite_courses = Favorite.objects.filter(
             student=request.user
         ).values_list('course_id', flat=True)
+
+    attach_active_coupons(courses, featured_courses, bestseller_courses)
 
     context = {
         'courses': courses,
@@ -463,6 +486,8 @@ def course_learn_view(request, course_id):
     if just_completed:
         issue_certificate(enrollment)
 
+    certificate = Certificate.objects.filter(enrollment=enrollment).first() if enrollment.status == 'completed' else None
+
     context = {
         'course': course,
         'enrollment': enrollment,
@@ -471,5 +496,6 @@ def course_learn_view(request, course_id):
         'progress': progress,
         'total_lessons': total_lessons,
         'completed_count': completed_count,
+        'certificate': certificate,
     }
     return render(request, 'academi/courses/curso_aprender.html', context)

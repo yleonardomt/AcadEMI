@@ -1,0 +1,120 @@
+/* Usa las variables globales de base.css (que ya cambian con el
+   modo noche/día); antes esta página las redefinía con valores
+   fijos, lo que impedía que el modo oscuro se aplicara aquí. */
+:root {
+    --radius: var(--border-radius);
+    --radius-sm: var(--border-radius-sm);
+}
+
+.lesson-container {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--gray-light);
+}
+.lesson-header {
+    border-bottom: 2px solid var(--primary-lighter);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+}
+.lesson-header .breadcrumb {
+    background: none;
+    padding: 0;
+    margin: 0 0 8px 0;
+}
+.lesson-header .breadcrumb a {
+    color: var(--primary);
+    text-decoration: none;
+}
+.lesson-header .breadcrumb a:hover {
+    text-decoration: underline;
+}
+.lesson-header h2 {
+    font-weight: 700;
+    color: var(--gray-dark);
+}
+.lesson-header .lesson-meta {
+    color: var(--gray);
+    font-size: 14px;
+}
+.lesson-header .lesson-meta i {
+    color: var(--primary);
+}
+.lesson-content {
+    font-size: 16px;
+    line-height: 1.8;
+    color: var(--gray-dark);
+    min-height: 200px;
+}
+.lesson-content img {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+}
+.lesson-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 2px solid var(--primary-lighter);
+    flex-wrap: wrap;
+}
+.lesson-actions .btn {
+    border-radius: 50px;
+    padding: 10px 24px;
+}
+.progress-mini {
+    background: var(--white-smoke);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    border: 1px solid var(--gray-light);
+}
+.progress-mini .progress {
+    height: 6px;
+    border-radius: 10px;
+    background: var(--gray-light);
+}
+.progress-mini .progress .progress-bar {
+    background: var(--primary-gradient);
+    border-radius: 10px;
+}
+.badge-lesson-type {
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 600;
+}
+.badge-lesson-type.video { background: #dbeafe; color: #1e40af; }
+.badge-lesson-type.text { background: #fef3c7; color: #92400e; }
+.badge-lesson-type.document { background: #d1fae5; color: #065f46; }
+.badge-lesson-type.quiz { background: #fce4ec; color: #c62828; }
+.badge-lesson-type.exam { background: #f3e5f5; color: #6a1b9a; }
+.badge-lesson-type.assignment { background: #e0f7fa; color: #00695c; }
+
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    background: #000;
+    border-radius: 12px;
+}
+.video-wrapper iframe,
+.video-wrapper video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Toast: usa el sistema único de static/css/components/notifications.css */
+
+@media (max-width: 768px) {
+    .lesson-container { padding: 16px; }
+    .lesson-actions { flex-direction: column; }
+    .lesson-actions .btn { width: 100%; }
+}

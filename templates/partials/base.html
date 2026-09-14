@@ -114,6 +114,12 @@
 </head>
 <body class="{% block body_class %}{% endblock %}">
 
+<!-- Token CSRF accesible para las peticiones fetch/AJAX de static/js/*.js.
+     CSRF_COOKIE_HTTPONLY está en True (endurecimiento contra XSS en los
+     cuestionarios), así que el JS no puede leer la cookie csrftoken
+     directamente; csrf.js lee este input en su lugar. -->
+<form id="csrf-form" style="display:none" aria-hidden="true">{% csrf_token %}</form>
+
 <!-- ============================================
      FONDO 3D DE PARTÍCULAS (ver static/js/particles-bg.js)
      Si Three.js o WebGL no cargan, queda el degradado

@@ -31,6 +31,7 @@
                                     <th>Emitido</th>
                                     <th>Verificaciones</th>
                                     <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -42,15 +43,31 @@
                                     <td>{{ certificate.issued_at|date:"d/m/Y" }}</td>
                                     <td>{{ certificate.verification_count }}</td>
                                     <td>
-                                        {% if certificate.is_verified %}
+                                        {% if certificate.is_revoked %}
+                                            <span class="badge-status revoked">Revocado</span>
+                                        {% elif certificate.is_verified %}
                                             <span class="badge-status published">Verificado</span>
                                         {% else %}
                                             <span class="badge-status pending">Sin verificar</span>
                                         {% endif %}
                                     </td>
+                                    <td>
+                                        <form method="post" action="{% url 'admin_certificate_toggle' certificate.id %}" class="d-inline">
+                                            {% csrf_token %}
+                                            {% if certificate.is_revoked %}
+                                                <button type="submit" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-rotate-left"></i> Reactivar
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Revocar este certificado? Dejará de mostrarse como válido en la verificación pública.');">
+                                                    <i class="fas fa-ban"></i> Revocar
+                                                </button>
+                                            {% endif %}
+                                        </form>
+                                    </td>
                                 </tr>
                                 {% empty %}
-                                <tr><td colspan="6" class="text-center text-muted py-4">No se han emitido certificados todavía.</td></tr>
+                                <tr><td colspan="7" class="text-center text-muted py-4">No se han emitido certificados todavía.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>

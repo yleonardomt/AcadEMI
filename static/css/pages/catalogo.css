@@ -1,0 +1,670 @@
+/* ============================================
+   CATÁLOGO DE CURSOS (templates/academi/courses/catalogo.html)
+   ============================================ */
+
+/* ============================================
+   HERO DEL CATÁLOGO
+   Banner de marca fijo (degradado azul + texto blanco), no
+   cambia con el modo noche/día — igual que el resto de los
+   "hero" de color sólido del sitio.
+   ============================================ */
+.catalog-hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, #2563eb 100%);
+    border-radius: var(--border-radius);
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    position: relative;
+    overflow: hidden;
+    color: var(--white);
+}
+
+.catalog-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 400px;
+    height: 400px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.catalog-hero::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: -10%;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.catalog-hero-content {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.catalog-hero h1 {
+    font-size: 28px;
+    font-weight: 800;
+    margin: 0;
+}
+
+.catalog-hero h1 i {
+    margin-right: 12px;
+    color: var(--secondary);
+}
+
+.catalog-hero p {
+    margin: 4px 0 0 0;
+    font-size: 15px;
+    opacity: 0.85;
+}
+
+.catalog-hero .hero-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.catalog-hero .hero-stat {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.12);
+    padding: 8px 20px;
+    border-radius: var(--border-radius-sm);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.catalog-hero .hero-stat .number {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.catalog-hero .hero-stat .label {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+.catalog-hero .hero-stat-link {
+    color: inherit;
+    text-decoration: underline;
+}
+
+/* ============================================
+   CATEGORÍAS - CHIPS DE NAVEGACIÓN
+   Estas sí son parte de la página normal (no del hero fijo),
+   así que sus colores cambian con el modo noche/día.
+   ============================================ */
+.category-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 32px;
+}
+
+.category-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 18px;
+    border-radius: var(--border-radius-pill);
+    background: var(--surface);
+    border: 1px solid var(--border-color);
+    color: var(--ink);
+    font-weight: 600;
+    font-size: 13.5px;
+    transition: var(--transition-fast);
+}
+
+.category-pill:hover {
+    border-color: var(--primary);
+    color: var(--primary-text);
+    transform: translateY(-2px);
+}
+
+.category-pill.active {
+    background: var(--primary-gradient);
+    border-color: transparent;
+    color: var(--white);
+    box-shadow: 0 4px 16px rgba(0, 51, 160, 0.25);
+}
+
+.category-pill .count {
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: var(--border-radius-pill);
+    padding: 1px 8px;
+    font-size: 11px;
+}
+
+.category-pill.active .count {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   ENCABEZADOS DE SECCIÓN (Destacados / Más comprados)
+   ============================================ */
+.catalog-section-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 8px 0 16px;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--ink);
+}
+
+.catalog-section-heading i {
+    color: var(--secondary);
+}
+
+.catalog-section-heading.bestsellers i {
+    color: var(--danger);
+}
+
+.catalog-scroll-row {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+    scroll-snap-type: x proximity;
+}
+
+.catalog-scroll-row .col-md-6 {
+    flex: 0 0 300px;
+    width: 300px;
+    scroll-snap-align: start;
+}
+
+.catalog-scroll-row::-webkit-scrollbar { height: 6px; }
+
+.badge-bestseller {
+    background: linear-gradient(135deg, var(--danger), #dc2626) !important;
+    color: var(--white) !important;
+}
+
+/* .course-category-tag: definido en static/css/components/tags.css */
+.course-category-tag { margin-bottom: 8px; }
+
+/* ===== BOTÓN FAVORITO =====
+   Flota sobre la miniatura del curso (foto o degradado de marca),
+   no sobre el fondo de la página — se queda fijo (blanco + gris)
+   en los dos modos, igual que el botón equivalente de mis_cursos. */
+.btn-favorite {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: #718096;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    transition: var(--transition-fast);
+    cursor: pointer;
+}
+
+.btn-favorite:hover {
+    transform: scale(1.1);
+    color: var(--danger);
+}
+
+.btn-favorite.active {
+    color: var(--danger);
+}
+
+/* ============================================
+   TARJETAS DE CURSOS - MODERNAS
+   ============================================ */
+.course-card-catalog {
+    border-radius: var(--border-radius-lg);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    height: 100%;
+    position: relative;
+}
+
+.course-card-catalog:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 48px rgba(0, 51, 160, 0.12);
+    border-color: var(--primary);
+}
+
+.course-card-catalog .card-img-top {
+    height: 180px;
+    object-fit: cover;
+    background: var(--primary-lighter);
+    transition: transform 0.5s ease;
+}
+
+.course-card-catalog:hover .card-img-top {
+    transform: scale(1.03);
+}
+
+.course-card-catalog .card-img-placeholder {
+    height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-gradient);
+    color: var(--white);
+    font-size: 48px;
+    transition: transform 0.5s ease;
+}
+
+.course-card-catalog:hover .card-img-placeholder {
+    transform: scale(1.03);
+}
+
+.course-card-catalog .card-body {
+    padding: 18px 20px;
+}
+
+.course-card-catalog .card-footer {
+    background: transparent;
+    border-top: 1px solid var(--border-color);
+    padding: 12px 20px;
+}
+
+/* ===== PRECIO ===== */
+.course-price {
+    font-weight: 700;
+    color: var(--primary-text);
+    font-size: 18px;
+}
+
+.course-price.free {
+    color: var(--success);
+}
+
+/* ===== RATING ===== */
+.course-rating {
+    color: var(--secondary);
+    font-size: 14px;
+}
+
+.course-rating .count {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-left: 4px;
+}
+
+/* ===== META ===== */
+.course-meta {
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.course-meta i {
+    width: 16px;
+    color: var(--primary-text);
+}
+
+.course-meta span {
+    margin-right: 12px;
+}
+
+/* .badge-level: definido en static/css/components/course-card.css */
+
+/* ===== BADGE DESTACADO ===== */
+.badge-featured {
+    background: linear-gradient(135deg, var(--secondary), var(--warning));
+    color: var(--primary-dark);
+    font-size: 10px;
+    padding: 4px 14px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 700;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(247, 198, 0, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-featured i {
+    margin-right: 4px;
+}
+
+/* ===== BADGE ADQUIRIDO ===== */
+.badge-owned {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: var(--white);
+    font-size: 10px;
+    padding: 4px 14px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 700;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-owned i {
+    margin-right: 4px;
+}
+
+/* ===== BADGE DE PROMOCIÓN (cupón activo) =====
+   Se muestra inline en el cuerpo de la tarjeta (no superpuesto sobre
+   la imagen) para no pelear con el badge destacado/bestseller ni el
+   botón de favorito, que ya ocupan las dos esquinas superiores. */
+.badge-promo {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    max-width: 100%;
+    background: linear-gradient(135deg, var(--info), var(--primary));
+    color: var(--white);
+    font-size: 10px;
+    padding: 4px 12px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 51, 160, 0.25);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+}
+
+.badge-promo i {
+    margin-right: 2px;
+    flex-shrink: 0;
+}
+
+/* Nombre de la promoción (ej. "NAVIDAD", "BLACKFRIDAY") destacado en
+   negrita, para que el estudiante vea de qué campaña se trata a
+   simple vista y no solo en el tooltip. */
+.badge-promo .promo-code {
+    font-weight: 800;
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.badge-promo .promo-sep {
+    opacity: 0.55;
+    font-weight: 400;
+}
+
+.badge-promo small {
+    font-weight: 600;
+    text-transform: none;
+    opacity: 0.9;
+    letter-spacing: 0;
+}
+
+/* ===== BOTÓN VER CURSO ===== */
+.btn-view-course {
+    background: var(--primary-gradient);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    flex: 1;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-view-course:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 51, 160, 0.25);
+    color: var(--white);
+    text-decoration: none;
+}
+
+/* ===== BOTÓN CARRITO ===== */
+.btn-add-cart {
+    background: transparent;
+    border: 2px solid var(--primary);
+    color: var(--primary-text);
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: var(--border-radius-sm);
+    font-size: 13px;
+    transition: var(--transition);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.btn-add-cart:hover {
+    background: var(--primary);
+    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 51, 160, 0.2);
+}
+
+.btn-add-cart.in-cart {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--white);
+}
+
+.btn-add-cart.in-cart:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+.btn-add-cart .btn-text {
+    font-size: 12px;
+}
+
+/* ===== BOTÓN CONTINUAR ===== */
+.btn-continue-learning {
+    background: linear-gradient(135deg, var(--success), #059669);
+    color: var(--white);
+    border: none;
+    padding: 8px 16px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    width: 100%;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-continue-learning:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    color: var(--white);
+    text-decoration: none;
+}
+
+/* ============================================
+   FOOTER ACCIONES
+   ============================================ */
+.footer-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.footer-actions .btn {
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: var(--border-radius-sm);
+    flex: 1;
+}
+
+/* Cuando ya está inscrito: "Continuar aprendiendo" manda (ocupa el
+   espacio) y "Ver curso" queda como botoncito de solo ícono al lado,
+   para no competir con la acción principal. */
+.footer-actions .btn-continue-learning {
+    width: auto;
+    flex: 1;
+}
+
+.footer-actions .btn-view-course-icon {
+    flex: 0 0 auto;
+    padding: 8px 14px;
+}
+
+/* ============================================
+   RESULTS COUNT
+   ============================================ */
+.results-count {
+    font-size: 14px;
+    color: var(--text-muted);
+    background: var(--white-smoke);
+    padding: 6px 16px;
+    border-radius: var(--border-radius-pill);
+    border: 1px solid var(--border-color);
+}
+
+.results-count strong {
+    color: var(--primary-text);
+}
+
+/* ============================================
+   EMPTY STATE
+   ============================================ */
+.empty-catalog {
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.empty-catalog i {
+    font-size: 64px;
+    color: var(--gray-light);
+    margin-bottom: 20px;
+}
+
+.empty-catalog h4 {
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+}
+
+.empty-catalog p {
+    color: var(--text-muted);
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Toast: usa el sistema único de static/css/components/notifications.css */
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 992px) {
+    .filter-section {
+        position: static;
+        margin-bottom: 20px;
+    }
+
+    .catalog-hero {
+        padding: 24px 28px;
+    }
+
+    .catalog-hero h1 {
+        font-size: 24px;
+    }
+
+    .catalog-hero .hero-stats {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    .catalog-hero {
+        padding: 20px;
+    }
+
+    .catalog-hero h1 {
+        font-size: 20px;
+    }
+
+    .catalog-hero .hero-stat .number {
+        font-size: 18px;
+    }
+
+    .catalog-hero .hero-stat {
+        padding: 6px 14px;
+    }
+
+    .course-card-catalog .card-img-top,
+    .course-card-catalog .card-img-placeholder {
+        height: 140px;
+    }
+
+    .footer-actions .btn {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+
+    .btn-add-cart {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+
+    .btn-add-cart .btn-text {
+        display: none;
+    }
+
+    .catalog-hero-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 576px) {
+    .catalog-hero {
+        padding: 16px;
+    }
+
+    .catalog-hero h1 {
+        font-size: 18px;
+    }
+
+    .catalog-hero p {
+        font-size: 13px;
+    }
+
+    .filter-section {
+        padding: 16px;
+    }
+
+    .course-card-catalog .card-body {
+        padding: 14px 16px;
+    }
+
+    .course-card-catalog .card-footer {
+        padding: 10px 16px;
+    }
+
+    .btn-view-course {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}

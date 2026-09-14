@@ -13,7 +13,10 @@ urlpatterns = [
     path('password-reset/', views.password_reset_request_view, name='password_reset_request'),
     path('reset-password/<str:uidb64>/<str:token>/', views.password_reset_confirm_view, name='password_reset_confirm'),
     path('verify-email/<str:uidb64>/<str:token>/', views.verify_email_view, name='verify_email'),
-    
+    path('verify-pending/', views.verify_pending_view, name='verify_pending'),
+    path('verify-pending/resend/', views.resend_verification_email_view, name='resend_verification_email'),
+    path('terminos/', views.terms_view, name='terms'),
+
     # Dashboard y Perfil
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('profile/', views.profile_view, name='profile'),
@@ -52,7 +55,6 @@ urlpatterns = [
     path('my-grades/', views.my_grades_view, name='my_grades'),
     path('my-certificates/', views.my_certificates_view, name='my_certificates'),
     path('my-certificates/<int:certificate_id>/', views.certificate_detail_view, name='certificate_detail'),
-    path('my-certificates/<int:certificate_id>/send-email/', views.certificate_send_email_view, name='certificate_send_email'),
     path('verify-certificate/<str:code>/', views.verify_certificate_view, name='verify_certificate'),
     path('my-favorites/', views.my_favorites_view, name='my_favorites'),
     path('purchase-history/', views.purchase_history_view, name='purchase_history'),
@@ -106,6 +108,7 @@ urlpatterns = [
     path('panel/coupons/<int:coupon_id>/editar/', views.admin_coupon_edit, name='admin_coupon_edit'),
     path('panel/payments/', views.admin_payments_view, name='admin_payments'),
     path('panel/certificates/', views.admin_certificates_view, name='admin_certificates'),
+    path('panel/certificates/<int:certificate_id>/toggle/', views.admin_certificate_toggle, name='admin_certificate_toggle'),
     path('panel/reports-generate/', views.admin_reports_generate_view, name='admin_reports_generate'),
     
     # ============================================
@@ -139,6 +142,7 @@ path('comments/<int:comment_id>/edit/', views.edit_comment_view, name='edit_comm
 path('comments/<int:comment_id>/delete/', views.delete_comment_view, name='delete_comment'),
 path('lesson/<int:lesson_id>/questions/add/', views.add_question_view, name='add_question'),
 path('questions/<int:question_id>/answer/', views.answer_question_view, name='answer_question'),
+path('mis-preguntas/', views.teacher_questions_view, name='teacher_questions'),
 path('course/<int:course_id>/reviews/add/', views.add_review_view, name='add_review'),
 path('reviews/<int:review_id>/edit/', views.edit_review_view, name='edit_review'),
 path('reviews/<int:review_id>/delete/', views.delete_review_view, name='delete_review'),

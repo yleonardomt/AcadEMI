@@ -2,12 +2,13 @@ from .auth import (
     home_view, register_view, login_view, logout_view, change_password_view,
     password_reset_request_view, password_reset_confirm_view,
     verify_email_view, profile_view,
+    verify_pending_view, resend_verification_email_view, terms_view,
 )
 from .dashboard import (
     dashboard_view, notifications_view, my_courses_view, my_progress_view,
     my_grades_view, my_certificates_view, my_favorites_view,
     mis_estudiantes_view, mis_resenas_view, certificate_detail_view,
-    certificate_send_email_view, verify_certificate_view,
+    verify_certificate_view,
 )
 from .courses import (
     create_course_view, manage_course_view, edit_course_view,
@@ -40,12 +41,12 @@ from .admin_panel import (
     admin_user_edit, admin_user_delete, admin_user_toggle_active,
     admin_user_reset_password, admin_course_moderate, admin_report_resolve,
     admin_category_edit, admin_category_delete, admin_coupon_toggle,
-    admin_coupon_edit,
+    admin_coupon_edit, admin_certificate_toggle,
 )
 from .chatbot import chatbot_view, chatbot_send_message
 from .engagement import (
     add_comment_view, edit_comment_view, delete_comment_view,
-    add_question_view, answer_question_view,
+    add_question_view, answer_question_view, teacher_questions_view,
     add_review_view, edit_review_view, delete_review_view,
     report_content_view,
 )

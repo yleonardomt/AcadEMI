@@ -69,7 +69,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== Barra de fortaleza de contraseña =====
-    var passwordInput = document.querySelector('#id_password1');
+    // #id_password1 es el campo de registro; #id_new_password es el de
+    // "nueva contraseña" al restablecerla (password_reset_confirm.html) —
+    // ambas páginas comparten esta misma barra de .strength-bar/.strength-text.
+    var passwordInput = document.querySelector('#id_password1, #id_new_password');
     var strengthBar = document.querySelector('.strength-bar');
     var strengthText = document.querySelector('.strength-text');
 
@@ -111,7 +114,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // ===== Confirmación de contraseña =====
-    var password2Input = document.querySelector('#id_password2');
+    // #id_password2 es el campo de registro; #id_confirm_password es el de
+    // password_reset_confirm.html — mismo patrón que passwordInput arriba.
+    var password2Input = document.querySelector('#id_password2, #id_confirm_password');
     if (password2Input && passwordInput) {
         password2Input.addEventListener('input', function() {
             if (this.value && this.value !== passwordInput.value) {

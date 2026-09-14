@@ -1,0 +1,110 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Términos y condiciones - AcadEMI{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="page-header">
+        <h1><i class="fas fa-file-contract"></i> Términos y condiciones</h1>
+        <p>Última actualización: {% now "d/m/Y" %}</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            <div class="card shadow-lg border-0">
+                <div class="card-body p-4 p-md-5">
+
+                    <h5 class="fw-bold"><i class="fas fa-handshake" style="color: var(--primary);"></i> 1. Aceptación de los términos</h5>
+                    <p class="text-muted">
+                        Al crear una cuenta en AcadEMI aceptas estos términos y condiciones. Si no
+                        estás de acuerdo con alguno de los puntos siguientes, no debes registrarte
+                        ni usar la plataforma.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-user-check" style="color: var(--primary);"></i> 2. Tu cuenta</h5>
+                    <p class="text-muted">
+                        Eres responsable de la confidencialidad de tu contraseña y de toda la
+                        actividad que ocurra dentro de tu cuenta. Debes darnos datos reales al
+                        registrarte (correo, nombre) para poder verificar tu identidad, emitir
+                        certificados a tu nombre y contactarte sobre tus compras.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-chalkboard-teacher" style="color: var(--primary);"></i> 3. Docentes y contenido de los cursos</h5>
+                    <p class="text-muted">
+                        Los cursos publicados en AcadEMI son creados y son responsabilidad de cada
+                        docente. El docente conserva la propiedad intelectual de su contenido
+                        (videos, documentos, evaluaciones), y otorga a AcadEMI una licencia para
+                        alojarlo, mostrarlo y entregarlo a los estudiantes que lo compren. El
+                        docente es responsable de que su contenido sea original o de que cuente
+                        con los permisos necesarios para publicarlo.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-money-bill-wave" style="color: var(--primary);"></i> 4. Pagos, precios y comisión de la plataforma</h5>
+                    <p class="text-muted">
+                        Los precios de los cursos se muestran en bolivianos (Bs.) e incluyen todos
+                        los cargos aplicables al momento de la compra. Por cada venta, AcadEMI
+                        retiene una comisión sobre el precio final (usada para mantener la
+                        plataforma, el soporte y la emisión de certificados) y transfiere el resto
+                        al docente correspondiente. Los cupones y promociones publicados por la
+                        academia o por un docente son válidos únicamente durante el período
+                        indicado en cada uno.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-rotate-left" style="color: var(--primary);"></i> 5. Reembolsos</h5>
+                    <p class="text-muted">
+                        Si tienes un problema con un curso que compraste (contenido no entregado,
+                        error de cobro, curso que no corresponde a su descripción), puedes
+                        reportarlo desde tu historial de compras o contactando a soporte. Cada
+                        caso se evalúa de forma individual.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-shield-halved" style="color: var(--primary);"></i> 6. Integridad académica en evaluaciones</h5>
+                    <p class="text-muted">
+                        Los cuestionarios y exámenes deben resolverse de forma individual y
+                        honesta. Está prohibido copiar, compartir respuestas o intentar burlar las
+                        medidas de seguridad del examen (cambiar de pestaña, usar herramientas de
+                        desarrollador, capturas no autorizadas). AcadEMI registra estos intentos y
+                        puede invalidar el intento de examen de quien incurra en ellos.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-ban" style="color: var(--primary);"></i> 7. Conducta y contenido prohibido</h5>
+                    <p class="text-muted">
+                        No está permitido subir contenido ilegal, difamatorio, discriminatorio o
+                        que infrinja derechos de autor de terceros, ni usar la plataforma para
+                        acosar a otros usuarios. AcadEMI puede suspender o eliminar cuentas que
+                        incumplan estas reglas.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-lock" style="color: var(--primary);"></i> 8. Privacidad de tus datos</h5>
+                    <p class="text-muted">
+                        Usamos tus datos únicamente para operar la plataforma: gestionar tu
+                        cuenta, procesar tus compras, emitir certificados y enviarte
+                        notificaciones sobre tus cursos. No vendemos tus datos personales a
+                        terceros.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-pen" style="color: var(--primary);"></i> 9. Cambios a estos términos</h5>
+                    <p class="text-muted">
+                        Podemos actualizar estos términos cuando la plataforma cambie. Si el
+                        cambio es relevante, te avisaremos por correo o mediante un aviso dentro
+                        del sitio.
+                    </p>
+
+                    <h5 class="fw-bold mt-4"><i class="fas fa-envelope" style="color: var(--primary);"></i> 10. Contacto</h5>
+                    <p class="text-muted mb-0">
+                        Si tienes dudas sobre estos términos, escríbenos a
+                        <a href="mailto:soporte@academi.com">soporte@academi.com</a>.
+                    </p>
+
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a href="javascript:history.back()" class="text-muted text-decoration-none">
+                    <i class="fas fa-arrow-left me-1"></i> Volver
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,10 +1,10 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}Asistente Virtual - AcadEMI{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/chatbot.css' %}">
+<link rel="stylesheet" href="{% static_v 'css/pages/chatbot.css' %}">
 {% endblock %}
 
 {% block chatbot_widget %}{% endblock %}
@@ -98,113 +98,8 @@
     </div>
 </div>
 
-<script>
-    // ============================================
-    // VARIABLES
-    // ============================================
-    const messagesContainer = document.getElementById('messagesContainer');
-    const chatEmpty = document.getElementById('chatEmpty');
-    const typingIndicator = document.getElementById('typingIndicator');
-    const chatInput = document.getElementById('chatInput');
-    const sendBtn = document.getElementById('sendBtn');
-    let isProcessing = false;
+{% endblock %}
 
-    // ============================================
-    // FUNCIONES
-    // ============================================
-    function addMessage(text, sender, time) {
-        chatEmpty.style.display = 'none';
-
-        const messageDiv = document.createElement('div');
-        messageDiv.className = 'chat-message ' + sender;
-
-        const avatar = document.createElement('div');
-        avatar.className = 'avatar';
-        avatar.innerHTML = sender === 'bot' ? '<i class="fas fa-robot"></i>' : '<i class="fas fa-user"></i>';
-
-        const bubble = document.createElement('div');
-        bubble.className = 'bubble';
-
-        const textSpan = document.createElement('span');
-        textSpan.textContent = text;
-
-        const timeSpan = document.createElement('span');
-        timeSpan.className = 'time';
-        timeSpan.textContent = time || new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-
-        bubble.appendChild(textSpan);
-        bubble.appendChild(timeSpan);
-        messageDiv.appendChild(avatar);
-        messageDiv.appendChild(bubble);
-        messagesContainer.appendChild(messageDiv);
-
-        // Scroll al final
-        const container = document.getElementById('chatMessages');
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function showTyping() {
-        typingIndicator.style.display = 'block';
-        const container = document.getElementById('chatMessages');
-        container.scrollTop = container.scrollHeight;
-    }
-
-    function hideTyping() {
-        typingIndicator.style.display = 'none';
-    }
-
-    function sendMessage() {
-        if (isProcessing) return;
-        const text = chatInput.value.trim();
-        if (!text) return;
-
-        // Deshabilitar
-        isProcessing = true;
-        sendBtn.disabled = true;
-        chatInput.disabled = true;
-
-        // Agregar mensaje del usuario
-        addMessage(text, 'user');
-        chatInput.value = '';
-
-        // Mostrar typing
-        showTyping();
-
-        chatbotSendMessage(text, function(response) {
-            hideTyping();
-            addMessage(response, 'bot');
-            isProcessing = false;
-            sendBtn.disabled = false;
-            chatInput.disabled = false;
-            chatInput.focus();
-        }, function(errorMessage) {
-            hideTyping();
-            addMessage(errorMessage, 'bot');
-            isProcessing = false;
-            sendBtn.disabled = false;
-            chatInput.disabled = false;
-            chatInput.focus();
-        });
-    }
-
-    function sendQuickMessage(text) {
-        chatInput.value = text;
-        sendMessage();
-    }
-
-    // ============================================
-    // EVENTOS
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mensaje de bienvenida si está vacío
-        if (messagesContainer.children.length === 0) {
-            chatEmpty.style.display = 'flex';
-        }
-
-        // Enfoque en el input
-        chatInput.focus();
-    });
-
-</script>
-
+{% block extra_js %}
+<script src="{% static_v 'js/chatbot-page.js' %}"></script>
 {% endblock %}

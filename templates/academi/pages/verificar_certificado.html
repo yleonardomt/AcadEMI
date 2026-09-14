@@ -1,48 +1,24 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}Verificar certificado - AcadEMI{% endblock %}
 
 {% block extra_css %}
-<style>
-    .verify-result {
-        max-width: 560px;
-        margin: 40px auto;
-        background: var(--surface);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-lg);
-        padding: var(--space-8) var(--space-6);
-        text-align: center;
-    }
-    .verify-icon {
-        width: 80px;
-        height: 80px;
-        margin: 0 auto var(--space-5);
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 36px;
-    }
-    .verify-icon.valid { background: #d1fae5; color: var(--success); }
-    .verify-icon.invalid { background: #fee2e2; color: var(--danger); }
-    .verify-details { text-align: left; margin-top: var(--space-6); }
-    .verify-details .row-item {
-        display: flex;
-        justify-content: space-between;
-        padding: var(--space-2) 0;
-        border-bottom: 1px solid var(--gray-light);
-        font-size: var(--font-size-small);
-    }
-    .verify-details .row-item span:first-child { color: var(--text-muted); }
-    .verify-details .row-item span:last-child { font-weight: var(--font-weight-semibold); color: var(--dark); }
-</style>
+<link rel="stylesheet" href="{% static_v 'css/pages/verificar-certificado.css' %}">
 {% endblock %}
 
 {% block content %}
 <div class="container py-4">
     <div class="verify-result">
-        {% if certificate %}
+        {% if certificate and certificate.is_revoked %}
+            <div class="verify-icon invalid"><i class="fas fa-ban"></i></div>
+            <h3>Certificado revocado</h3>
+            <p class="text-muted">Este certificado fue emitido por AcadEMI pero la academia lo revocó el {{ certificate.revoked_at|date:"d/m/Y" }}. Ya no es válido.</p>
+            <div class="verify-details">
+                <div class="row-item"><span>Curso</span><span>{{ certificate.enrollment.course.title }}</span></div>
+                <div class="row-item"><span>Código</span><span>{{ certificate.certificate_code }}</span></div>
+            </div>
+        {% elif certificate %}
             <div class="verify-icon valid"><i class="fas fa-check-circle"></i></div>
             <h3>Certificado válido</h3>
             <p class="text-muted">Este certificado fue emitido por AcadEMI y su autenticidad ha sido confirmada.</p>

@@ -11,6 +11,30 @@ from .learning import Enrollment
 # MÓDULO 7: CARRITO, COMPRAS, PAGOS Y CUPONES (RF-54 al RF-63)
 # ============================================
 
+# Porcentaje que retiene la academia en cada venta de curso; el resto
+# es para el docente. Usado tanto por Payment como por PaymentItem para
+# no duplicar el número mágico en dos lugares.
+PLATFORM_COMMISSION_RATE = Decimal('0.20')
+
+# Dominio de correo de estudiantes de la EMI (Universidad/Escuela Militar
+# de Ingeniería, Bolivia) y descuento automático en su primera compra.
+# Valor de descuento elegido por defecto (15%); ajustar acá si se define
+# otro porcentaje.
+EMI_STUDENT_EMAIL_DOMAIN = 'est.emi.edu.bo'
+EMI_STUDENT_DISCOUNT_PERCENT = Decimal('15')
+
+
+def is_emi_student_email(email):
+    """True si el correo pertenece al dominio de estudiantes de la EMI."""
+    return bool(email) and email.strip().lower().endswith('@' + EMI_STUDENT_EMAIL_DOMAIN)
+
+
+def is_eligible_for_emi_first_purchase_discount(user):
+    """True si el usuario es de la EMI y todavía no completó ninguna compra."""
+    if not is_emi_student_email(user.email):
+        return False
+    return not Payment.objects.filter(student=user, status='completed').exists()
+
 class Cart(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -174,7 +198,7 @@ class Payment(models.Model):
             self.invoice_number = self.generate_invoice_number()
 
         if self.final_amount > 0:
-            self.commission_amount = self.final_amount * Decimal('0.10')
+            self.commission_amount = self.final_amount * PLATFORM_COMMISSION_RATE
             self.teacher_amount = self.final_amount - self.commission_amount
 
         super().save(*args, **kwargs)
@@ -246,7 +270,7 @@ class PaymentItem(models.Model):
             self.final_price = self.price - self.discount_applied
 
         if self.final_price > 0:
-            self.platform_commission = self.final_price * Decimal('0.10')
+            self.platform_commission = self.final_price * PLATFORM_COMMISSION_RATE
             self.teacher_commission = self.final_price - self.platform_commission
 
         super().save(*args, **kwargs)
@@ -264,6 +288,8 @@ class Certificate(models.Model):  # RF-64, RF-65, RF-66, RF-67
     is_verified = models.BooleanField(default=False)
     verification_count = models.IntegerField(default=0)  # RF-67
     last_verified_at = models.DateTimeField(blank=True, null=True)  # RF-67
+    is_revoked = models.BooleanField(default=False)
+    revoked_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
         return f"Certificado - {self.enrollment.student.username} - {self.enrollment.course.title}"
@@ -281,3 +307,13 @@ class Certificate(models.Model):  # RF-64, RF-65, RF-66, RF-67
         self.last_verified_at = timezone.now()
         self.save()
         return True
+
+    def revoke(self):
+        self.is_revoked = True
+        self.revoked_at = timezone.now()
+        self.save()
+
+    def reactivate(self):
+        self.is_revoked = False
+        self.revoked_at = None
+        self.save()

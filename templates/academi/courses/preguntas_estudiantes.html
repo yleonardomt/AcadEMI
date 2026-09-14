@@ -1,0 +1,73 @@
+{% extends 'partials/base.html' %}
+
+{% block title %}Preguntas de estudiantes - AcadEMI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <div class="page-header">
+        <div class="page-header-icon"><i class="fas fa-question-circle"></i></div>
+        <div class="page-header-text">
+            <h1 class="page-title">Preguntas de estudiantes</h1>
+            <p class="page-subtitle">
+                {% if pending_count %}
+                    Tienes <strong>{{ pending_count }}</strong> pregunta{{ pending_count|pluralize }} sin responder
+                {% else %}
+                    Estás al día, no hay preguntas pendientes
+                {% endif %}
+            </p>
+        </div>
+        <div class="page-header-actions">
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
+        </div>
+    </div>
+
+    {% if questions %}
+    <div class="card shadow-sm border-0">
+        <div class="card-body">
+            {% for question in questions %}
+            <div class="engagement-item">
+                <div class="engagement-item-header">
+                    <span class="engagement-item-author"><i class="fas fa-user-circle"></i> {{ question.student.get_full_name|default:question.student.username }}</span>
+                    <span class="engagement-item-date">{{ question.created_at|date:"d/m/Y H:i" }}</span>
+                </div>
+                <p class="mb-1">
+                    <a href="{% url 'lesson_view' question.lesson.id %}" class="course-category-tag">
+                        <i class="fas fa-book-open"></i> {{ question.lesson.module.course.title|truncatechars:35 }} · {{ question.lesson.title|truncatechars:35 }}
+                    </a>
+                    {% if question.is_answered %}
+                        <span class="badge bg-success ms-1"><i class="fas fa-check"></i> Respondida</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark ms-1"><i class="fas fa-clock"></i> Sin responder</span>
+                    {% endif %}
+                </p>
+                <p class="engagement-item-body mb-0">{{ question.content }}</p>
+
+                {% for answer in question.answers.all %}
+                <div class="engagement-reply">
+                    <div class="engagement-reply-author"><i class="fas fa-chalkboard-teacher"></i> Tu respuesta</div>
+                    <p class="mb-0">{{ answer.content }}</p>
+                </div>
+                {% endfor %}
+
+                {% if not question.is_answered %}
+                <form method="POST" action="{% url 'answer_question' question.id %}" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="teacher_questions">
+                    <textarea class="form-control form-control-sm mb-2" name="content" rows="2" placeholder="Escribe tu respuesta..." required></textarea>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-reply"></i> Responder</button>
+                </form>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-comments"></i></div>
+        <h4>Todavía no hay preguntas</h4>
+        <p>Cuando un estudiante te pregunte algo en una de tus lecciones, va a aparecer acá para que le respondas.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

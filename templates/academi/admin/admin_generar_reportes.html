@@ -42,34 +42,50 @@
                     </div>
 
                     {% if generated %}
+                        <!-- Cada tipo de reporte muestra solo las tarjetas que le
+                             corresponden (antes las 4 se mostraban siempre igual,
+                             sin importar qué tipo se eligiera). Estas tarjetas usan
+                             fondos pálidos FIJOS (no cambian con el modo noche/día,
+                             a propósito, igual que las insignias de
+                             components/alerts.css) — por eso su texto también se
+                             fija en oscuro con style="color:", en vez de heredar el
+                             gris/oscuro que sí cambia de tema. -->
                         <div class="row g-3">
+                            {% if report_type == 'usuarios' %}
                             <div class="col-6">
-                                <div class="stat-card p-3 text-center rounded" style="background: var(--primary-lighter); border-bottom: 3px solid var(--primary);">
+                                <div class="stat-card p-3 text-center rounded" style="background: var(--primary-lighter); border-bottom: 3px solid var(--primary); color: #1a202c;">
                                     <span class="d-block fw-bold h4">{{ total_users }}</span>
-                                    <small class="text-muted">Usuarios totales</small>
+                                    <small>Usuarios registrados{% if date_from or date_to %} en el período{% endif %}</small>
                                 </div>
                             </div>
+                            {% elif report_type == 'cursos' %}
                             <div class="col-6">
-                                <div class="stat-card p-3 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid #3b82f6;">
+                                <div class="stat-card p-3 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid var(--info); color: #1a202c;">
                                     <span class="d-block fw-bold h4">{{ total_courses }}</span>
-                                    <small class="text-muted">Cursos totales</small>
+                                    <small>Cursos creados{% if date_from or date_to %} en el período{% endif %}</small>
                                 </div>
                             </div>
+                            {% else %}
                             <div class="col-6">
-                                <div class="stat-card p-3 text-center rounded" style="background: #fef3c7; border-bottom: 3px solid var(--secondary);">
+                                <div class="stat-card p-3 text-center rounded" style="background: var(--secondary-light); border-bottom: 3px solid var(--secondary-dark); color: #1a202c;">
                                     <span class="d-block fw-bold h4">{{ total_sales }}</span>
-                                    <small class="text-muted">Ventas en el período</small>
+                                    <small>Ventas en el período</small>
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="stat-card p-3 text-center rounded" style="background: #d1fae5; border-bottom: 3px solid #10b981;">
+                                <div class="stat-card p-3 text-center rounded" style="background: #d1fae5; border-bottom: 3px solid var(--success); color: #1a202c;">
                                     <span class="d-block fw-bold h4">Bs. {{ total_revenue }}</span>
-                                    <small class="text-muted">Ingresos del período</small>
+                                    <small>Ingresos del período</small>
                                 </div>
                             </div>
+                            {% endif %}
                         </div>
                         <p class="text-muted small mt-3 mb-0">
-                            Reporte de <strong>{{ report_type }}</strong>
+                            Reporte de <strong>
+                                {% if report_type == 'usuarios' %}usuarios registrados
+                                {% elif report_type == 'cursos' %}rendimiento académico
+                                {% else %}ventas e ingresos{% endif %}
+                            </strong>
                             {% if date_from %} desde {{ date_from }}{% endif %}
                             {% if date_to %} hasta {{ date_to }}{% endif %}.
                         </p>

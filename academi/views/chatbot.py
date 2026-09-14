@@ -1,3 +1,4 @@
+import re
 import time
 import unicodedata
 
@@ -13,15 +14,20 @@ from ..utils.ai_chatbot import get_ai_response
 
 STOPWORDS = {'y', 'e', 'de', 'del', 'la', 'el', 'los', 'las', 'en'}
 
+_PUNCTUATION_RE = re.compile(r'[^\w\s]', re.UNICODE)
+
 
 def _normalize(text):
-    """Minúsculas y sin tildes, para comparar sin importar acentos
-    ("programación" vs. "programacion")."""
+    """Minúsculas, sin tildes y sin puntuación, para comparar sin
+    importar acentos ("programación" vs. "programacion") ni signos
+    ("¿cuánto cuesta?" vs. "cuanto cuesta") — sin esto, "emi?" o
+    "¿tengo" nunca calzaban con las palabras clave "emi"/"tengo"
+    porque el signo quedaba pegado a la palabra."""
     stripped = ''.join(
         c for c in unicodedata.normalize('NFD', text.lower())
         if unicodedata.category(c) != 'Mn'
     )
-    return stripped
+    return _PUNCTUATION_RE.sub(' ', stripped)
 
 
 # ============================================
@@ -65,7 +71,13 @@ def _keyword_score(keywords_field, text_words):
     literal de la frase completa) aparecen en el mensaje. Esto tolera
     variaciones normales del lenguaje ("hablar con UN docente" vs.
     "hablar con EL docente", "me inscribo" vs. "inscribirme") que una
-    comparación de substring exacta no detecta."""
+    comparación de substring exacta no detecta.
+
+    El puntaje suma la cantidad de palabras coincidentes de cada frase
+    que encaja (no solo +1 por frase): así una frase específica de 2-3
+    palabras ("descuento emi") pesa más que una genérica de 1 sola
+    palabra ("descuento"), y una entrada más específica gana el
+    desempate frente a una genérica cuando ambas encajan."""
     score = 0
     for phrase in keywords_field.split(','):
         phrase_words = [w for w in _normalize(phrase).split() if w]
@@ -73,7 +85,7 @@ def _keyword_score(keywords_field, text_words):
             continue
         matched = sum(1 for w in phrase_words if w in text_words)
         if matched / len(phrase_words) >= 0.6:
-            score += 1
+            score += matched
     return score
 
 

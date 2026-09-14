@@ -8,7 +8,10 @@ from .evaluations import (
     Evaluation, QuestionEvaluation, QuestionOption, EvaluationResult,
     UserAnswer, EvaluationIncident,
 )
-from .commerce import Cart, CartItem, Coupon, Payment, PaymentItem, Certificate
+from .commerce import (
+    Cart, CartItem, Coupon, Payment, PaymentItem, Certificate,
+    EMI_STUDENT_DISCOUNT_PERCENT, is_emi_student_email, is_eligible_for_emi_first_purchase_discount,
+)
 from .system import Report, SystemReport, ActivityLog, SystemSetting
 from .chatbot import (
     ChatSession, ChatMessage, ChatIntent, ChatKnowledgeBase, ChatFeedback,
@@ -23,6 +26,7 @@ __all__ = [
     'Evaluation', 'QuestionEvaluation', 'QuestionOption', 'EvaluationResult',
     'UserAnswer', 'EvaluationIncident',
     'Cart', 'CartItem', 'Coupon', 'Payment', 'PaymentItem', 'Certificate',
+    'EMI_STUDENT_DISCOUNT_PERCENT', 'is_emi_student_email', 'is_eligible_for_emi_first_purchase_discount',
     'Report', 'SystemReport', 'ActivityLog', 'SystemSetting',
     'ChatSession', 'ChatMessage', 'ChatIntent', 'ChatKnowledgeBase', 'ChatFeedback',
     'ChatAnalytics',

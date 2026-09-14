@@ -1,0 +1,643 @@
+/* ============================================
+   DASHBOARD ADMINISTRADOR
+   (incluido dentro de templates/academi/dashboard/dashboard.html
+   vía dashboard_admin.html — ver el <link> en dashboard.html)
+
+   Usa el mismo lenguaje visual "modern" que dashboard-docente.css /
+   dashboard-estudiante.css (hero con degradado + formas, .metric-card,
+   .action-card, .card-modern, tarjeta de perfil) para que los 3
+   paneles por rol se vean consistentes entre sí, en vez de que cada
+   uno reinvente su propio sistema de tarjetas/colores.
+   ============================================ */
+.dashboard-wrapper {
+    padding: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* ============================================
+   HERO — mismo criterio que el hero del docente: banda de
+   color fija (no cambia con el modo noche/día).
+   ============================================ */
+.hero-admin {
+    position: relative;
+    border-radius: 16px;
+    margin-bottom: 28px;
+    overflow: hidden;
+    padding: 32px 36px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, #2563eb 100%);
+}
+
+.hero-bg-pattern {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        radial-gradient(circle at 20% 50%, rgba(255,255,255,0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255,255,255,0.08) 0%, transparent 40%),
+        radial-gradient(circle at 50% 80%, rgba(255,255,255,0.03) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.hero-bg-shapes {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.1;
+}
+
+.shape-1 {
+    width: 300px;
+    height: 300px;
+    background: rgba(255,255,255,0.1);
+    top: -100px;
+    right: -50px;
+    animation: floatShape 8s ease-in-out infinite;
+}
+
+.shape-2 {
+    width: 200px;
+    height: 200px;
+    background: rgba(255,255,255,0.08);
+    bottom: -50px;
+    left: -30px;
+    animation: floatShape 10s ease-in-out infinite reverse;
+}
+
+.shape-3 {
+    width: 150px;
+    height: 150px;
+    background: rgba(255,215,0,0.08);
+    top: 50%;
+    right: 30%;
+    animation: floatShape 6s ease-in-out infinite 1s;
+}
+
+@keyframes floatShape {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -20px) scale(1.1); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .shape { animation: none; }
+}
+
+.hero-content {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+    color: var(--white);
+    z-index: 1;
+}
+
+.hero-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.hero-avatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary), var(--warning));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 700;
+    border: 3px solid rgba(255,255,255,0.4);
+    overflow: hidden;
+    flex-shrink: 0;
+    box-shadow: 0 4px 20px rgba(247, 198, 0, 0.3);
+    position: relative;
+}
+
+.hero-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+}
+
+.hero-avatar span {
+    color: var(--white);
+    position: relative;
+    z-index: 1;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.hero-left h1 {
+    font-size: 24px;
+    font-weight: 400;
+    margin: 0;
+    color: var(--white);
+}
+
+.hero-left h1 strong {
+    font-weight: 700;
+}
+
+.hero-left p {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+    opacity: 0.85;
+    color: var(--white);
+}
+
+.hero-left p i {
+    margin-right: 6px;
+}
+
+.separator {
+    margin: 0 10px;
+    opacity: 0.5;
+}
+
+.hero-right {
+    display: flex;
+    gap: 16px;
+}
+
+.hero-stat {
+    text-align: center;
+    background: rgba(255,255,255,0.12);
+    padding: 8px 18px;
+    border-radius: 10px;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255,255,255,0.08);
+    transition: all 0.3s ease;
+}
+
+.hero-stat:hover {
+    background: rgba(255,255,255,0.2);
+    transform: translateY(-2px);
+}
+
+.hero-stat .stat-number {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+}
+
+.hero-stat .stat-label {
+    font-size: 12px;
+    opacity: 0.8;
+    color: var(--white);
+}
+
+/* ============================================
+   MÉTRICAS
+   Cada .metric-card fija su color de acento con la
+   propiedad personalizada --accent en el propio elemento
+   (style="--accent: #..."), así una sola regla CSS sirve
+   para todas las tarjetas.
+   ============================================ */
+.metrics-admin {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.metric-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 18px 22px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--gray-light);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.metric-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--accent);
+    border-radius: 14px 14px 0 0;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+}
+
+.metric-card:hover::after {
+    opacity: 1;
+}
+
+.metric-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.metric-value {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--dark);
+    line-height: 1.2;
+}
+
+.metric-label {
+    font-size: 13px;
+    color: var(--gray);
+}
+
+.metric-trend {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 12px;
+    border-radius: 50px;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.metric-trend.up {
+    background: #d1fae5;
+    color: var(--success);
+}
+
+.metric-trend.down {
+    background: #fee2e2;
+    color: var(--danger);
+}
+
+/* ============================================
+   ACCIONES RÁPIDAS
+   Mismo componente .action-card que el dashboard docente.
+   ============================================ */
+.actions-admin {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.action-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 16px 20px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--gray-light);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 8px;
+    text-decoration: none;
+    color: var(--dark);
+    transition: all 0.3s ease;
+}
+
+.action-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+    text-decoration: none;
+    color: var(--dark);
+}
+
+.action-card .action-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    background: var(--primary-lighter);
+    color: var(--primary);
+}
+
+.action-card span {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* ============================================
+   CARD MODERN (mismo componente que docente/estudiante)
+   ============================================ */
+.card-modern {
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--gray-light);
+    transition: all 0.3s ease;
+    height: 100%;
+    overflow: hidden;
+}
+
+.card-modern-header {
+    padding: 16px 22px;
+    border-bottom: 1px solid var(--gray-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.card-modern-header h5 {
+    font-weight: 600;
+    font-size: 15px;
+    margin: 0;
+    color: var(--dark);
+}
+
+.card-modern-header h5 i {
+    margin-right: 8px;
+}
+
+.card-modern-body {
+    padding: 18px 22px;
+}
+
+/* ============================================
+   PERFIL (mismo componente que docente)
+   ============================================ */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--gray-light);
+}
+
+.profile-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--secondary), var(--warning));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--white);
+    position: relative;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-avatar span {
+    color: var(--white);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.status-online {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--success);
+    border: 2px solid var(--surface);
+}
+
+.profile-header h5 {
+    font-weight: 600;
+    font-size: 16px;
+    margin: 0;
+    color: var(--dark);
+}
+
+.role-badge {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--primary);
+    background: var(--primary-lighter);
+    padding: 2px 12px;
+    border-radius: 50px;
+    display: inline-block;
+}
+
+/* Variante de color para el admin, mismo patrón de insignia fija
+   (fondo pálido + texto fijo) que static/css/components/alerts.css. */
+.role-badge.role-badge-admin {
+    color: var(--accent-pink);
+    background: var(--accent-pink-light);
+}
+
+.role-badge i {
+    margin-right: 4px;
+}
+
+.profile-body {
+    padding: 16px 22px 20px;
+}
+
+.profile-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    font-size: 13px;
+    color: var(--gray-dark);
+}
+
+.profile-info i {
+    width: 16px;
+    color: var(--gray);
+    font-size: 13px;
+}
+
+.profile-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+
+.btn-profile {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--gray-light);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-dark);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    min-width: 80px;
+}
+
+.btn-profile:hover {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+    text-decoration: none;
+}
+
+.btn-profile-secondary:hover {
+    background: #6b7280;
+    border-color: #6b7280;
+    color: var(--white);
+}
+
+.profile-stats {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    padding: 14px 22px;
+    border-top: 1px solid var(--gray-light);
+}
+
+.profile-stats span {
+    display: block;
+    font-weight: 700;
+    color: var(--dark);
+}
+
+.profile-stats small {
+    font-size: 11px;
+    color: var(--gray);
+}
+
+/* ============================================
+   ACTIVIDAD RECIENTE (tabs + items de la lista)
+   ============================================ */
+.user-item {
+    transition: var(--transition);
+    cursor: default;
+    border: 1px solid transparent;
+}
+
+.user-item:hover {
+    background: var(--primary-lighter) !important;
+    border-color: var(--primary-light);
+    border-radius: 8px;
+}
+
+.user-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--primary-lighter);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--primary);
+    flex-shrink: 0;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: var(--gray);
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: var(--transition);
+}
+
+.nav-tabs .nav-link:hover {
+    background: var(--primary-lighter);
+    color: var(--primary);
+}
+
+.nav-tabs .nav-link.active {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 6px;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1200px) {
+    .metrics-admin { grid-template-columns: repeat(2, 1fr); }
+    .actions-admin { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (max-width: 992px) {
+    .hero-admin { padding: 24px 28px; }
+    .hero-left h1 { font-size: 20px; }
+    .hero-right { gap: 12px; }
+    .hero-stat .stat-number { font-size: 18px; }
+    .hero-stat { padding: 6px 14px; }
+    .nav-tabs .nav-link { font-size: 13px; padding: 6px 12px; }
+}
+
+@media (max-width: 768px) {
+    .hero-admin { padding: 20px; }
+    .hero-content { flex-direction: column; align-items: flex-start; }
+    .hero-right { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+    .hero-left h1 { font-size: 18px; }
+    .hero-avatar { width: 48px; height: 48px; font-size: 18px; }
+    .metrics-admin { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .metric-card { padding: 14px 16px; }
+    .metric-value { font-size: 20px; }
+    .metric-icon { width: 40px; height: 40px; font-size: 16px; }
+    .actions-admin { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .action-card { padding: 14px 16px; }
+    .action-icon { width: 38px; height: 38px; font-size: 16px; }
+    .profile-header { flex-direction: column; text-align: center; }
+    .card-modern-header { padding: 12px 16px; flex-direction: column; align-items: flex-start; }
+    .card-modern-body { padding: 14px 16px; }
+    .profile-actions { flex-direction: column; }
+    .user-item { flex-wrap: wrap; gap: 4px; }
+    .nav-tabs { flex-wrap: nowrap; overflow-x: auto; }
+    .nav-tabs .nav-link { font-size: 12px; padding: 4px 10px; white-space: nowrap; }
+}
+
+@media (max-width: 480px) {
+    .hero-admin { padding: 16px; }
+    .hero-left h1 { font-size: 16px; }
+    .hero-avatar { width: 40px; height: 40px; font-size: 16px; }
+    .hero-stat .stat-number { font-size: 16px; }
+    .hero-stat { padding: 4px 10px; }
+    .metrics-admin { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .metric-card { padding: 12px 14px; }
+    .metric-value { font-size: 18px; }
+    .metric-label { font-size: 12px; }
+    .metric-icon { width: 36px; height: 36px; font-size: 14px; }
+    .actions-admin { grid-template-columns: 1fr 1fr; gap: 8px; }
+    .action-card { padding: 12px 14px; }
+    .profile-avatar { width: 44px; height: 44px; font-size: 18px; }
+}

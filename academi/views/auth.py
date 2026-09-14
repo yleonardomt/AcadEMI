@@ -1,9 +1,12 @@
+import logging
+
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg, Count, Q
+from django.urls import reverse
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
 
@@ -12,10 +15,14 @@ from ..forms import (
     PasswordResetRequestForm, PasswordResetConfirmForm,
     CustomPasswordChangeForm,
 )
-from ..models import Course, Category, Enrollment, Review
+from ..models import (
+    Course, Category, Enrollment, Review, Notification,
+    is_emi_student_email, EMI_STUDENT_DISCOUNT_PERCENT,
+)
 from ..utils import send_verification_email, send_password_reset_email, generate_reset_link
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 
 # Las categorías son datos libres (el admin las crea desde el panel),
 # así que no tienen un campo de ícono en el modelo. Buscamos por
@@ -96,17 +103,62 @@ def register_view(request):
             user = form.save()
             login(request, user)
 
+            if is_emi_student_email(user.email):
+                Notification.objects.create(
+                    user=user,
+                    type='system',
+                    title='Descuento estudiante EMI',
+                    message=f'¡Bienvenido! Por ser estudiante de la EMI tienes {EMI_STUDENT_DISCOUNT_PERCENT:g}% de descuento en tu primer curso. Se aplica automáticamente al pagar.',
+                    link=reverse('catalog'),
+                )
+
             try:
                 send_verification_email(user, request)
                 messages.success(request, 'Registro exitoso. Te hemos enviado un correo de verificación.')
-            except:
-                messages.warning(request, 'Registro exitoso, pero no pudimos enviar el correo de verificación.')
+            except Exception:
+                logger.exception('Fallo el envío del correo de verificación para %s', user.email)
+                messages.warning(request, 'Registro exitoso, pero no pudimos enviar el correo de verificación. Puedes reenviarlo desde esta página.')
 
-            return redirect('dashboard')
+            # No lo mandamos al dashboard todavía: el middleware de
+            # verificación lo rebotaría igual hasta que confirme el correo.
+            return redirect('verify_pending')
     else:
         form = RegisterForm()
 
     return render(request, 'academi/auth/register.html', {'form': form})
+
+
+# ============================================
+# RF-07: ESPERAR VERIFICACIÓN DE CORREO
+# ============================================
+@login_required
+def verify_pending_view(request):
+    if request.user.email_verified:
+        return redirect('dashboard')
+    return render(request, 'academi/auth/verificacion_pendiente.html')
+
+
+@login_required
+def resend_verification_email_view(request):
+    if request.user.email_verified:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        try:
+            send_verification_email(request.user, request)
+            messages.success(request, 'Te reenviamos el correo de verificación. Revisa tu bandeja de entrada (y spam).')
+        except Exception:
+            logger.exception('Fallo el reenvío del correo de verificación para %s', request.user.email)
+            messages.error(request, 'No pudimos reenviar el correo. Intenta de nuevo en unos minutos.')
+
+    return redirect('verify_pending')
+
+
+# ============================================
+# TÉRMINOS Y CONDICIONES
+# ============================================
+def terms_view(request):
+    return render(request, 'academi/pages/terminos.html')
 
 
 # ============================================

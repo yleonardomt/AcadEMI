@@ -1,0 +1,376 @@
+/* ============================================
+   BUSCAR CURSOS (templates/academi/courses/buscar.html)
+   ============================================ */
+
+/* HEADER */
+.search-header {
+    background: var(--primary-gradient);
+    color: var(--white);
+    padding: 35px 0 30px;
+    margin-bottom: 30px;
+    border-radius: 0 0 24px 24px;
+    position: relative;
+    overflow: hidden;
+}
+
+.search-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.search-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: 20%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+}
+
+.search-header h2 {
+    font-weight: 800;
+    font-size: 2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.search-header h2 i {
+    color: var(--secondary);
+    margin-right: 10px;
+}
+
+.search-header p {
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 0;
+    font-size: 1.05rem;
+    position: relative;
+    z-index: 1;
+}
+
+.results-count {
+    background: rgba(255, 255, 255, 0.12);
+    padding: 8px 20px;
+    border-radius: var(--border-radius-pill);
+    font-size: 0.95rem;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    position: relative;
+    z-index: 1;
+    display: inline-block;
+}
+
+.results-count strong {
+    font-weight: 700;
+    color: var(--secondary);
+}
+
+/* FORMULARIO — tarjeta sobre la página normal, sí cambia con el tema */
+.search-form-wrapper {
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow);
+    padding: 20px 24px;
+    margin-top: -20px;
+    margin-bottom: 30px;
+    position: relative;
+    z-index: 2;
+    border: 1px solid var(--border-color);
+}
+
+.search-form-wrapper .input-group {
+    border-radius: var(--border-radius-pill);
+    overflow: hidden;
+    box-shadow: var(--shadow-card);
+}
+
+.search-form-wrapper .input-group .form-control {
+    border: 2px solid var(--border-color);
+    border-right: none;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: var(--border-radius-pill) 0 0 var(--border-radius-pill);
+    transition: var(--transition);
+    background: var(--white-smoke);
+    color: var(--ink);
+}
+
+.search-form-wrapper .input-group .form-control:focus {
+    border-color: var(--primary);
+    box-shadow: none;
+    background: var(--surface);
+}
+
+.search-form-wrapper .input-group .form-control::placeholder {
+    color: var(--text-muted);
+    font-size: 0.95rem;
+}
+
+.search-form-wrapper .input-group .btn-search {
+    border: 2px solid var(--border-color);
+    border-left: none;
+    padding: 12px 28px;
+    background: var(--primary-gradient);
+    color: var(--white);
+    font-weight: 600;
+    border-radius: 0 var(--border-radius-pill) var(--border-radius-pill) 0;
+    transition: var(--transition);
+    cursor: pointer;
+}
+
+.search-form-wrapper .input-group .btn-search:hover {
+    background: var(--primary-dark);
+    transform: scale(1.02);
+}
+
+.search-form-wrapper .input-group .btn-search i {
+    margin-right: 6px;
+}
+
+.search-form-wrapper .input-group .btn-clear {
+    border: 2px solid var(--border-color);
+    border-left: none;
+    padding: 12px 20px;
+    background: var(--white-smoke);
+    color: var(--text-muted);
+    border-radius: 0 var(--border-radius-pill) var(--border-radius-pill) 0;
+    transition: var(--transition);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.search-form-wrapper .input-group .btn-clear:hover {
+    background: #fee2e2;
+    color: var(--danger);
+}
+
+.search-hint {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin-top: 8px;
+}
+
+.search-hint i {
+    margin-right: 6px;
+}
+
+/* TARJETAS */
+.course-card {
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    transition: var(--transition);
+    border: 1px solid var(--border-color);
+    background: var(--surface);
+    height: 100%;
+    position: relative;
+}
+
+.course-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--primary);
+}
+
+.course-card .card-img-top {
+    height: 170px;
+    object-fit: cover;
+    background: var(--primary-lighter);
+    width: 100%;
+}
+
+.course-card .card-img-placeholder {
+    height: 170px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--primary-gradient);
+    color: var(--white);
+    font-size: 48px;
+}
+
+.course-card .card-body {
+    padding: 18px 20px 12px;
+}
+
+.course-card .card-footer {
+    background: transparent;
+    border-top: 1px solid var(--border-color);
+    padding: 12px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.course-title {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.course-description {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    min-height: 38px;
+}
+
+.course-price {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--primary-text);
+}
+
+.course-price.free {
+    color: var(--success);
+}
+
+.course-price.free i {
+    font-size: 0.9rem;
+}
+
+/* .badge-level: definido en static/css/components/course-card.css */
+
+.course-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.course-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.course-meta i {
+    color: var(--primary-text);
+    font-size: 12px;
+    width: 14px;
+    text-align: center;
+}
+
+.btn-view {
+    font-size: 13px;
+    padding: 6px 18px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-view i {
+    margin-right: 4px;
+}
+
+.btn-add-cart {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid var(--border-color);
+    background: transparent;
+    color: var(--primary-text);
+    transition: var(--transition);
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.btn-add-cart:hover {
+    background: var(--primary);
+    color: var(--white);
+    border-color: var(--primary);
+    transform: scale(1.05);
+}
+
+.btn-add-cart.in-cart {
+    background: var(--success);
+    color: var(--white);
+    border-color: var(--success);
+}
+
+.btn-add-cart.in-cart:hover {
+    background: #059669;
+    border-color: #059669;
+}
+
+/* VACÍO */
+.empty-search {
+    padding: 80px 20px;
+    text-align: center;
+    background: var(--surface);
+    border-radius: var(--border-radius);
+    border: 1px solid var(--border-color);
+}
+
+.empty-search i {
+    font-size: 72px;
+    color: var(--gray-light);
+    margin-bottom: 20px;
+    display: block;
+}
+
+.empty-search h4 {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.empty-search p {
+    color: var(--text-muted);
+    max-width: 450px;
+    margin: 0 auto 24px;
+    font-size: 1.05rem;
+}
+
+/* Toast: usa el sistema único de static/css/components/notifications.css */
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .search-header { padding: 24px 0 20px; }
+    .search-header h2 { font-size: 1.5rem; }
+    .search-header p { font-size: 0.9rem; }
+    .search-form-wrapper { padding: 16px; margin-top: -12px; }
+    .search-form-wrapper .input-group .form-control { font-size: 0.9rem; padding: 10px 16px; }
+    .search-form-wrapper .input-group .btn-search { padding: 10px 18px; font-size: 0.9rem; }
+    .course-card .card-img-top,
+    .course-card .card-img-placeholder { height: 140px; }
+    .course-title { font-size: 0.95rem; }
+    .course-description { font-size: 0.8rem; min-height: 32px; }
+    .results-count { font-size: 0.85rem; padding: 6px 14px; }
+    .search-hint { font-size: 12px; }
+}
+
+@media (max-width: 480px) {
+    .search-header h2 { font-size: 1.25rem; }
+    .search-form-wrapper .input-group { flex-wrap: nowrap; }
+    .search-form-wrapper .input-group .btn-search span { display: none; }
+    .search-form-wrapper .input-group .btn-search i { margin-right: 0; }
+    .course-card .card-img-top,
+    .course-card .card-img-placeholder { height: 120px; }
+    .course-meta { font-size: 11px; gap: 6px; }
+    .btn-view { font-size: 12px; padding: 4px 14px; }
+    .btn-add-cart { width: 34px; height: 34px; font-size: 12px; }
+}

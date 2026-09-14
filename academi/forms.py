@@ -17,12 +17,10 @@ ROLES_CHOICES = (
 # RF-01: REGISTRARSE (COMPLETO)
 # ============================================
 class RegisterForm(UserCreationForm):
-    # Datos básicos
-    username = forms.CharField(required=True, widget=forms.TextInput(attrs={
-        'class': 'form-control',
-        'placeholder': 'Elige un nombre de usuario',
-        'minlength': '3'
-    }))
+    # Datos básicos. No se pide un "nombre de usuario" aparte del nombre
+    # completo (student: full_name / teacher: teacher_full_name, más abajo)
+    # — sería un campo redundante. El username real para el login se
+    # genera solo a partir del email en save().
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
         'class': 'form-control',
         'placeholder': 'ejemplo@correo.com'
@@ -147,30 +145,29 @@ class RegisterForm(UserCreationForm):
         'class': 'form-control',
         'placeholder': 'https://tu-sitio-web.com'
     }))
-    
-    # ===== CAPTCHA =====
-    captcha = CaptchaField(label='Código de seguridad')
+
+    # ===== TÉRMINOS Y CONDICIONES =====
+    accept_terms = forms.BooleanField(required=True, widget=forms.CheckboxInput(attrs={
+        'class': 'form-check-input'
+    }), error_messages={'required': 'Debes aceptar los términos y condiciones para registrarte.'})
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2', 'role']
+        fields = ['email', 'password1', 'password2', 'role']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Hacer todos los campos extra opcionales
+        # Hacer todos los campos extra opcionales (menos los básicos y accept_terms)
         for field_name in self.fields:
-            if field_name not in ['username', 'email', 'password1', 'password2', 'role', 'captcha']:
+            if field_name not in ['email', 'password1', 'password2', 'role', 'accept_terms']:
                 self.fields[field_name].required = False
-
-    def clean_username(self):
-        username = self.cleaned_data.get('username')
-        if User.objects.filter(username=username).exists():
-            raise ValidationError('Este nombre de usuario ya está registrado')
-        if len(username) < 3:
-            raise ValidationError('El nombre de usuario debe tener al menos 3 caracteres')
-        if not re.match(r'^[a-zA-Z0-9_]+$', username):
-            raise ValidationError('Solo letras, números y guión bajo')
-        return username
+        # Sin esto, BoundField.value() de un checkbox múltiple sin enviar
+        # todavía (primer GET) devuelve None en vez de una lista, y el
+        # "{% if value in form.X.value %}" del template revienta con
+        # TypeError al intentar hacer `in None`.
+        if not self.is_bound:
+            for name in ('interests', 'teaching_materials', 'teaching_level'):
+                self.initial.setdefault(name, [])
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
@@ -214,11 +211,25 @@ class RegisterForm(UserCreationForm):
                 
         return cleaned_data
 
+    def _generate_username(self):
+        """El registro ya no pide un nombre de usuario aparte, así que se
+        deriva uno interno (necesario porque User.USERNAME_FIELD sigue
+        siendo 'username') a partir de la parte local del email, con un
+        sufijo numérico si ya existe."""
+        base = re.sub(r'[^a-zA-Z0-9_]', '', self.cleaned_data['email'].split('@')[0])[:25] or 'usuario'
+        candidate = base
+        suffix = 1
+        while User.objects.filter(username=candidate).exists():
+            suffix += 1
+            candidate = f'{base}{suffix}'
+        return candidate
+
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         user.role = self.cleaned_data['role']
-        
+        user.username = self._generate_username()
+
         if self.cleaned_data.get('phone'):
             user.phone = self.cleaned_data.get('phone')
         elif self.cleaned_data.get('teacher_phone'):

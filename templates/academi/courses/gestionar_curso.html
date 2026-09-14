@@ -1,94 +1,10 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}Gestionar curso - {{ course.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-    .bg-purple { background-color: #6b46c1; color: white; }
-    .dropdown-item i { width: 20px; color: #0033a0; }
-    .dropdown-item:hover i { color: #0033a0; }
-    
-    .module-item {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        transition: all 0.3s ease;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.02);
-    }
-    .module-item:hover {
-        border-color: #0033a0;
-        box-shadow: 0 4px 20px rgba(0, 51, 160, 0.06);
-    }
-    .module-header {
-        background: #f8fafc;
-        border-radius: 12px 12px 0 0;
-        padding: 12px 16px;
-        border-bottom: 1px solid #e2e8f0;
-    }
-    .lesson-item {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 8px;
-        transition: all 0.2s ease;
-    }
-    .lesson-item:hover {
-        border-color: #0033a0;
-        background: #fafcff;
-    }
-    .modal-icon {
-        font-size: 48px;
-        margin-bottom: 12px;
-    }
-    .modal-icon.warning { color: #f7c600; }
-    .modal-icon.error { color: #e53e3e; }
-    .modal-icon.success { color: #10b981; }
-    .btn-sm-icon {
-        width: 28px;
-        height: 28px;
-        padding: 0;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: 6px;
-        font-size: 12px;
-    }
-    .btn-sm-icon i { font-size: 12px; }
-    .badge-lesson {
-        font-size: 10px;
-        padding: 3px 8px;
-        border-radius: 50px;
-        font-weight: 600;
-    }
-    .lesson-title {
-        font-size: 14px;
-        font-weight: 500;
-        color: #2d3748;
-    }
-    .empty-state {
-        padding: 60px 20px;
-        text-align: center;
-    }
-    .empty-state i {
-        font-size: 56px;
-        color: #cbd5e0;
-        margin-bottom: 16px;
-    }
-    .empty-state h6 {
-        font-weight: 700;
-        color: #2d3748;
-    }
-    .empty-state p {
-        color: #718096;
-        margin-bottom: 16px;
-    }
-    @media (max-width: 576px) {
-        .module-item { padding: 12px !important; }
-        .lesson-item { flex-wrap: wrap; gap: 6px; }
-        .lesson-item > div:first-child { width: 100%; }
-        .lesson-item > div:last-child { width: 100%; justify-content: flex-start; }
-    }
-</style>
+<link rel="stylesheet" href="{% static_v 'css/pages/gestionar-curso.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -98,7 +14,7 @@
     <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-2">
         <div>
             <h4 class="fw-bold mb-1">
-                <i class="fas fa-cog" style="color: #0033a0;"></i> 
+                <i class="fas fa-cog" style="color: var(--primary);"></i> 
                 {{ course.title }}
             </h4>
             <p class="text-muted mb-0">
@@ -135,10 +51,10 @@
     </div>
 
     <!-- MÓDULOS Y LECCIONES -->
-    <div class="card border-0 shadow-lg">
+    <div class="card border-0 shadow-lg modules-card">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
             <h6 class="fw-bold mb-0">
-                <i class="fas fa-list-ul" style="color: #0033a0;"></i> 
+                <i class="fas fa-list-ul" style="color: var(--primary);"></i> 
                 Módulos y lecciones
             </h6>
             <a href="{% url 'add_module' course.id %}" class="btn btn-primary btn-sm">
@@ -153,7 +69,7 @@
                     <div class="module-header d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="fw-bold mb-0">
-                                <i class="fas fa-folder-open" style="color: #0033a0;"></i> 
+                                <i class="fas fa-folder-open" style="color: var(--primary);"></i> 
                                 {{ module.title }}
                                 <span class="badge bg-secondary ms-2">{{ module.lessons.count }} lecciones</span>
                             </h6>
@@ -271,7 +187,7 @@
                 {% endfor %}
             {% else %}
                 <div class="empty-state">
-                    <i class="fas fa-folder-open"></i>
+                    <div class="empty-state-icon"><i class="fas fa-folder-open"></i></div>
                     <h6>No hay módulos creados</h6>
                     <p>Comienza creando tu primer módulo para organizar el contenido del curso.</p>
                     <a href="{% url 'add_module' course.id %}" class="btn btn-primary">
@@ -335,7 +251,7 @@
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-body text-center p-5">
                 <div class="modal-icon" id="msgIcon">
-                    <i class="fas fa-info-circle" style="color: #0033a0;"></i>
+                    <i class="fas fa-info-circle" style="color: var(--primary);"></i>
                 </div>
                 <h5 class="fw-bold mb-2" id="msgTitle">Mensaje</h5>
                 <p class="text-muted mb-4" id="msgText">Texto del mensaje</p>
@@ -349,126 +265,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    // ============================================
-    // VARIABLES PARA ELIMINAR
-    // ============================================
-    var deleteUrl = '';
-
-    // ============================================
-    // MOSTRAR MODAL DE CONFIRMACIÓN
-    // ============================================
-    function showConfirmModal(title, message, url) {
-        document.getElementById('confirmTitle').textContent = title || 'Confirmar eliminación';
-        document.getElementById('confirmMessage').innerHTML = message || '¿Estás seguro de que deseas eliminar esto?';
-        deleteUrl = url || '#';
-        document.getElementById('confirmDeleteBtn').href = deleteUrl;
-        new bootstrap.Modal(document.getElementById('confirmModal')).show();
-    }
-
-    // ============================================
-    // ELIMINAR - REDIRIGIR A LA URL
-    // ============================================
-    function deleteItem() {
-        if (deleteUrl && deleteUrl !== '#') {
-            window.location.href = deleteUrl;
-        }
-        return false;
-    }
-
-    // ============================================
-    // CERRAR MODAL
-    // ============================================
-    function closeModal() {
-        var modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
-        if (modal) modal.hide();
-    }
-
-    // ============================================
-    // ELIMINAR MÓDULO
-    // ============================================
-    function confirmDeleteModule(moduleId, moduleTitle) {
-        showConfirmModal(
-            'Eliminar módulo',
-            '¿Estás seguro de eliminar el módulo "<strong>' + moduleTitle + '</strong>"?<br>Las lecciones que contiene también se eliminarán.',
-            '/module/delete/' + moduleId + '/'
-        );
-    }
-
-    // ============================================
-    // ELIMINAR LECCIÓN
-    // ============================================
-    function confirmDeleteLesson(lessonId, lessonTitle) {
-        showConfirmModal(
-            'Eliminar lección',
-            '¿Estás seguro de eliminar la lección "<strong>' + lessonTitle + '</strong>"?',
-            '/lesson/delete/' + lessonId + '/'
-        );
-    }
-
-    // ============================================
-    // REORDENAR MÓDULO
-    // ============================================
-    function reorderModule(moduleId, direction) {
-        fetch('/module/reorder/' + moduleId + '/' + direction + '/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    showToast('Error al reordenar el módulo', 'danger');
-                }
-            })
-            .catch(function() {
-                showToast('Error de conexión al servidor', 'danger');
-            });
-    }
-
-    // ============================================
-    // REORDENAR LECCIÓN
-    // ============================================
-    function reorderLesson(lessonId, direction) {
-        fetch('/lesson/reorder/' + lessonId + '/' + direction + '/')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    location.reload();
-                } else {
-                    showToast('Error al reordenar la lección', 'danger');
-                }
-            })
-            .catch(function() {
-                showToast('Error de conexión al servidor', 'danger');
-            });
-    }
-
-    // ============================================
-    // PUBLICAR CURSO
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        var publishBtn = document.getElementById('publishBtn');
-        if (publishBtn) {
-            publishBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                new bootstrap.Modal(document.getElementById('publishModal')).show();
-            });
-        }
-    });
-
-    // ============================================
-    // RESETEAR MODAL
-    // ============================================
-    document.getElementById('confirmModal').addEventListener('hidden.bs.modal', function() {
-        deleteUrl = '';
-        document.getElementById('confirmDeleteBtn').href = '#';
-        document.getElementById('confirmMessage').innerHTML = '¿Estás seguro de que deseas eliminar esto?';
-    });
-
-    // ============================================
-    // CSS ANIMATION PARA TOAST
-    // ============================================
-    var style = document.createElement('style');
-    style.textContent = '@keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }';
-    document.head.appendChild(style);
-</script>
+<script src="{% static_v 'js/gestionar-curso.js' %}"></script>
 {% endblock %}

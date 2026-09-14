@@ -1,90 +1,10 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}Certificado - {{ certificate.enrollment.course.title }} - AcadEMI{% endblock %}
 
 {% block extra_css %}
-<style>
-    .certificate-actions {
-        display: flex;
-        justify-content: center;
-        gap: var(--space-3);
-        margin-bottom: var(--space-6);
-        flex-wrap: wrap;
-    }
-
-    .certificate-diploma {
-        max-width: 800px;
-        margin: 0 auto;
-        background: var(--surface);
-        border-radius: var(--border-radius);
-        box-shadow: var(--shadow-lg);
-        padding: 60px 50px;
-        text-align: center;
-        position: relative;
-        border: 10px solid var(--primary-lighter);
-    }
-
-    .certificate-diploma::before {
-        content: '';
-        position: absolute;
-        inset: 14px;
-        border: 2px solid var(--secondary);
-        border-radius: 8px;
-        pointer-events: none;
-    }
-
-    .certificate-seal {
-        font-size: 48px;
-        color: var(--secondary);
-        margin-bottom: var(--space-4);
-    }
-
-    .certificate-heading {
-        font-size: 13px;
-        letter-spacing: 3px;
-        text-transform: uppercase;
-        color: var(--text-muted);
-        margin-bottom: var(--space-2);
-    }
-
-    .certificate-student {
-        font-size: 32px;
-        font-weight: var(--font-weight-bold);
-        color: var(--primary);
-        margin: var(--space-3) 0;
-    }
-
-    .certificate-course {
-        font-size: 22px;
-        font-weight: var(--font-weight-semibold);
-        color: var(--dark);
-        margin-bottom: var(--space-5);
-    }
-
-    .certificate-meta {
-        display: flex;
-        justify-content: center;
-        gap: var(--space-8);
-        margin-top: var(--space-6);
-        padding-top: var(--space-5);
-        border-top: 1px solid var(--gray-light);
-        font-size: var(--font-size-small);
-        color: var(--text-muted);
-        flex-wrap: wrap;
-    }
-
-    .certificate-meta strong {
-        display: block;
-        color: var(--dark);
-    }
-
-    @media print {
-        .navbar, .footer, .certificate-actions, .page-header { display: none !important; }
-        .main-content { padding: 0 !important; }
-        .certificate-diploma { box-shadow: none; border-color: var(--primary-lighter); }
-    }
-</style>
+<link rel="stylesheet" href="{% static_v 'css/pages/certificado-detalle.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -107,7 +27,6 @@
         {% else %}
         <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
         {% endif %}
-        <a href="{% url 'certificate_send_email' certificate.id %}" class="btn btn-outline-primary"><i class="fas fa-envelope"></i> Enviar por correo</a>
         <a href="{% url 'verify_certificate' certificate.certificate_code %}" class="btn btn-outline-primary" target="_blank"><i class="fas fa-shield-alt"></i> Verificar autenticidad</a>
     </div>
 

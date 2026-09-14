@@ -66,26 +66,18 @@
                             <form method="POST" id="registerForm" novalidate>
                                 {% csrf_token %}
 
-                                <!-- ===== DATOS BÁSICOS ===== -->
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-bold small">
-                                            <i class="fas fa-user me-1"></i> Nombre de usuario <span class="text-danger">*</span>
-                                        </label>
-                                        {{ form.username }}
-                                        {% if form.username.errors %}
-                                            <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-bold small">
-                                            <i class="fas fa-envelope me-1"></i> Email <span class="text-danger">*</span>
-                                        </label>
-                                        {{ form.email }}
-                                        {% if form.email.errors %}
-                                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
+                                <!-- ===== DATOS BÁSICOS =====
+                                     No se pide un "nombre de usuario" aparte: el nombre completo
+                                     (más abajo, según el rol) es el único campo de nombre. El
+                                     username interno para el login se genera solo del email. -->
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold small">
+                                        <i class="fas fa-envelope me-1"></i> Email <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
                                 </div>
 
                                 <div class="row">
@@ -207,7 +199,7 @@
                                             {% for value, label in form.interests.field.choices %}
                                             <div class="col-md-4">
                                                 <div class="form-check">
-                                                    <input type="checkbox" name="interests" value="{{ value }}" class="form-check-input" id="interest_{{ value }}">
+                                                    <input type="checkbox" name="interests" value="{{ value }}" class="form-check-input" id="interest_{{ value }}" {% if value in form.interests.value %}checked{% endif %}>
                                                     <label class="form-check-label small" for="interest_{{ value }}">{{ label }}</label>
                                                 </div>
                                             </div>
@@ -281,7 +273,7 @@
                                             {% for value, label in form.teaching_materials.field.choices %}
                                             <div class="col-md-4">
                                                 <div class="form-check">
-                                                    <input type="checkbox" name="teaching_materials" value="{{ value }}" class="form-check-input" id="material_{{ value }}">
+                                                    <input type="checkbox" name="teaching_materials" value="{{ value }}" class="form-check-input" id="material_{{ value }}" {% if value in form.teaching_materials.value %}checked{% endif %}>
                                                     <label class="form-check-label small" for="material_{{ value }}">{{ label }}</label>
                                                 </div>
                                             </div>
@@ -295,7 +287,7 @@
                                             {% for value, label in form.teaching_level.field.choices %}
                                             <div class="col-md-3">
                                                 <div class="form-check">
-                                                    <input type="checkbox" name="teaching_level" value="{{ value }}" class="form-check-input" id="level_{{ value }}">
+                                                    <input type="checkbox" name="teaching_level" value="{{ value }}" class="form-check-input" id="level_{{ value }}" {% if value in form.teaching_level.value %}checked{% endif %}>
                                                     <label class="form-check-label small" for="level_{{ value }}">{{ label }}</label>
                                                 </div>
                                             </div>
@@ -315,19 +307,16 @@
                                     </div>
                                 </div>
 
-                                <!-- ===== CAPTCHA ===== -->
+                                <!-- ===== TÉRMINOS Y CONDICIONES ===== -->
                                 <hr>
-                                <div class="mb-3 captcha-section">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-shield-alt me-1"></i> Código de seguridad <span class="text-danger">*</span>
+                                <div class="mb-3 form-check">
+                                    {{ form.accept_terms }}
+                                    <label class="form-check-label small" for="id_accept_terms">
+                                        Acepto los <a href="{% url 'terms' %}" target="_blank">términos y condiciones</a> de AcadEMI <span class="text-danger">*</span>
                                     </label>
-                                    {{ form.captcha }}
-                                    {% if form.captcha.errors %}
-                                        <div class="text-danger small mt-1">{{ form.captcha.errors.0 }}</div>
+                                    {% if form.accept_terms.errors %}
+                                        <div class="text-danger small mt-1">{{ form.accept_terms.errors.0 }}</div>
                                     {% endif %}
-                                    <div class="form-text">
-                                        <i class="fas fa-info-circle"></i> Escribe el código que ves en la imagen
-                                    </div>
                                 </div>
 
                                 <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">

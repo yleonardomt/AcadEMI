@@ -1,0 +1,609 @@
+/* ============================================
+   DETALLE DE CURSO (templates/academi/courses/curso_detalle.html)
+   ============================================ */
+
+/* ============================================
+   HERO — banner de marca fijo (degradado azul + texto
+   blanco), no cambia con el modo noche/día.
+   ============================================ */
+.course-hero {
+    background: var(--primary-gradient);
+    color: var(--white);
+    padding: 40px;
+    border-radius: var(--border-radius);
+    margin-bottom: 30px;
+    position: relative;
+    overflow: hidden;
+}
+
+.course-hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 500px;
+    height: 500px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.course-hero h1 {
+    font-weight: 800;
+    font-size: 2.2rem;
+    position: relative;
+    z-index: 1;
+}
+
+.course-hero .price-tag {
+    font-size: 24px;
+    font-weight: 700;
+    background: var(--secondary);
+    color: var(--primary-dark);
+    padding: 6px 20px;
+    border-radius: var(--border-radius-pill);
+    display: inline-block;
+    position: relative;
+    z-index: 1;
+}
+
+.course-hero .price-tag.free {
+    background: var(--success);
+    color: var(--white);
+}
+
+.course-hero .btn-hero {
+    padding: 10px 24px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 14px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    text-decoration: none;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+
+.course-hero .btn-hero-primary {
+    background: var(--secondary);
+    color: var(--primary-dark);
+}
+
+.course-hero .btn-hero-primary:hover {
+    background: var(--secondary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(247, 198, 0, 0.3);
+    color: var(--primary-dark);
+    text-decoration: none;
+}
+
+.course-hero .btn-hero-outline {
+    background: transparent;
+    color: var(--white);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.course-hero .btn-hero-outline:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--white);
+    color: var(--white);
+    text-decoration: none;
+}
+
+.btn-cart-hero {
+    background: transparent;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: var(--white);
+    padding: 10px 18px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 14px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+}
+
+.btn-cart-hero:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--white);
+    color: var(--white);
+}
+
+.btn-cart-hero.in-cart {
+    background: var(--success);
+    border-color: var(--success);
+    color: var(--white);
+}
+
+.btn-cart-hero.in-cart:hover {
+    background: #059669;
+    border-color: #059669;
+    color: var(--white);
+}
+
+.badge-owned-hero {
+    background: var(--success);
+    color: var(--white);
+    padding: 4px 14px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 600;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    position: relative;
+    z-index: 1;
+}
+
+.badge-level {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--white);
+    padding: 3px 14px;
+    border-radius: var(--border-radius-pill);
+    font-size: 12px;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+
+.badge-featured-inline {
+    background: var(--secondary);
+    color: var(--primary-dark);
+    padding: 2px 12px;
+    border-radius: var(--border-radius-pill);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    position: relative;
+    z-index: 1;
+}
+
+/* BOTÓN VER VIDEO PROMOCIONAL */
+.btn-video-promo {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--white);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 8px 18px;
+    border-radius: var(--border-radius-sm);
+    font-weight: 600;
+    font-size: 13px;
+    transition: var(--transition);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+    text-decoration: none;
+}
+
+.btn-video-promo:hover {
+    background: rgba(255, 255, 255, 0.25);
+    border-color: var(--white);
+    color: var(--white);
+    transform: translateY(-2px);
+}
+
+.btn-video-promo i {
+    font-size: 16px;
+}
+
+/* ============================================
+   VIDEO PROMOCIONAL Y MODAL
+   El reproductor siempre es oscuro (fondo negro), tanto en
+   modo claro como oscuro — es la convención habitual para
+   chrome de video, no depende del tema del sitio.
+   ============================================ */
+.video-thumbnail {
+    position: relative;
+    border-radius: var(--border-radius-sm);
+    overflow: hidden;
+    margin-bottom: 20px;
+    cursor: pointer;
+    background: #000;
+}
+
+.video-thumbnail img {
+    width: 100%;
+    max-height: 350px;
+    object-fit: cover;
+    transition: var(--transition);
+}
+
+.video-thumbnail:hover img {
+    transform: scale(1.02);
+}
+
+.video-thumbnail .play-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.video-thumbnail .play-overlay:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.video-thumbnail .play-overlay .play-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba(247, 198, 0, 0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-size: 36px;
+    transition: var(--transition);
+    border: none;
+}
+
+.video-thumbnail .play-overlay:hover .play-icon {
+    transform: scale(1.1);
+    background: var(--secondary);
+    box-shadow: 0 0 40px rgba(247, 198, 0, 0.3);
+}
+
+.modal-video .modal-content {
+    background: #000 !important;
+    border: none !important;
+    border-radius: var(--border-radius-sm) !important;
+}
+
+.modal-video .modal-header {
+    border: none !important;
+    padding: 10px 16px !important;
+    background: rgba(0, 0, 0, 0.6) !important;
+    border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0 !important;
+}
+
+.modal-video .modal-header .btn-close {
+    filter: invert(1);
+    opacity: 0.8;
+}
+
+.modal-video .modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.modal-video .modal-body {
+    padding: 0 !important;
+    position: relative;
+    background: #000;
+}
+
+.modal-video .modal-body video {
+    width: 100%;
+    border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+    display: block;
+    max-height: 80vh;
+}
+
+.modal-video .btn-close-video {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    z-index: 10;
+    background: rgba(0, 0, 0, 0.7);
+    color: var(--white);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-pill);
+    padding: 8px 20px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modal-video .btn-close-video:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* ============================================
+   TARJETAS DE LA PÁGINA (sidebar, módulos) — sí cambian
+   con el modo noche/día, son superficies normales.
+   ============================================ */
+.course-info-card {
+    background: var(--surface);
+    border-radius: var(--border-radius-sm);
+    padding: 20px;
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-color);
+    margin-bottom: 20px;
+}
+
+.course-info-card .info-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--white-smoke);
+}
+
+.course-info-card .info-item:last-child {
+    border-bottom: none;
+}
+
+/* ===== SOBRE EL DOCENTE ===== */
+.teacher-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.teacher-avatar-lg {
+    width: 52px;
+    height: 52px;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.teacher-name {
+    font-weight: 700;
+    color: var(--ink);
+    font-size: 14px;
+}
+
+.teacher-specialty {
+    color: var(--primary-text);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.teacher-bio {
+    color: var(--ink-muted);
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.teacher-experience {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-bottom: 0;
+}
+
+.teacher-experience i {
+    color: var(--primary-text);
+    margin-right: 4px;
+}
+
+.course-info-card .info-item i {
+    width: 20px;
+    color: var(--primary-text);
+    font-size: 14px;
+}
+
+.course-info-card .info-item .label {
+    color: var(--text-muted);
+    font-size: 13px;
+}
+
+.course-info-card .info-item .value {
+    font-weight: 600;
+    color: var(--ink);
+    margin-left: auto;
+    font-size: 13px;
+}
+
+.course-description-body {
+    color: var(--text-secondary);
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+.course-modules {
+    background: var(--surface);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.course-modules .module-header {
+    background: var(--white-smoke);
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.course-modules .module-header .module-title {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 15px;
+}
+
+.course-modules .module-body {
+    padding: 10px 20px;
+}
+
+.course-modules .lesson-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--white-smoke);
+    font-size: 14px;
+}
+
+.course-modules .lesson-item:last-child {
+    border-bottom: none;
+}
+
+.course-modules .lesson-item i {
+    color: var(--primary-text);
+    width: 18px;
+    font-size: 14px;
+}
+
+.course-modules .lesson-item .lesson-title {
+    color: var(--ink);
+    flex: 1;
+}
+
+.course-modules .lesson-item .lesson-duration {
+    color: var(--text-muted);
+    font-size: 12px;
+    margin-left: auto;
+}
+
+.course-modules .lesson-item.locked {
+    opacity: 0.5;
+}
+
+.course-modules a.lesson-item-link {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-fast);
+}
+
+.course-modules a.lesson-item-link:hover {
+    background: var(--white-smoke);
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.course-modules .lesson-item.locked i {
+    color: var(--text-muted);
+}
+
+.course-modules .lesson-item .badge-free {
+    background: var(--success);
+    color: var(--white);
+    font-size: 9px;
+    padding: 1px 10px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 600;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.course-modules .lesson-item .badge-free i {
+    color: var(--white);
+    font-size: 8px;
+    width: auto;
+}
+
+.course-modules .lesson-item .badge-locked {
+    background: var(--danger);
+    color: var(--white);
+    font-size: 9px;
+    padding: 1px 10px;
+    border-radius: var(--border-radius-pill);
+    font-weight: 600;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.course-modules .lesson-item .badge-locked i {
+    color: var(--white);
+    font-size: 8px;
+    width: auto;
+}
+
+/* Toast: usa el sistema único de static/css/components/notifications.css */
+/* Reseñas: usa el componente compartido static/css/components/engagement.css */
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .course-hero {
+        padding: 24px 20px;
+    }
+    .course-hero h1 {
+        font-size: 1.6rem;
+    }
+    .course-hero .price-tag {
+        font-size: 20px;
+        padding: 4px 16px;
+    }
+    .course-hero .btn-hero {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+    }
+    .btn-cart-hero {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+    }
+    .btn-video-promo {
+        width: 100%;
+        justify-content: center;
+        padding: 8px 16px;
+    }
+    .hero-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+    .hero-actions .btn-hero,
+    .hero-actions .btn-cart-hero,
+    .hero-actions .btn-video-promo {
+        width: 100%;
+        justify-content: center;
+    }
+    .course-info-card .info-item {
+        flex-wrap: wrap;
+    }
+    .course-info-card .info-item .value {
+        margin-left: 0;
+        width: 100%;
+    }
+    .video-thumbnail .play-overlay .play-icon {
+        width: 56px;
+        height: 56px;
+        font-size: 24px;
+    }
+    .modal-video .modal-body video {
+        max-height: 60vh;
+    }
+    .modal-video .btn-close-video {
+        bottom: 10px;
+        right: 10px;
+        padding: 6px 14px;
+        font-size: 12px;
+    }
+}
+
+@media (min-width: 769px) {
+    .hero-actions {
+        flex-wrap: wrap;
+    }
+    .hero-actions .btn-hero {
+        flex: 0 1 auto;
+    }
+    .hero-actions .btn-cart-hero {
+        flex: 0 1 auto;
+    }
+    .hero-actions .btn-video-promo {
+        flex: 0 1 auto;
+    }
+}

@@ -46,8 +46,20 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'academi.middleware.EmailVerificationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+# ============================================
+# BACKENDS DE AUTENTICACIÓN
+# ============================================
+# UsernameOrEmailBackend primero (permite loguearse con username o email,
+# tal como promete el placeholder del login); ModelBackend queda como
+# respaldo estándar de Django.
+AUTHENTICATION_BACKENDS = [
+    'academi.auth_backends.UsernameOrEmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
 ]
 
 
@@ -185,7 +197,7 @@ SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8001')
 # conocimiento propia (academi.models.ChatKnowledgeBase / ChatIntent) en
 # vez de generar respuestas con IA. Ver README para cómo obtener la clave.
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
-GROQ_MODEL = os.environ.get('GROQ_MODEL', 'llama-3.1-8b-instant')
+GROQ_MODEL = os.environ.get('GROQ_MODEL', 'groq/compound-mini')
 
 
 # ============================================

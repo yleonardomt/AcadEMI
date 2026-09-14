@@ -1,5 +1,5 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}Crear lección de texto - {{ module.title }}{% endblock %}
 
@@ -9,12 +9,12 @@
         <div class="col-lg-8 col-md-10">
 
             <div class="card border-0 shadow-lg">
-                <div class="card-header bg-white py-3 border-0 d-flex align-items-center gap-3">
+                <div class="card-header py-3 border-0 d-flex align-items-center gap-3">
                     <div class="rounded-circle p-2" style="background: var(--primary-lighter);">
                         <i class="fas fa-file-alt" style="color: var(--primary); font-size: 24px;"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold mb-0" style="color: var(--primary-dark);">Crear lección de texto</h4>
+                        <h4 class="fw-bold mb-0" style="color: var(--primary-text);">Crear lección de texto</h4>
                         <p class="text-muted mb-0">
                             <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
                             <span class="mx-1">|</span>
@@ -115,70 +115,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-        const titleInput = document.getElementById('title');
-        const submitBtn = document.getElementById('submitBtn');
-
-        form.addEventListener('submit', function(e) {
-            let valid = true;
-
-            document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-            document.querySelectorAll('.invalid-feedback').forEach(el => el.remove());
-
-            function showError(input, message) {
-                input.classList.add('is-invalid');
-                let feedback = input.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.insertBefore(feedback, input.nextSibling);
-                }
-                feedback.textContent = message;
-                valid = false;
-            }
-
-            const title = titleInput.value.trim();
-            if (!title) {
-                showError(titleInput, 'El título es obligatorio.');
-            } else if (title.length < 3) {
-                showError(titleInput, 'El título debe tener al menos 3 caracteres.');
-            }
-
-            const content = document.getElementById('content').value.trim();
-            if (!content) {
-                const input = document.getElementById('content');
-                input.classList.add('is-invalid');
-                let feedback = input.parentNode.querySelector('.invalid-feedback');
-                if (!feedback) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.insertBefore(feedback, input.nextSibling);
-                }
-                feedback.textContent = 'El contenido es obligatorio.';
-                valid = false;
-            }
-
-            if (!valid) {
-                e.preventDefault();
-                const firstError = form.querySelector('.is-invalid');
-                if (firstError) firstError.focus();
-                return false;
-            }
-
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creando...';
-            submitBtn.disabled = true;
-            return true;
-        });
-
-        titleInput.addEventListener('input', function() {
-            if (this.value.trim().length >= 3) {
-                this.classList.remove('is-invalid');
-                const feedback = this.parentNode.querySelector('.invalid-feedback');
-                if (feedback) feedback.remove();
-            }
-        });
-    });
-</script>
+<script src="{% static_v 'js/crear-texto.js' %}"></script>
 {% endblock %}

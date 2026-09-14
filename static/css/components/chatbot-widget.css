@@ -236,6 +236,16 @@
     padding: 8px 14px;
     font-size: 13px;
     outline: none;
+    /* Igual que .form-control (forms.css): sin esto el input hereda
+       fondo/texto nativos del navegador en vez de los tokens del
+       tema, y queda una caja blanca fuera de lugar sobre el panel
+       oscuro del widget en modo noche. */
+    background: var(--surface);
+    color: var(--ink);
+}
+
+.chatbot-panel-footer input::placeholder {
+    color: var(--ink-muted);
 }
 
 .chatbot-panel-footer input:focus {

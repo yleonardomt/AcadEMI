@@ -239,6 +239,23 @@ def admin_certificates_view(request):
 
 
 @login_required
+def admin_certificate_toggle(request, certificate_id):
+    """Revoca o reactiva un certificado (p. ej. si se emitió por error o hubo fraude)."""
+    if request.user.role != 'admin':
+        messages.error(request, 'No tienes permisos.')
+        return redirect('dashboard')
+
+    certificate = get_object_or_404(Certificate, id=certificate_id)
+    if certificate.is_revoked:
+        certificate.reactivate()
+        messages.success(request, f'Certificado {certificate.certificate_code} reactivado.')
+    else:
+        certificate.revoke()
+        messages.success(request, f'Certificado {certificate.certificate_code} revocado.')
+    return redirect('admin_certificates')
+
+
+@login_required
 def admin_reports_generate_view(request):
     if request.user.role != 'admin':
         messages.error(request, 'No tienes permisos.')
@@ -250,18 +267,27 @@ def admin_reports_generate_view(request):
         date_from = request.POST.get('date_from')
         date_to = request.POST.get('date_to')
 
+        # El rango de fechas se aplica a los 3 tipos de reporte (antes
+        # solo filtraba las ventas; usuarios y cursos ignoraban el
+        # rango elegido aunque el formulario lo pedía).
+        users = User.objects.all()
+        courses = Course.objects.all()
         payments = Payment.objects.filter(status='completed')
         if date_from:
+            users = users.filter(created_at__date__gte=date_from)
+            courses = courses.filter(created_at__date__gte=date_from)
             payments = payments.filter(created_at__date__gte=date_from)
         if date_to:
+            users = users.filter(created_at__date__lte=date_to)
+            courses = courses.filter(created_at__date__lte=date_to)
             payments = payments.filter(created_at__date__lte=date_to)
 
         context['generated'] = True
         context['report_type'] = report_type
         context['date_from'] = date_from
         context['date_to'] = date_to
-        context['total_users'] = User.objects.count()
-        context['total_courses'] = Course.objects.count()
+        context['total_users'] = users.count()
+        context['total_courses'] = courses.count()
         context['total_sales'] = payments.count()
         context['total_revenue'] = payments.aggregate(total=Sum('final_amount'))['total'] or 0
 

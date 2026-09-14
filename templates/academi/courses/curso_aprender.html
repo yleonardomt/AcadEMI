@@ -1,163 +1,10 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}{{ course.title }} - AcadEMI{% endblock %}
 
 {% block extra_css %}
-<style>
-    .course-header {
-        background: linear-gradient(135deg, #0033a0, #1a4db8);
-        color: white;
-        padding: 30px 0;
-        margin-bottom: 30px;
-    }
-    .course-header .course-title {
-        font-weight: 800;
-        font-size: 28px;
-    }
-    .course-header .course-meta {
-        color: rgba(255,255,255,0.8);
-        font-size: 14px;
-    }
-    .course-header .course-meta i {
-        margin-right: 4px;
-    }
-    .module-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 2px 12px rgba(0,0,0,0.04);
-        margin-bottom: 16px;
-        overflow: hidden;
-        border: 1px solid #e2e8f0;
-    }
-    .module-card .module-header {
-        padding: 16px 20px;
-        background: #f8fafc;
-        cursor: pointer;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        border-bottom: 1px solid #e2e8f0;
-        transition: all 0.3s ease;
-    }
-    .module-card .module-header:hover {
-        background: #f1f5f9;
-    }
-    .module-card .module-header h5 {
-        font-weight: 600;
-        margin: 0;
-        font-size: 16px;
-    }
-    .module-card .module-header .module-badge {
-        font-size: 12px;
-        color: #718096;
-    }
-    .module-card .module-body {
-        padding: 0;
-    }
-    .lesson-item {
-        display: flex;
-        align-items: center;
-        padding: 12px 20px;
-        border-bottom: 1px solid #f5f7fa;
-        transition: all 0.3s ease;
-        text-decoration: none;
-        color: #2d3748;
-        cursor: pointer;
-    }
-    .lesson-item:last-child {
-        border-bottom: none;
-    }
-    .lesson-item:hover {
-        background: #f8fafc;
-        text-decoration: none;
-        color: #2d3748;
-    }
-    .lesson-item .lesson-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-right: 14px;
-        flex-shrink: 0;
-    }
-    .lesson-item .lesson-icon.completed {
-        background: #10b981;
-        color: white;
-    }
-    .lesson-item .lesson-icon.pending {
-        background: #e2e8f0;
-        color: #718096;
-    }
-    .lesson-item .lesson-icon.current {
-        background: #0033a0;
-        color: white;
-    }
-    .lesson-item .lesson-info {
-        flex: 1;
-    }
-    .lesson-item .lesson-info .lesson-title {
-        font-weight: 500;
-        font-size: 14px;
-    }
-    .lesson-item .lesson-info .lesson-type {
-        font-size: 12px;
-        color: #718096;
-    }
-    .lesson-item .lesson-status {
-        font-size: 12px;
-        padding: 2px 10px;
-        border-radius: 50px;
-        white-space: nowrap;
-    }
-    .lesson-item .lesson-status.completed {
-        background: #d1fae5;
-        color: #065f46;
-    }
-    .lesson-item .lesson-status.pending {
-        background: #fef3c7;
-        color: #92400e;
-    }
-    .progress-container {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        border: 1px solid #e2e8f0;
-        margin-bottom: 24px;
-    }
-    .progress-container .progress {
-        height: 8px;
-        border-radius: 10px;
-        background: #e2e8f0;
-    }
-    .progress-container .progress .progress-bar {
-        background: linear-gradient(90deg, #0033a0, #1a4db8);
-        border-radius: 10px;
-        transition: width 0.6s ease;
-    }
-    /* Toast: usa el sistema único de static/css/components/notifications.css */
-    @media (max-width: 768px) {
-        .course-header .course-title {
-            font-size: 20px;
-        }
-        .course-header {
-            padding: 20px 0;
-        }
-        .lesson-item {
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .lesson-item .lesson-status {
-            font-size: 10px;
-            padding: 2px 8px;
-        }
-        .progress-container {
-            padding: 16px;
-        }
-    }
-</style>
+<link rel="stylesheet" href="{% static_v 'css/pages/curso-aprender.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -174,7 +21,7 @@
                 <div class="course-meta mt-2">
                     <span><i class="fas fa-user"></i> {{ course.teacher.username }}</span>
                     <span class="ms-3"><i class="fas fa-book"></i> {{ total_lessons }} lecciones</span>
-                    <span class="ms-3"><i class="fas fa-star" style="color: #f7c600;"></i> {{ course.average_rating|floatformat:1 }}</span>
+                    <span class="ms-3"><i class="fas fa-star" style="color: var(--secondary);"></i> {{ course.average_rating|floatformat:1 }}</span>
                     {% if course.is_free %}
                         <span class="ms-3 badge bg-success"><i class="fas fa-gift"></i> Gratis</span>
                     {% else %}
@@ -197,7 +44,7 @@
     <div class="progress-container">
         <div class="d-flex justify-content-between align-items-center mb-2">
             <span class="fw-semibold">Progreso del curso</span>
-            <span class="fw-bold" style="color: #0033a0;">{{ progress }}%</span>
+            <span class="fw-bold" style="color: var(--primary-text);">{{ progress }}%</span>
         </div>
         <div class="progress">
             <div class="progress-bar" style="width: {{ progress }}%;"></div>
@@ -212,18 +59,34 @@
         </div>
     </div>
 
+    <!-- CERTIFICADO (solo si el curso ya está completado) -->
+    {% if certificate %}
+    <div class="certificate-callout">
+        <div class="certificate-icon"><i class="fas fa-award"></i></div>
+        <div class="certificate-body">
+            <h5>¡Felicidades, completaste el curso!</h5>
+            <p>Tu certificado ya está listo — código <strong>{{ certificate.certificate_code }}</strong>.</p>
+        </div>
+        <div class="certificate-actions">
+            <a href="{% url 'certificate_detail' certificate.id %}" class="btn btn-primary">
+                <i class="fas fa-certificate"></i> Ver certificado
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- MÓDULOS Y LECCIONES -->
     {% for module in modules %}
     <div class="module-card">
         <div class="module-header" onclick="toggleModule(this)">
             <div>
                 <h5>
-                    <i class="fas fa-folder-open" style="color: #0033a0;"></i>
+                    <i class="fas fa-folder-open" style="color: var(--primary-text);"></i>
                     {{ module.title }}
                 </h5>
                 <small class="module-badge">{{ module.lessons.count }} lecciones</small>
             </div>
-            <i class="fas fa-chevron-down" style="color: #718096; transition: transform 0.3s ease;"></i>
+            <i class="fas fa-chevron-down" style="color: var(--text-muted); transition: transform 0.3s ease;"></i>
         </div>
         <div class="module-body">
             {% for lesson in module.lessons.all %}
@@ -266,7 +129,7 @@
     </div>
     {% empty %}
     <div class="text-center py-5">
-        <i class="fas fa-book-open" style="font-size: 48px; color: #cbd5e0;"></i>
+        <i class="fas fa-book-open" style="font-size: 48px; color: var(--gray-light);"></i>
         <h5 class="mt-3 text-muted">Este curso aún no tiene módulos</h5>
     </div>
     {% endfor %}
@@ -278,41 +141,8 @@
         </a>
     </div>
 </div>
+{% endblock %}
 
-<script>
-    // ============================================
-    // TOGGLE MÓDULOS
-    // ============================================
-    function toggleModule(element) {
-        var body = element.nextElementSibling;
-        var icon = element.querySelector('.fa-chevron-down');
-        if (body.style.display === 'none') {
-            body.style.display = 'block';
-            icon.style.transform = 'rotate(0deg)';
-        } else {
-            body.style.display = 'none';
-            icon.style.transform = 'rotate(-90deg)';
-        }
-    }
-
-    // ============================================
-    // ABRIR LECCIÓN
-    // ============================================
-    function openLesson(lessonId) {
-        showToast('Lección en desarrollo. Próximamente disponible.', 'success');
-        // Aquí puedes redirigir a la página de la lección
-        // window.location.href = '/lesson/' + lessonId + '/';
-    }
-
-    // ============================================
-    // INICIALIZAR
-    // ============================================
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mostrar todos los módulos abiertos por defecto
-        var bodies = document.querySelectorAll('.module-body');
-        bodies.forEach(function(body) {
-            body.style.display = 'block';
-        });
-    });
-</script>
+{% block extra_js %}
+<script src="{% static_v 'js/curso-aprender.js' %}"></script>
 {% endblock %}

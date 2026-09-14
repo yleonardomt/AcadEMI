@@ -1,0 +1,100 @@
+/* ============================================
+   CREAR LECCIÓN (templates/academi/courses/crear_leccion.html)
+   ============================================ */
+.field-group {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+.field-group.active {
+    display: block;
+}
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.filepond--root {
+    font-family: 'Inter', sans-serif;
+}
+.filepond--panel-root {
+    background: var(--white-smoke);
+    border: 2px dashed var(--gray-light);
+    border-radius: var(--radius-sm);
+}
+.filepond--drop-label {
+    color: var(--gray-dark);
+    font-weight: 500;
+}
+.filepond--drop-label label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+.filepond--drop-label label i {
+    font-size: 32px;
+    color: var(--primary);
+    opacity: 0.5;
+}
+.filepond--file-action-button {
+    background: var(--primary);
+}
+.type-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+.type-btn {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px 16px;
+    border: 2px solid var(--gray-light);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--gray-dark);
+    font-weight: 500;
+    transition: var(--transition);
+    cursor: pointer;
+    text-align: center;
+    font-size: 13px;
+}
+.type-btn:hover {
+    border-color: var(--primary-light);
+    background: var(--primary-lighter);
+}
+.type-btn.active {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--white);
+}
+.type-btn i {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 4px;
+}
+.type-btn.active i {
+    color: var(--white);
+}
+.preview-container {
+    margin-top: 12px;
+    padding: 16px;
+    background: var(--white-smoke);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--gray-light);
+}
+.preview-container video {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+    background: #000;
+}
+.preview-container img {
+    max-width: 100%;
+    border-radius: var(--radius-sm);
+}
+.form-check-input:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+.form-check-input:focus {
+    box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.15);
+}

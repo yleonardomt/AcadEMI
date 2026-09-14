@@ -1,0 +1,122 @@
+/* ============================================
+   GESTIÓN DE USUARIOS - ADMIN (templates/academi/users/admin_usuarios.html)
+   ============================================ */
+.stat-card {
+    transition: var(--transition);
+    cursor: default;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow);
+}
+
+.table thead {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.table thead th {
+    border: none;
+    font-weight: 600;
+    padding: 12px 16px;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.05em;
+}
+
+.table tbody tr {
+    transition: var(--transition-fast);
+}
+
+.table tbody tr:hover {
+    background: var(--primary-lighter);
+}
+
+.btn-group .btn {
+    border-radius: 4px !important;
+    padding: 4px 10px;
+    transition: var(--transition-fast);
+}
+
+.btn-group .btn:hover {
+    transform: scale(1.05);
+}
+
+.btn-group .btn-outline-danger:hover {
+    background: var(--danger);
+    color: var(--white);
+}
+
+.btn-group .btn-outline-success:hover {
+    background: var(--success);
+    color: var(--white);
+}
+
+.btn-group .btn-outline-warning:hover {
+    background: var(--warning);
+    color: var(--white);
+}
+
+.btn-group .btn-outline-primary:hover {
+    background: var(--primary);
+    color: var(--white);
+}
+
+/* Modal personalizado */
+.modal-content {
+    border-radius: var(--border-radius);
+    border: none;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    padding: 16px 24px;
+}
+
+.modal-body {
+    padding: 24px;
+}
+
+.modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--gray-light);
+}
+
+@media (max-width: 768px) {
+    .stat-card {
+        padding: 8px !important;
+    }
+    .stat-card .h5 {
+        font-size: 16px !important;
+    }
+    .table {
+        font-size: 13px;
+    }
+    .table thead {
+        display: none;
+    }
+    .table tbody tr {
+        display: block;
+        margin-bottom: 15px;
+        border: 1px solid var(--gray-light);
+        border-radius: var(--border-radius-sm);
+        padding: 10px;
+    }
+    .table tbody td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border: none;
+    }
+    .table tbody td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--gray);
+    }
+    .btn-group .btn {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+}

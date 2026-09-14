@@ -167,6 +167,13 @@
        --primary es azul marino oscuro y no se lee bien sobre un fondo
        oscuro, así que este token se aclara en modo noche. */
     --primary-text: var(--primary);
+    /* Bootstrap fija el color de texto de .card/.table/.list-group-item/
+       .dropdown-menu a --bs-body-color (su propia variable, no la
+       nuestra) y nunca la redefine solo — sin esto, esos componentes
+       quedan con texto oscuro fijo (#212529) aunque --ink sí cambie de
+       tema, que es justo el bug de "títulos negros en modo oscuro". */
+    --bs-body-color: var(--ink);
+    --bs-body-color-rgb: 26, 32, 44;
 }
 
 /* ============================================
@@ -214,6 +221,8 @@
         --text-secondary: #cbd5e1;
         --text-muted: #94a3b8;
         --card-background: rgba(30, 41, 59, 0.86);
+        --bs-body-color: #e8edf5;
+        --bs-body-color-rgb: 232, 237, 245;
     }
 }
 
@@ -238,6 +247,8 @@
     --text-secondary: #cbd5e1;
     --text-muted: #94a3b8;
     --card-background: rgba(30, 41, 59, 0.86);
+    --bs-body-color: #e8edf5;
+    --bs-body-color-rgb: 232, 237, 245;
 }
 
 /* ============================================
@@ -305,8 +316,22 @@ body {
 
 a {
     text-decoration: none;
-    color: var(--primary);
+    /* --primary-text (no --primary): un enlace es texto sobre el fondo
+       de la página, y --primary es azul marino fijo que no se lee bien
+       en modo oscuro — ver la nota junto a --primary-text en :root
+       más arriba. Los enlaces con su propio estilo (botones, nav,
+       dropdown-item, etc.) tienen selectores más específicos que pisan
+       esto sin problema. */
+    color: var(--primary-text);
     transition: var(--transition);
+}
+
+/* Bootstrap trae .text-muted con un gris fijo (#6c757d) que no se
+   adapta al modo oscuro. Se pisa acá una sola vez para que las
+   decenas de templates que ya usan esta clase de Bootstrap queden
+   consistentes con el tema sin tener que tocar cada uno. */
+.text-muted {
+    color: var(--text-muted) !important;
 }
 
 /* ============================================

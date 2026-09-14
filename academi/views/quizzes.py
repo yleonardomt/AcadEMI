@@ -200,9 +200,22 @@ def quiz_view(request, lesson_id):
         evaluation=evaluation
     ).count()
 
+    # Siguiente lección del curso: si el estudiante es expulsado del
+    # cuestionario por seguridad, se lo redirige ahí (pierde el intento
+    # en vez de quedarse trabado en la pantalla del examen).
+    course = lesson.module.course
+    course_lessons = list(Lesson.objects.filter(
+        module__course=course
+    ).order_by('module__order', 'order'))
+    next_lesson = None
+    for i, l in enumerate(course_lessons):
+        if l.id == lesson.id and i < len(course_lessons) - 1:
+            next_lesson = course_lessons[i + 1]
+            break
+
     context = {
         'lesson': lesson,
-        'course': lesson.module.course,
+        'course': course,
         'evaluation': evaluation,
         'questions': questions,
         'token': token,
@@ -211,6 +224,7 @@ def quiz_view(request, lesson_id):
         'max_attempts': evaluation.max_attempts,
         'attempts_used': attempts_used,
         'passing_score': evaluation.passing_score,
+        'next_lesson': next_lesson,
     }
     return render(request, 'academi/courses/quiz.html', context)
 

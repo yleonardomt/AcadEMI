@@ -1,6 +1,17 @@
 {% extends 'partials/base.html' %}
+{% load static static_extras %}
 
 {% block title %}Dashboard - AcadEMI{% endblock %}
+
+{% block extra_css %}
+{% if user.role == 'student' %}
+<link rel="stylesheet" href="{% static_v 'css/pages/dashboard-estudiante.css' %}">
+{% elif user.role == 'teacher' %}
+<link rel="stylesheet" href="{% static_v 'css/pages/dashboard-docente.css' %}">
+{% elif user.role == 'admin' %}
+<link rel="stylesheet" href="{% static_v 'css/pages/dashboard-admin.css' %}">
+{% endif %}
+{% endblock %}
 
 {% block content %}
     {% if user.role == 'student' %}

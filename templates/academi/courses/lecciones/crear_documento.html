@@ -9,12 +9,12 @@
         <div class="col-lg-8 col-md-10">
 
             <div class="card border-0 shadow-lg">
-                <div class="card-header bg-white py-3 border-0 d-flex align-items-center gap-3">
-                    <div class="rounded-circle p-2" style="background: #e8edf5;">
-                        <i class="fas fa-file-pdf" style="color: #0033a0; font-size: 24px;"></i>
+                <div class="card-header py-3 border-0 d-flex align-items-center gap-3">
+                    <div class="rounded-circle p-2" style="background: var(--primary-lighter);">
+                        <i class="fas fa-file-pdf" style="color: var(--primary); font-size: 24px;"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold mb-0" style="color: #002277;">Crear lección de documento</h4>
+                        <h4 class="fw-bold mb-0" style="color: var(--primary-text);">Crear lección de documento</h4>
                         <p class="text-muted mb-0">
                             <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
                             <span class="mx-1">|</span>
@@ -73,13 +73,14 @@
                                    name="document_file"
                                    id="document_file"
                                    class="form-control"
-                                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip">
+                                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip"
+                                   required>
                             <div class="form-text">
                                 <i class="fas fa-info-circle"></i> PDF, Word, PowerPoint, Excel, ZIP. Máximo 50MB.
                             </div>
                         </div>
 
-                        <div class="mb-4 p-3 rounded" style="background: #f5f7fa; border: 1px solid #e2e8f0;">
+                        <div class="mb-4 p-3 rounded" style="background: var(--white-smoke); border: 1px solid var(--border-color);">
                             <div class="d-flex align-items-center gap-3 flex-wrap">
                                 <div class="form-check form-switch mb-0">
                                     <input type="checkbox"
@@ -89,7 +90,7 @@
                                            style="width: 44px; height: 22px; cursor: pointer;"
                                            {% if form_data.is_free %}checked{% endif %}>
                                     <label class="form-check-label fw-semibold" for="is_free" style="cursor: pointer;">
-                                        <i class="fas fa-star" style="color: #f7c600;"></i>
+                                        <i class="fas fa-star" style="color: var(--secondary);"></i>
                                         Lección gratuita
                                     </label>
                                 </div>

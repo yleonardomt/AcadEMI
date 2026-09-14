@@ -1,4 +1,4 @@
-from django.shortcuts import redirect, get_object_or_404
+from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 
@@ -93,10 +93,11 @@ def answer_question_view(request, question_id):
     """RF-38: el docente responde preguntas sobre sus cursos."""
     question = get_object_or_404(Question, id=question_id)
     course = question.lesson.module.course
+    redirect_to = 'teacher_questions' if request.POST.get('next') == 'teacher_questions' else None
 
     if request.user != course.teacher and request.user.role != 'admin':
         messages.error(request, 'No tienes permisos para responder esta pregunta.')
-        return redirect('lesson_view', lesson_id=question.lesson_id)
+        return redirect(redirect_to) if redirect_to else redirect('lesson_view', lesson_id=question.lesson_id)
 
     if request.method == 'POST':
         content = request.POST.get('content', '').strip()
@@ -113,7 +114,31 @@ def answer_question_view(request, question_id):
             question.save()
             messages.success(request, 'Respuesta publicada.')
 
-    return redirect('lesson_view', lesson_id=question.lesson_id)
+    return redirect(redirect_to) if redirect_to else redirect('lesson_view', lesson_id=question.lesson_id)
+
+
+@login_required
+def teacher_questions_view(request):
+    """RF-38: panel único donde el docente ve y responde todas las
+    preguntas de estudiantes en sus cursos, sin tener que entrar
+    lección por lección a buscarlas."""
+    if request.user.role != 'teacher':
+        messages.error(request, 'No tienes permisos.')
+        return redirect('dashboard')
+
+    teacher_courses = Course.objects.filter(teacher=request.user)
+    questions = Question.objects.filter(
+        lesson__module__course__in=teacher_courses
+    ).select_related('student', 'lesson', 'lesson__module', 'lesson__module__course').prefetch_related(
+        'answers'
+    ).order_by('is_answered', '-created_at')
+
+    pending_count = sum(1 for q in questions if not q.is_answered)
+
+    return render(request, 'academi/courses/preguntas_estudiantes.html', {
+        'questions': questions,
+        'pending_count': pending_count,
+    })
 
 
 @login_required

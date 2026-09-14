@@ -1,16 +1,16 @@
 {% extends 'partials/base.html' %}
-{% load static %}
+{% load static static_extras %}
 
 {% block title %}AcadEMI - Educación Online en Bolivia{% endblock %}
 
 {% block body_class %}landing-page{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/pages/landing.css' %}">
+<link rel="stylesheet" href="{% static_v 'css/pages/landing.css' %}">
 {% endblock %}
 
 {% block content %}
-<!-- ========== HERO CON VIDEO ========== -->
+<!-- ========== HERO (video a pantalla completa) ========== -->
 <section class="hero">
     <video class="hero-video-bg" autoplay muted loop playsinline>
         <source src="/media/sitio/academia.mp4" type="video/mp4">
@@ -19,80 +19,65 @@
     <div class="hero-overlay"></div>
     <div class="hero-mesh"></div>
 
-    <div class="container hero-content">
-        <div class="row align-items-center">
-            <div class="col-lg-7">
-                <div class="hero-tag reveal">
-                    <i class="fas fa-bolt"></i> Plataforma educativa online
-                </div>
-                <h1 class="hero-title reveal">
-                    Aprende desde cualquier lugar de <span>Bolivia</span>
-                </h1>
-                <p class="hero-subtitle reveal">
-                    Transforma tu futuro con nuestros cursos online. Aprende de expertos,
-                    avanza a tu propio ritmo y obtén certificados reconocidos.
-                </p>
-                <div class="hero-buttons reveal">
-                    {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-hero">
-                            <i class="fas fa-play-circle"></i> Ir al Dashboard
-                        </a>
-                    {% else %}
-                        <a href="{% url 'register' %}" class="btn btn-primary btn-hero">
-                            <i class="fas fa-play-circle"></i> Comenzar ahora
-                            <span class="btn-badge">Gratis</span>
-                        </a>
-                    {% endif %}
-                    <a href="#cursos" class="btn btn-outline-primary btn-hero">
-                        <i class="fas fa-info-circle"></i> Ver cursos
+    <div class="container">
+        <div class="hero-content">
+            <h1 class="hero-title">Aprende algo nuevo, <span>a tu ritmo</span></h1>
+            <p class="hero-subtitle">Cursos dictados por profesores reales, con certificado al terminar y sin horarios fijos.</p>
+            <div class="hero-buttons">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'catalog' %}" class="btn btn-primary btn-hero">
+                        <i class="fas fa-compass"></i> Explorar cursos
                     </a>
-                </div>
-                <div class="hero-badges reveal">
-                    <span class="badge-custom">
-                        <i class="fas fa-check-circle"></i> {{ total_courses }}+ cursos
-                    </span>
-                    <span class="badge-custom">
-                        <i class="fas fa-users"></i> {{ total_students }}+ estudiantes
-                    </span>
-                    {% if avg_rating %}
-                    <span class="badge-custom">
-                        <i class="fas fa-star"></i> {{ avg_rating }}/5 calificación
-                    </span>
-                    {% endif %}
-                    <span class="badge-custom">
-                        <i class="fas fa-certificate"></i> Certificados
-                    </span>
-                </div>
-            </div>
-            <div class="col-lg-5 d-none d-lg-block">
-                <div class="hero-stats-card tilt-card">
-                    <div class="stats-card-inner">
-                        <div class="stat-item">
-                            <span class="stat-number-hero"><span class="counter" data-count="{{ avg_rating|default:'0' }}" data-decimals="1">0</span><i class="fas fa-star" style="font-size: 16px;"></i></span>
-                            <span class="stat-label">Calificación</span>
-                        </div>
-                        <div class="stat-divider"></div>
-                        <div class="stat-item">
-                            <span class="stat-number-hero"><span class="counter" data-count="{{ total_students }}">0</span>+</span>
-                            <span class="stat-label">Estudiantes</span>
-                        </div>
-                        <div class="stat-divider"></div>
-                        <div class="stat-item">
-                            <span class="stat-number-hero"><span class="counter" data-count="{{ total_teachers }}">0</span>+</span>
-                            <span class="stat-label">Instructores</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="hero-float-chip chip-1"><i class="fas fa-certificate"></i> Certificado verificado</div>
-                <div class="hero-float-chip chip-2"><i class="fas fa-circle-play"></i> Clases en video HD</div>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-primary btn-hero">
+                        <i class="fas fa-user-plus"></i> Crear cuenta gratis
+                    </a>
+                {% endif %}
+                <a href="#cursos" class="btn btn-outline-primary btn-hero">
+                    <i class="fas fa-book-open"></i> Ver cursos
+                </a>
             </div>
         </div>
+    </div>
+
+    <div class="hero-stats-card">
+        <div class="stats-card-inner">
+            <div class="stat-item">
+                <span class="stat-number-hero">{{ total_courses|default:0 }}+</span>
+                <span class="stat-label">Cursos</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number-hero">{{ total_students|default:0 }}+</span>
+                <span class="stat-label">Estudiantes</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number-hero">{{ avg_rating|default:"—" }}</span>
+                <span class="stat-label"><i class="fas fa-star"></i> Calificación</span>
+            </div>
+        </div>
+        <span class="hero-float-chip chip-1"><i class="fas fa-certificate"></i> Certificado incluido</span>
     </div>
 
     <a href="#categorias" class="scroll-cue" aria-label="Bajar">
         <i class="fas fa-chevron-down"></i>
     </a>
 </section>
+
+<!-- ========== MARQUEE ========== -->
+<div class="marquee-bar">
+    <div class="marquee-track">
+        {% for i in "12"|make_list %}
+        <span class="marquee-item"><i class="fas fa-certificate"></i> Certificados verificables</span>
+        <span class="marquee-item"><i class="fas fa-comments"></i> Preguntas directas al docente</span>
+        <span class="marquee-item"><i class="fas fa-ticket-alt"></i> Cupones por tiempo limitado</span>
+        <span class="marquee-item"><i class="fas fa-mobile-alt"></i> Aprende desde el celular</span>
+        <span class="marquee-item"><i class="fas fa-star"></i> {{ avg_rating|default:"—" }}/5 de calificación</span>
+        <span class="marquee-item"><i class="fas fa-user-graduate"></i> {{ total_students }}+ estudiantes activos</span>
+        {% endfor %}
+    </div>
+</div>
 
 {% if categories %}
 <!-- ========== CATEGORÍAS ========== -->
@@ -106,14 +91,16 @@
             <p>Elige un área y descubre los cursos disponibles</p>
         </div>
 
-        <div class="category-grid reveal">
-            {% for cat in categories %}
-            <a href="{% url 'catalog' %}?category={{ cat.id }}" class="category-card">
-                <div class="category-icon"><i class="fas {{ cat.icon }}"></i></div>
-                <h6>{{ cat.name }}</h6>
-                <span>{{ cat.course_count }} curso{{ cat.course_count|pluralize }}</span>
-            </a>
-            {% endfor %}
+        <div class="category-scroll reveal">
+            <div class="category-track">
+                {% for cat in categories %}
+                <a href="{% url 'catalog' %}?category={{ cat.id }}" class="category-card">
+                    <div class="category-icon"><i class="fas {{ cat.icon }}"></i></div>
+                    <h6>{{ cat.name }}</h6>
+                    <span>{{ cat.course_count }} curso{{ cat.course_count|pluralize }}</span>
+                </a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </section>
@@ -147,7 +134,7 @@
                         {% endif %}
                     </div>
                     <div class="course-body">
-                        <span class="course-badge course-badge-python">{{ course.category.name|default:"General" }}</span>
+                        <span class="course-badge">{{ course.category.name|default:"General" }}</span>
                         <h5>{{ course.title }}</h5>
                         <p>{{ course.description|truncatechars:70 }}</p>
                         <div class="course-teacher">
@@ -167,7 +154,7 @@
                 </div>
             </div>
             {% empty %}
-            <div class="col-12 text-center text-muted py-5">
+            <div class="col-12 text-center py-5" style="color: var(--ldg-text-mute);">
                 <i class="fas fa-book-open fa-2x mb-3"></i>
                 <p>Todavía no hay cursos publicados. ¡Vuelve pronto!</p>
             </div>
@@ -246,7 +233,7 @@
     </div>
 </section>
 
-<!-- ========== CARACTERÍSTICAS ========== -->
+<!-- ========== CARACTERÍSTICAS (BENTO) ========== -->
 <section id="caracteristicas" class="features">
     <div class="container">
         <div class="section-header reveal">
@@ -257,71 +244,45 @@
             <p>Todo lo que necesitas para aprender de manera efectiva</p>
         </div>
 
-        <div class="row g-4">
-            <div class="col-md-4 reveal">
-                <div class="feature-card tilt-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-video"></i>
-                    </div>
-                    <h5>Videos HD</h5>
-                    <p>Contenido en alta definición con la mejor calidad</p>
-                    <span class="feature-tag">Calidad</span>
+        <div class="bento-grid reveal">
+            <div class="bento-card bento-lg">
+                <div class="bento-glow"></div>
+                <div class="bento-icon"><i class="fas fa-certificate"></i></div>
+                <div>
+                    <h5>Certificados verificables</h5>
+                    <p>Obtén un certificado con código único al finalizar cada curso, verificable públicamente por cualquiera.</p>
+                    <span class="bento-preview mt-3"><i class="fas fa-check-circle"></i> AC-2K9X7M · Verificado</span>
                 </div>
             </div>
 
-            <div class="col-md-4 reveal">
-                <div class="feature-card tilt-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-certificate"></i>
-                    </div>
-                    <h5>Certificados</h5>
-                    <p>Obtén certificados verificables al finalizar cada curso</p>
-                    <span class="feature-tag">Validado</span>
-                </div>
+            <div class="bento-card">
+                <div class="bento-icon"><i class="fas fa-comments"></i></div>
+                <h5>Habla con el docente</h5>
+                <p>Pregunta en cada lección y recibí respuesta real del profesor.</p>
             </div>
 
-            <div class="col-md-4 reveal">
-                <div class="feature-card tilt-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-comments"></i>
-                    </div>
-                    <h5>Habla con el docente</h5>
-                    <p>Pregunta directo en cada lección y recibe respuesta del profesor</p>
-                    <span class="feature-tag">Social</span>
-                </div>
+            <div class="bento-card">
+                <div class="bento-icon"><i class="fas fa-video"></i></div>
+                <h5>Videos HD</h5>
+                <p>Contenido en alta definición, a tu ritmo.</p>
             </div>
 
-            <div class="col-md-4 reveal">
-                <div class="feature-card tilt-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-mobile-alt"></i>
-                    </div>
-                    <h5>Acceso móvil</h5>
-                    <p>Aprende desde cualquier dispositivo, en cualquier lugar</p>
-                    <span class="feature-tag">Mobile</span>
-                </div>
+            <div class="bento-card bento-wide">
+                <div class="bento-icon"><i class="fas fa-ticket-alt"></i></div>
+                <h5>Cupones y ofertas</h5>
+                <p>Descuentos por tiempo limitado que crean los propios docentes en sus cursos.</p>
             </div>
 
-            <div class="col-md-4 reveal">
-                <div class="feature-card tilt-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-clock"></i>
-                    </div>
-                    <h5>A tu ritmo</h5>
-                    <p>Estudia a tu propio ritmo sin presiones ni fechas límite</p>
-                    <span class="feature-tag">Flexible</span>
-                </div>
+            <div class="bento-card">
+                <div class="bento-icon"><i class="fas fa-mobile-alt"></i></div>
+                <h5>Acceso móvil</h5>
+                <p>Aprende desde cualquier dispositivo.</p>
             </div>
 
-            <div class="col-md-4 reveal">
-                <div class="feature-card tilt-card">
-                    <div class="feature-icon">
-                        <i class="fas fa-ticket-alt"></i>
-                    </div>
-                    <h5>Cupones y ofertas</h5>
-                    <p>Aprovecha descuentos y cupones por tiempo limitado de tus docentes</p>
-                    <span class="feature-tag">Ahorro</span>
-                </div>
+            <div class="bento-card">
+                <div class="bento-icon"><i class="fas fa-clock"></i></div>
+                <h5>A tu ritmo</h5>
+                <p>Sin fechas límite ni presiones.</p>
             </div>
         </div>
     </div>
@@ -360,7 +321,7 @@
 </section>
 
 {% if testimonials %}
-<!-- ========== TESTIMONIOS (reseñas reales de estudiantes) ========== -->
+<!-- ========== TESTIMONIOS (marquee, reseñas reales) ========== -->
 <section class="testimonials">
     <div class="container">
         <div class="section-header reveal">
@@ -370,10 +331,12 @@
             <h2>Lo que dicen <span>nuestros</span> estudiantes</h2>
             <p>Reseñas reales dejadas por estudiantes en sus cursos</p>
         </div>
+    </div>
 
-        <div class="row g-4">
-            {% for review in testimonials %}
-            <div class="col-md-4 reveal">
+    <div class="testimonial-marquee reveal">
+        <div class="testimonial-row row-1">
+            {% for i in "12"|make_list %}
+                {% for review in testimonials %}
                 <div class="testimonial-card">
                     <div class="testimonial-stars">
                         {% for i in "12345"|make_list %}
@@ -389,7 +352,28 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="testimonial-row row-2">
+            {% for i in "12"|make_list %}
+                {% for review in testimonials reversed %}
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        {% for i in "12345"|make_list %}
+                            {% if forloop.counter <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                        {% endfor %}
+                    </div>
+                    <p>"{{ review.comment }}"</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">{{ review.student.username|first|upper }}</div>
+                        <div>
+                            <span class="author-name">{{ review.student.get_full_name|default:review.student.username }}</span>
+                            <span class="author-role">{{ review.course.title }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
             {% endfor %}
         </div>
     </div>
@@ -420,5 +404,5 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="{% static 'js/landing.js' %}"></script>
+<script src="{% static_v 'js/landing.js' %}"></script>
 {% endblock %}

@@ -1,6 +1,11 @@
 {% extends 'partials/base.html' %}
+{% load static static_extras %}
 
 {% block title %}Gestión de Usuarios - Administrador{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static_v 'css/pages/admin-usuarios.css' %}">
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
@@ -36,7 +41,7 @@
                             </div>
                         </div>
                         <div class="col-md-2 col-6">
-                            <div class="stat-card p-2 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid #3b82f6;">
+                            <div class="stat-card p-2 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid var(--info);">
                                 <span class="d-block fw-bold h5">{{ total_students }}</span>
                                 <small class="text-muted">Estudiantes</small>
                             </div>
@@ -48,19 +53,19 @@
                             </div>
                         </div>
                         <div class="col-md-2 col-6">
-                            <div class="stat-card p-2 text-center rounded" style="background: #fce4ec; border-bottom: 3px solid #ef5350;">
+                            <div class="stat-card p-2 text-center rounded" style="background: #fce4ec; border-bottom: 3px solid var(--danger);">
                                 <span class="d-block fw-bold h5">{{ total_admins }}</span>
                                 <small class="text-muted">Admins</small>
                             </div>
                         </div>
                         <div class="col-md-2 col-6">
-                            <div class="stat-card p-2 text-center rounded" style="background: #d1fae5; border-bottom: 3px solid #10b981;">
+                            <div class="stat-card p-2 text-center rounded" style="background: #d1fae5; border-bottom: 3px solid var(--success);">
                                 <span class="d-block fw-bold h5">{{ total_active }}</span>
                                 <small class="text-muted">Activos</small>
                             </div>
                         </div>
                         <div class="col-md-2 col-6">
-                            <div class="stat-card p-2 text-center rounded" style="background: #fee2e2; border-bottom: 3px solid #ef4444;">
+                            <div class="stat-card p-2 text-center rounded" style="background: #fee2e2; border-bottom: 3px solid var(--danger);">
                                 <span class="d-block fw-bold h5">{{ total_inactive }}</span>
                                 <small class="text-muted">Inactivos</small>
                             </div>
@@ -220,183 +225,8 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-.stat-card {
-    transition: all 0.3s ease;
-    cursor: default;
-}
-
-.stat-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow);
-}
-
-.table thead {
-    background: var(--primary);
-    color: white;
-}
-
-.table thead th {
-    border: none;
-    font-weight: 600;
-    padding: 12px 16px;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.05em;
-}
-
-.table tbody tr {
-    transition: all 0.2s ease;
-}
-
-.table tbody tr:hover {
-    background: var(--primary-lighter);
-}
-
-.btn-group .btn {
-    border-radius: 4px !important;
-    padding: 4px 10px;
-    transition: all 0.2s ease;
-}
-
-.btn-group .btn:hover {
-    transform: scale(1.05);
-}
-
-.btn-group .btn-outline-danger:hover {
-    background: #dc3545;
-    color: white;
-}
-
-.btn-group .btn-outline-success:hover {
-    background: #10b981;
-    color: white;
-}
-
-.btn-group .btn-outline-warning:hover {
-    background: #f59e0b;
-    color: white;
-}
-
-.btn-group .btn-outline-primary:hover {
-    background: var(--primary);
-    color: white;
-}
-
-/* Modal personalizado */
-.modal-content {
-    border-radius: var(--radius);
-    border: none;
-    box-shadow: var(--shadow-lg);
-}
-
-.modal-header {
-    padding: 16px 24px;
-}
-
-.modal-body {
-    padding: 24px;
-}
-
-.modal-footer {
-    padding: 16px 24px;
-    border-top: 1px solid var(--gray-light);
-}
-
-@media (max-width: 768px) {
-    .stat-card {
-        padding: 8px !important;
-    }
-    .stat-card .h5 {
-        font-size: 16px !important;
-    }
-    .table {
-        font-size: 13px;
-    }
-    .table thead {
-        display: none;
-    }
-    .table tbody tr {
-        display: block;
-        margin-bottom: 15px;
-        border: 1px solid var(--gray-light);
-        border-radius: var(--radius-sm);
-        padding: 10px;
-    }
-    .table tbody td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 6px 0;
-        border: none;
-    }
-    .table tbody td::before {
-        content: attr(data-label);
-        font-weight: 600;
-        color: var(--gray);
-    }
-    .btn-group .btn {
-        padding: 4px 8px;
-        font-size: 12px;
-    }
-}
-</style>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // ====== CONFIRMAR ELIMINACIÓN (SIN ALERT) ======
-    var deleteButtons = document.querySelectorAll('.btn-delete-user');
-    var modal = document.getElementById('confirmModal');
-    var modalUsername = document.getElementById('modalUsername');
-    var modalMessage = document.getElementById('modalMessage');
-    var modalSubMessage = document.getElementById('modalSubMessage');
-    var confirmBtn = document.getElementById('modalConfirmBtn');
-    
-    deleteButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            var username = this.getAttribute('data-user');
-            var url = this.getAttribute('data-url');
-            
-            modalUsername.textContent = username;
-            modalMessage.innerHTML = '¿Estás seguro de eliminar a <span class="fw-bold" style="color: var(--danger);">' + username + '</span>?';
-            modalSubMessage.textContent = 'Esta acción no se puede deshacer.';
-            confirmBtn.href = url;
-            
-            var modalInstance = new bootstrap.Modal(modal);
-            modalInstance.show();
-        });
-    });
-    
-    // ====== ACTIVAR/DESACTIVAR CON CONFIRMACIÓN ======
-    var toggleButtons = document.querySelectorAll('.btn-toggle-user');
-    
-    toggleButtons.forEach(function(btn) {
-        btn.addEventListener('click', function(e) {
-            e.preventDefault();
-            var username = this.getAttribute('data-user');
-            var url = this.getAttribute('data-url');
-            var isActive = this.classList.contains('btn-outline-danger');
-            
-            modalUsername.textContent = username;
-            if (isActive) {
-                modalMessage.innerHTML = '¿Estás seguro de <span class="fw-bold" style="color: var(--danger);">desactivar</span> a ' + username + '?';
-                modalSubMessage.textContent = 'El usuario no podrá iniciar sesión.';
-                confirmBtn.className = 'btn btn-warning';
-                confirmBtn.innerHTML = '<i class="fas fa-pause"></i> Desactivar';
-            } else {
-                modalMessage.innerHTML = '¿Estás seguro de <span class="fw-bold" style="color: var(--success);">activar</span> a ' + username + '?';
-                modalSubMessage.textContent = 'El usuario podrá iniciar sesión nuevamente.';
-                confirmBtn.className = 'btn btn-success';
-                confirmBtn.innerHTML = '<i class="fas fa-play"></i> Activar';
-            }
-            confirmBtn.href = url;
-            
-            var modalInstance = new bootstrap.Modal(modal);
-            modalInstance.show();
-        });
-    });
-});
-</script>
+{% block extra_js %}
+<script src="{% static_v 'js/admin-usuarios.js' %}"></script>
 {% endblock %}
