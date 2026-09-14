@@ -10,19 +10,29 @@
 {% endblock %}
 
 {% block content %}
-<!-- ========== HERO (video a pantalla completa) ========== -->
-<section class="hero">
-    <video class="hero-video-bg" autoplay muted loop playsinline>
+
+<!-- ========== HERO ========== -->
+<section class="hero" aria-label="Presentación principal">
+    <video class="hero-video-bg" autoplay muted loop playsinline poster="">
         <source src="/media/sitio/academia.mp4" type="video/mp4">
         Tu navegador no soporta el elemento de video.
     </video>
+    <div class="hero-tint" aria-hidden="true"></div>
     <div class="hero-overlay"></div>
-    <div class="hero-mesh"></div>
+    <div class="hero-mesh" aria-hidden="true"></div>
 
     <div class="container">
         <div class="hero-content">
-            <h1 class="hero-title">Aprende algo nuevo, <span>a tu ritmo</span></h1>
-            <p class="hero-subtitle">Cursos dictados por profesores reales, con certificado al terminar y sin horarios fijos.</p>
+            <span class="hero-eyebrow">
+                <i class="fas fa-graduation-cap"></i> Educación online de calidad en Bolivia
+            </span>
+            <h1 class="hero-title">
+                Aprende algo nuevo,<br>
+                <span>a tu ritmo</span>
+            </h1>
+            <p class="hero-subtitle">
+                Cursos dictados por profesores reales, con certificado verificable al terminar y sin horarios fijos.
+            </p>
             <div class="hero-buttons">
                 {% if user.is_authenticated %}
                     <a href="{% url 'catalog' %}" class="btn btn-primary btn-hero">
@@ -40,33 +50,32 @@
         </div>
     </div>
 
-    <div class="hero-stats-card">
+    <div class="hero-stats-card" aria-label="Estadísticas principales">
         <div class="stats-card-inner">
             <div class="stat-item">
                 <span class="stat-number-hero">{{ total_courses|default:0 }}+</span>
                 <span class="stat-label">Cursos</span>
             </div>
-            <div class="stat-divider"></div>
+            <div class="stat-divider" aria-hidden="true"></div>
             <div class="stat-item">
                 <span class="stat-number-hero">{{ total_students|default:0 }}+</span>
                 <span class="stat-label">Estudiantes</span>
             </div>
-            <div class="stat-divider"></div>
+            <div class="stat-divider" aria-hidden="true"></div>
             <div class="stat-item">
                 <span class="stat-number-hero">{{ avg_rating|default:"—" }}</span>
                 <span class="stat-label"><i class="fas fa-star"></i> Calificación</span>
             </div>
         </div>
-        <span class="hero-float-chip chip-1"><i class="fas fa-certificate"></i> Certificado incluido</span>
     </div>
 
-    <a href="#categorias" class="scroll-cue" aria-label="Bajar">
+    <a href="#categorias" class="scroll-cue" aria-label="Desplazarse hacia abajo">
         <i class="fas fa-chevron-down"></i>
     </a>
 </section>
 
 <!-- ========== MARQUEE ========== -->
-<div class="marquee-bar">
+<div class="marquee-bar" aria-hidden="true">
     <div class="marquee-track">
         {% for i in "12"|make_list %}
         <span class="marquee-item"><i class="fas fa-certificate"></i> Certificados verificables</span>
@@ -88,14 +97,16 @@
                 <i class="fas fa-shapes"></i> Explora
             </span>
             <h2>Encuentra tu <span>categoría</span></h2>
-            <p>Elige un área y descubre los cursos disponibles</p>
+            <p>Elige un área y descubre los cursos disponibles para ti</p>
         </div>
 
         <div class="category-scroll reveal">
             <div class="category-track">
                 {% for cat in categories %}
                 <a href="{% url 'catalog' %}?category={{ cat.id }}" class="category-card">
-                    <div class="category-icon"><i class="fas {{ cat.icon }}"></i></div>
+                    <div class="category-icon">
+                        <i class="fas {{ cat.icon }}"></i>
+                    </div>
                     <h6>{{ cat.name }}</h6>
                     <span>{{ cat.course_count }} curso{{ cat.course_count|pluralize }}</span>
                 </a>
@@ -120,12 +131,12 @@
         <div class="row g-4">
             {% for course in featured_courses %}
             <div class="col-lg-4 col-md-6 reveal">
-                <div class="course-card tilt-card">
+                <article class="course-card tilt-card">
                     <div class="course-image {% cycle 'course-image-python' 'course-image-javascript' 'course-image-react' %}">
                         {% if course.image %}
-                            <img src="{{ course.image.url }}" alt="{{ course.title }}" style="width:100%;height:100%;object-fit:cover;">
+                            <img src="{{ course.image.url }}" alt="{{ course.title }}" loading="lazy">
                         {% else %}
-                            <i class="fas fa-book-open"></i>
+                            <i class="fas fa-book-open" aria-hidden="true"></i>
                         {% endif %}
                         {% if course.is_featured %}
                             <span class="course-badge-top">Destacado</span>
@@ -138,12 +149,14 @@
                         <h5>{{ course.title }}</h5>
                         <p>{{ course.description|truncatechars:70 }}</p>
                         <div class="course-teacher">
-                            <i class="fas fa-chalkboard-teacher"></i> {{ course.teacher.get_full_name|default:course.teacher.username }}
+                            <i class="fas fa-chalkboard-teacher"></i>
+                            {{ course.teacher.get_full_name|default:course.teacher.username }}
                         </div>
                         <div class="course-meta">
                             <span class="course-price">{{ course.get_price_display }}</span>
                             <span class="course-rating">
-                                <i class="fas fa-star"></i> {{ course.average_rating|floatformat:1 }}
+                                <i class="fas fa-star"></i>
+                                {{ course.average_rating|floatformat:1 }}
                                 <span class="rating-count">({{ course.total_reviews }})</span>
                             </span>
                         </div>
@@ -151,11 +164,11 @@
                             <i class="fas fa-eye"></i> Ver curso
                         </a>
                     </div>
-                </div>
+                </article>
             </div>
             {% empty %}
-            <div class="col-12 text-center py-5" style="color: var(--ldg-text-mute);">
-                <i class="fas fa-book-open fa-2x mb-3"></i>
+            <div class="col-12 text-center py-5 empty-state">
+                <i class="fas fa-book-open fa-2x mb-3" aria-hidden="true"></i>
                 <p>Todavía no hay cursos publicados. ¡Vuelve pronto!</p>
             </div>
             {% endfor %}
@@ -173,7 +186,9 @@
             <div class="newest-strip-list">
                 {% for course in newest_courses %}
                 <a href="{% url 'course_detail' course.id %}" class="list-item">
-                    <div class="list-item-icon"><i class="fas fa-book-open"></i></div>
+                    <div class="list-item-icon">
+                        <i class="fas fa-book-open"></i>
+                    </div>
                     <div class="list-item-body">
                         <p class="list-item-title">{{ course.title }}</p>
                         <div class="list-item-meta">
@@ -181,12 +196,90 @@
                             <span>{{ course.get_price_display }}</span>
                         </div>
                     </div>
-                    <div class="list-item-actions"><i class="fas fa-arrow-right"></i></div>
+                    <div class="list-item-actions">
+                        <i class="fas fa-arrow-right"></i>
+                    </div>
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
+    </div>
+</section>
+
+<!-- ========== SOBRE NOSOTROS + MISIÓN / VISIÓN / VALORES ========== -->
+<section id="nosotros" class="about-mission">
+    <div class="container">
+        <div class="section-header reveal">
+            <span class="badge-section">
+                <i class="fas fa-heart"></i> Quiénes somos
+            </span>
+            <h2>Más que una plataforma, <span>una comunidad</span></h2>
+            <p>AcadEMI nace para democratizar la educación de calidad en Bolivia y Latinoamérica</p>
+        </div>
+
+        <div class="about-intro reveal">
+            <p class="about-lead">
+                Creemos que el conocimiento debe ser accesible, flexible y de alto nivel.
+                Por eso conectamos a estudiantes con profesores reales que enseñan con pasión,
+                rigor y cercanía.
+            </p>
+        </div>
+
+        <div class="mission-vision-grid reveal">
+            <!-- Misión -->
+            <article class="mv-card mission-card">
+                <div class="mv-icon">
+                    <i class="fas fa-bullseye"></i>
+                </div>
+                <h3>Nuestra Misión</h3>
+                <p>
+                    Ofrecer educación online de excelencia, accesible y flexible,
+                    que permita a cada persona desarrollar habilidades reales
+                    y transformar su futuro profesional y personal.
+                </p>
+            </article>
+
+            <!-- Visión -->
+            <article class="mv-card vision-card">
+                <div class="mv-icon">
+                    <i class="fas fa-eye"></i>
+                </div>
+                <h3>Nuestra Visión</h3>
+                <p>
+                    Ser la plataforma de aprendizaje de referencia en Bolivia y la región,
+                    reconocida por la calidad de sus docentes, la relevancia de sus cursos
+                    y el impacto real en la vida de nuestros estudiantes.
+                </p>
+            </article>
+        </div>
+
+        <!-- Valores -->
+        <div class="values-section reveal">
+            <h3 class="values-title">Nuestros valores</h3>
+            <div class="values-grid">
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-gem"></i></div>
+                    <h4>Excelencia</h4>
+                    <p>Contenido de alta calidad y docentes comprometidos con el aprendizaje real.</p>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-handshake"></i></div>
+                    <h4>Cercanía</h4>
+                    <p>Respuestas directas de los profesores y acompañamiento humano en cada paso.</p>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-unlock"></i></div>
+                    <h4>Accesibilidad</h4>
+                    <p>Educación flexible, a tu ritmo y disponible desde cualquier dispositivo.</p>
+                </div>
+                <div class="value-item">
+                    <div class="value-icon"><i class="fas fa-lightbulb"></i></div>
+                    <h4>Innovación</h4>
+                    <p>Metodologías actualizadas y herramientas modernas para un aprendizaje efectivo.</p>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
 
@@ -208,21 +301,21 @@
                 <h5>Explora</h5>
                 <p>Busca entre decenas de cursos por categoría, nivel o precio</p>
             </div>
-            <div class="step-connector"></div>
+            <div class="step-connector" aria-hidden="true"></div>
             <div class="step-card reveal">
                 <div class="step-number">2</div>
                 <div class="step-icon"><i class="fas fa-cart-shopping"></i></div>
                 <h5>Inscríbete</h5>
                 <p>Compra el curso o accede gratis, y suma un cupón si tienes uno</p>
             </div>
-            <div class="step-connector"></div>
+            <div class="step-connector" aria-hidden="true"></div>
             <div class="step-card reveal">
                 <div class="step-number">3</div>
                 <div class="step-icon"><i class="fas fa-laptop-code"></i></div>
                 <h5>Aprende</h5>
                 <p>Avanza a tu ritmo y pregúntale directo al docente en cada lección</p>
             </div>
-            <div class="step-connector"></div>
+            <div class="step-connector" aria-hidden="true"></div>
             <div class="step-card reveal">
                 <div class="step-number">4</div>
                 <div class="step-icon"><i class="fas fa-certificate"></i></div>
@@ -241,48 +334,50 @@
                 <i class="fas fa-gem"></i> Características
             </span>
             <h2>¿Por qué <span>elegirnos</span>?</h2>
-            <p>Todo lo que necesitas para aprender de manera efectiva</p>
+            <p>Todo lo que necesitas para aprender de manera efectiva y con resultados reales</p>
         </div>
 
         <div class="bento-grid reveal">
             <div class="bento-card bento-lg">
-                <div class="bento-glow"></div>
+                <div class="bento-glow" aria-hidden="true"></div>
                 <div class="bento-icon"><i class="fas fa-certificate"></i></div>
                 <div>
                     <h5>Certificados verificables</h5>
                     <p>Obtén un certificado con código único al finalizar cada curso, verificable públicamente por cualquiera.</p>
-                    <span class="bento-preview mt-3"><i class="fas fa-check-circle"></i> AC-2K9X7M · Verificado</span>
+                    <span class="bento-preview">
+                        <i class="fas fa-check-circle"></i> AC-2K9X7M · Verificado
+                    </span>
                 </div>
             </div>
 
             <div class="bento-card">
                 <div class="bento-icon"><i class="fas fa-comments"></i></div>
                 <h5>Habla con el docente</h5>
-                <p>Pregunta en cada lección y recibí respuesta real del profesor.</p>
+                <p>Pregunta en cada lección y recibe respuesta real del profesor.</p>
             </div>
 
             <div class="bento-card">
                 <div class="bento-icon"><i class="fas fa-video"></i></div>
                 <h5>Videos HD</h5>
-                <p>Contenido en alta definición, a tu ritmo.</p>
+                <p>Contenido en alta definición, disponible cuando quieras.</p>
             </div>
 
             <div class="bento-card bento-wide">
                 <div class="bento-icon"><i class="fas fa-ticket-alt"></i></div>
                 <h5>Cupones y ofertas</h5>
-                <p>Descuentos por tiempo limitado que crean los propios docentes en sus cursos.</p>
+                <p>Descuentos por tiempo limitado creados por los propios docentes en sus cursos.</p>
             </div>
 
             <div class="bento-card">
                 <div class="bento-icon"><i class="fas fa-mobile-alt"></i></div>
                 <h5>Acceso móvil</h5>
-                <p>Aprende desde cualquier dispositivo.</p>
+                <p>Aprende desde cualquier dispositivo, en cualquier momento.</p>
             </div>
 
             <div class="bento-card">
                 <div class="bento-icon"><i class="fas fa-clock"></i></div>
                 <h5>A tu ritmo</h5>
-                <p>Sin fechas límite ni presiones.</p>
+                <p>Sin fechas límite ni presiones. Tú decides cuándo avanzar.</p>
             </div>
         </div>
     </div>
@@ -293,36 +388,52 @@
     <div class="container">
         <div class="row g-4 text-center">
             <div class="col-md-3 reveal">
-                <div class="stat-icon"><i class="fas fa-book-open"></i></div>
-                <div class="stat-number"><span class="counter" data-count="{{ total_courses }}">0</span>+</div>
-                <p>Cursos disponibles</p>
-                <span class="stat-sub">En crecimiento</span>
+                <div class="stat-block">
+                    <div class="stat-icon"><i class="fas fa-book-open"></i></div>
+                    <div class="stat-number">
+                        <span class="counter" data-count="{{ total_courses }}">0</span>+
+                    </div>
+                    <p>Cursos disponibles</p>
+                    <span class="stat-sub">En crecimiento constante</span>
+                </div>
             </div>
             <div class="col-md-3 reveal">
-                <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
-                <div class="stat-number"><span class="counter" data-count="{{ total_students }}">0</span>+</div>
-                <p>Estudiantes activos</p>
-                <span class="stat-sub">Felices aprendiendo</span>
+                <div class="stat-block">
+                    <div class="stat-icon"><i class="fas fa-user-graduate"></i></div>
+                    <div class="stat-number">
+                        <span class="counter" data-count="{{ total_students }}">0</span>+
+                    </div>
+                    <p>Estudiantes activos</p>
+                    <span class="stat-sub">Felices aprendiendo</span>
+                </div>
             </div>
             <div class="col-md-3 reveal">
-                <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
-                <div class="stat-number"><span class="counter" data-count="{{ total_teachers }}">0</span>+</div>
-                <p>Instructores expertos</p>
-                <span class="stat-sub">Profesionales</span>
+                <div class="stat-block">
+                    <div class="stat-icon"><i class="fas fa-chalkboard-teacher"></i></div>
+                    <div class="stat-number">
+                        <span class="counter" data-count="{{ total_teachers }}">0</span>+
+                    </div>
+                    <p>Instructores expertos</p>
+                    <span class="stat-sub">Profesionales reales</span>
+                </div>
             </div>
             <div class="col-md-3 reveal">
-                <div class="stat-icon"><i class="fas fa-star"></i></div>
-                <div class="stat-number"><span class="counter" data-count="{{ avg_rating|default:'0' }}" data-decimals="1">0</span></div>
-                <p>Calificación promedio</p>
-                <span class="stat-sub">Excelente</span>
+                <div class="stat-block">
+                    <div class="stat-icon"><i class="fas fa-star"></i></div>
+                    <div class="stat-number">
+                        <span class="counter" data-count="{{ avg_rating|default:'0' }}" data-decimals="1">0</span>
+                    </div>
+                    <p>Calificación promedio</p>
+                    <span class="stat-sub">Excelente valoración</span>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 {% if testimonials %}
-<!-- ========== TESTIMONIOS (marquee, reseñas reales) ========== -->
-<section class="testimonials">
+<!-- ========== TESTIMONIOS ========== -->
+<section class="testimonials" aria-label="Testimonios de estudiantes">
     <div class="container">
         <div class="section-header reveal">
             <span class="badge-section">
@@ -337,42 +448,50 @@
         <div class="testimonial-row row-1">
             {% for i in "12"|make_list %}
                 {% for review in testimonials %}
-                <div class="testimonial-card">
+                <blockquote class="testimonial-card">
                     <div class="testimonial-stars">
                         {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
                         {% endfor %}
                     </div>
                     <p>"{{ review.comment }}"</p>
-                    <div class="testimonial-author">
+                    <footer class="testimonial-author">
                         <div class="author-avatar">{{ review.student.username|first|upper }}</div>
                         <div>
-                            <span class="author-name">{{ review.student.get_full_name|default:review.student.username }}</span>
+                            <cite class="author-name">{{ review.student.get_full_name|default:review.student.username }}</cite>
                             <span class="author-role">{{ review.course.title }}</span>
                         </div>
-                    </div>
-                </div>
+                    </footer>
+                </blockquote>
                 {% endfor %}
             {% endfor %}
         </div>
         <div class="testimonial-row row-2">
             {% for i in "12"|make_list %}
                 {% for review in testimonials reversed %}
-                <div class="testimonial-card">
+                <blockquote class="testimonial-card">
                     <div class="testimonial-stars">
                         {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= review.rating %}<i class="fas fa-star"></i>{% else %}<i class="far fa-star"></i>{% endif %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="fas fa-star"></i>
+                            {% else %}
+                                <i class="far fa-star"></i>
+                            {% endif %}
                         {% endfor %}
                     </div>
                     <p>"{{ review.comment }}"</p>
-                    <div class="testimonial-author">
+                    <footer class="testimonial-author">
                         <div class="author-avatar">{{ review.student.username|first|upper }}</div>
                         <div>
-                            <span class="author-name">{{ review.student.get_full_name|default:review.student.username }}</span>
+                            <cite class="author-name">{{ review.student.get_full_name|default:review.student.username }}</cite>
                             <span class="author-role">{{ review.course.title }}</span>
                         </div>
-                    </div>
-                </div>
+                    </footer>
+                </blockquote>
                 {% endfor %}
             {% endfor %}
         </div>
@@ -384,7 +503,7 @@
 <section class="final-cta">
     <div class="container">
         <div class="final-cta-card reveal">
-            <div class="final-cta-mesh"></div>
+            <div class="final-cta-mesh" aria-hidden="true"></div>
             <div class="final-cta-content">
                 <h2>Tu próximo curso te está esperando</h2>
                 <p>Únete a {{ total_students }}+ estudiantes que ya están aprendiendo en AcadEMI</p>
@@ -401,6 +520,7 @@
         </div>
     </div>
 </section>
+
 {% endblock %}
 
 {% block extra_js %}

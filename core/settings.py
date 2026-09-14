@@ -192,12 +192,16 @@ SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1:8001')
 # ============================================
 # ASISTENTE VIRTUAL CON IA (RF-77 al RF-82)
 # ============================================
-# Clave de Groq (https://console.groq.com/keys) — tiene una capa gratuita
-# generosa. Si se deja vacía, el chatbot sigue funcionando con la base de
-# conocimiento propia (academi.models.ChatKnowledgeBase / ChatIntent) en
-# vez de generar respuestas con IA. Ver README para cómo obtener la clave.
-GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
-GROQ_MODEL = os.environ.get('GROQ_MODEL', 'groq/compound-mini')
+# Clave de Gemini (https://aistudio.google.com/apikey) — capa gratuita,
+# no pide tarjeta. Se usa directo (no vía OpenRouter) para no depender
+# de su pool gratuito compartido, que fue devolviendo 404 (modelo
+# retirado), 429 (rate-limit) o 502 (proveedor saturado) según el
+# modelo probado. Si se deja vacía, el chatbot sigue funcionando con la
+# base de conocimiento propia (academi.models.ChatKnowledgeBase /
+# ChatIntent) en vez de generar respuestas con IA. Ver README para cómo
+# obtener la clave.
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.5-flash-lite')
 
 
 # ============================================

@@ -24,6 +24,13 @@
 .form-control:focus {
     border-color: var(--input-focus);
     box-shadow: 0 0 0 3px rgba(0, 51, 160, 0.08);
+    /* Bootstrap define su propio .form-control:focus con background-color
+       fijo (var(--bs-body-bg), blanco), y como ":focus" suma especificidad
+       a la clase, gana sobre nuestra regla base de arriba en cuanto el
+       input recibe foco — se ve una caja blanca encima del fondo oscuro
+       apenas se hace clic (o con autofocus, desde que carga la página). */
+    background: var(--surface);
+    color: var(--ink);
 }
 
 .form-control.is-invalid {

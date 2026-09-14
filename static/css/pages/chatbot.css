@@ -174,7 +174,12 @@
 }
 .chat-empty i {
     font-size: 64px;
-    color: var(--gray-light);
+    /* --gray-light se invierte en modo oscuro (queda un gris casi tan
+       oscuro como el fondo --white-smoke), así que el ícono quedaba
+       casi invisible; --gray sí se aclara en modo oscuro y mantiene
+       el mismo look "apagado" en ambos temas. */
+    color: var(--gray);
+    opacity: 0.5;
     margin-bottom: 16px;
 }
 .chat-empty h5 {

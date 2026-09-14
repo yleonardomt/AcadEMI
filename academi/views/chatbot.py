@@ -37,19 +37,32 @@ def chatbot_view(request):
     return render(request, 'academi/chatbot/chatbot.html')
 
 
+def _stem_match(category_word, text_word, stem_len=6):
+    """Compara dos palabras por su raíz en vez de exigir que sean
+    idénticas: sin esto, "programar" nunca calzaba con la categoría
+    "Programación" (son formas distintas de la misma palabra, y una
+    no es substring literal de la otra), así que un mensaje tan básico
+    como "me gusta programar" no recibía ninguna recomendación."""
+    if len(category_word) < 4 or len(text_word) < 4:
+        return category_word == text_word
+    n = min(len(category_word), len(text_word), stem_len)
+    return category_word[:n] == text_word[:n]
+
+
 def recommend_courses_by_category(user_message):
     """RF-79: si el mensaje menciona una categoría real (o una palabra
-    significativa de su nombre), responde con cursos publicados reales
-    de esa categoría (título y precio) en vez de un texto genérico
-    desconectado del catálogo real."""
-    text = _normalize(user_message)
+    significativa de su nombre, incluso en otra forma gramatical:
+    "programar" también debe calzar con la categoría "Programación"),
+    responde con cursos publicados reales de esa categoría (título y
+    precio) en vez de un texto genérico desconectado del catálogo real."""
+    text_words = _normalize(user_message).split()
 
     for category in Category.objects.all():
         words = [
             _normalize(w) for w in category.name.split()
             if len(w) > 3 and w.lower() not in STOPWORDS
         ]
-        if not any(word in text for word in words):
+        if not any(_stem_match(word, tw) for word in words for tw in text_words):
             continue
 
         courses = Course.objects.filter(status='published', category=category)[:3]
@@ -59,6 +72,25 @@ def recommend_courses_by_category(user_message):
         lines = [f'{c.title} ({c.get_price_display()})' for c in courses]
         return (
             f'En la categoría "{category.name}" tenemos, entre otros: '
+            + '; '.join(lines) + '. Puedes verlos todos en el catálogo filtrando por esa categoría.'
+        )
+
+    # Si ninguna categoría calzó (p.ej. "inglés" no aparece en el nombre
+    # de la categoría "Idiomas y Comunicación"), se busca también por
+    # palabras del título de un curso real, para no depender solo del
+    # nombre de la categoría.
+    for course in Course.objects.filter(status='published').select_related('category'):
+        words = [
+            _normalize(w) for w in course.title.split()
+            if len(w) > 3 and w.lower() not in STOPWORDS
+        ]
+        if not any(_stem_match(word, tw) for word in words for tw in text_words):
+            continue
+
+        courses = Course.objects.filter(status='published', category=course.category)[:3]
+        lines = [f'{c.title} ({c.get_price_display()})' for c in courses]
+        return (
+            f'En la categoría "{course.category.name}" tenemos, entre otros: '
             + '; '.join(lines) + '. Puedes verlos todos en el catálogo filtrando por esa categoría.'
         )
 
@@ -129,10 +161,26 @@ def match_knowledge_base(user_message):
 def build_platform_context(user):
     """RF-79, RF-80, RF-81: datos reales de la plataforma para que el
     asistente (con o sin IA) responda con información actual, en vez de
-    respuestas genéricas desconectadas del sitio real."""
+    respuestas genéricas desconectadas del sitio real.
+
+    Incluye el catálogo real (categoría -> cursos con precio) para que,
+    si el usuario cuenta un interés en lenguaje natural ("me gusta
+    programar", "quiero aprender diseño"), la IA pueda recomendar
+    cursos concretos que existen de verdad en la plataforma, en vez de
+    solo saber cuántos cursos hay o el nombre de las categorías."""
+    catalog = []
+    for category in Category.objects.all():
+        courses = Course.objects.filter(status='published', category=category)[:4]
+        if courses:
+            catalog.append({
+                'category': category.name,
+                'courses': [f'{c.title} ({c.get_price_display()})' for c in courses],
+            })
+
     context = {
         'total_courses': Course.objects.filter(status='published').count(),
         'categories': list(Category.objects.values_list('name', flat=True)[:12]),
+        'catalog': catalog,
         'is_authenticated': user.is_authenticated,
     }
     if user.is_authenticated:

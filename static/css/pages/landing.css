@@ -33,6 +33,7 @@ body.landing-page {
 .landing-page .hero,
 .landing-page .categories,
 .landing-page .courses,
+.landing-page .about-mission,
 .landing-page .how-it-works,
 .landing-page .features,
 .landing-page .testimonials,
@@ -42,6 +43,7 @@ body.landing-page {
 
 .landing-page .categories::before,
 .landing-page .courses::before,
+.landing-page .about-mission::before,
 .landing-page .how-it-works::before,
 .landing-page .features::before,
 .landing-page .testimonials::before {
@@ -110,6 +112,21 @@ body.landing-page {
 
 @media (prefers-reduced-motion: reduce) {
     .hero-video-bg { animation: none; }
+}
+
+/* Baña el video con el azul de marca (mix-blend-mode: color conserva
+   el brillo/detalle original del video y solo reemplaza su tono, así
+   no queda un cuadro plano) para que el hero se sienta parte de la
+   misma identidad azul del resto del sitio en vez de fotografía
+   suelta con sus propios colores (tierra, verde, cielo gris). */
+.hero-tint {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    background: linear-gradient(160deg, #0033a0 0%, #1a4db8 50%, #3b82f6 100%);
+    mix-blend-mode: color;
+    opacity: 0.8;
+    pointer-events: none;
 }
 
 /* Oscurece solo donde hay texto (izquierda) y el pie (para los
@@ -710,6 +727,152 @@ body.landing-page {
 .newest-strip-list .list-item:hover { border-color: var(--ldg-border-hover); transform: translateY(-2px); }
 
 /* ============================================
+   SOBRE NOSOTROS + MISIÓN / VISIÓN / VALORES
+   (el template ya traía este HTML, pero sin ninguna regla acá —
+   se renderizaba como texto plano sin tarjetas ni iconos; se le da
+   el mismo tratamiento "vidrio" que category-card/step-card/
+   bento-card del resto de la página.)
+   ============================================ */
+.about-mission { padding: 90px 0; }
+
+.about-intro {
+    max-width: 720px;
+    margin: 0 auto 56px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.about-lead {
+    font-size: 19px;
+    line-height: 1.75;
+    color: var(--ldg-text-dim);
+}
+
+.mission-vision-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 64px;
+}
+
+.mv-card {
+    background: var(--ldg-card);
+    border: 1px solid var(--ldg-border);
+    border-top: 3px solid var(--ldg-blue);
+    border-radius: var(--border-radius-lg);
+    padding: 40px;
+    transition: var(--transition);
+}
+
+.mv-card.vision-card { border-top-color: var(--ldg-celeste); }
+
+.mv-card:hover {
+    border-color: var(--ldg-border-hover);
+    border-top-color: var(--ldg-blue);
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(59, 130, 246, 0.16);
+}
+
+.mv-card.vision-card:hover { border-top-color: var(--ldg-celeste); }
+
+.mv-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: var(--primary-lighter);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.mv-card h3 {
+    font-size: 21px;
+    color: var(--ldg-text);
+    margin-bottom: 10px;
+}
+
+.mv-card p {
+    color: var(--ldg-text-dim);
+    font-size: 15px;
+    line-height: 1.7;
+}
+
+.values-title {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--ldg-text);
+    margin-bottom: 32px;
+}
+
+.values-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+.value-item {
+    text-align: center;
+    background: var(--ldg-card);
+    border: 1px solid var(--ldg-border);
+    border-radius: var(--border-radius);
+    padding: 30px 20px;
+    transition: var(--transition);
+}
+
+.value-item:hover {
+    border-color: var(--ldg-border-hover);
+    transform: translateY(-4px);
+    box-shadow: 0 14px 34px rgba(59, 130, 246, 0.14);
+}
+
+.value-icon {
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: var(--primary-lighter);
+    color: var(--primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+
+.value-item h4 {
+    font-size: 16px;
+    color: var(--ldg-text);
+    margin-bottom: 8px;
+}
+
+.value-item p {
+    font-size: 13px;
+    color: var(--ldg-text-dim);
+    line-height: 1.6;
+    margin: 0;
+}
+
+@media (max-width: 992px) {
+    .mission-vision-grid { grid-template-columns: 1fr; }
+    .values-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+    .mv-card { padding: 28px 22px; }
+    .values-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================================
    CÓMO FUNCIONA
    ============================================ */
 .how-it-works { padding: 90px 0; }
@@ -1058,15 +1221,20 @@ body.landing-page {
 
 .final-cta-content { position: relative; z-index: 1; }
 
+/* Texto fijo claro (NO --ldg-text/--ldg-text-dim): la tarjeta tiene un
+   fondo azul marino fijo en los dos temas (ver .final-cta-card arriba),
+   así que un texto que se oscurece en modo claro quedaría invisible
+   sobre ese fondo — a diferencia del resto de la portada, que sí vive
+   sobre el fondo compartido y por eso usa los tokens de tema. */
 .final-cta-content h2 {
-    color: var(--ldg-text);
+    color: #f4f6fb;
     font-size: 34px;
     font-weight: 800;
     margin-bottom: 12px;
 }
 
 .final-cta-content p {
-    color: var(--ldg-text-dim);
+    color: rgba(244, 246, 251, 0.75);
     font-size: 16px;
     margin-bottom: 30px;
 }

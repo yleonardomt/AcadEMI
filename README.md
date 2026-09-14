@@ -75,7 +75,7 @@ cp .env.example .env
 sed -i "s/DB_PASSWORD=change-me/DB_PASSWORD=TU_PASSWORD_DB/" .env
 sed -i "s/SECRET_KEY=change-me-to-a-random-secret-key/SECRET_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(50))')/" .env
 # (Opcional) Editá .env para agregar tu cuenta de Gmail y/o tu clave de
-# Groq — ver la sección "Variables de entorno" más abajo.
+# Gemini — ver la sección "Variables de entorno" más abajo.
 
 # ============================================
 # 7. Aplicar migraciones (crea todas las tablas en PostgreSQL)
@@ -179,8 +179,8 @@ Copiá `.env.example` a `.env` y completá:
 | `DB_NAME` / `DB_USER` / `DB_PASSWORD` / `DB_HOST` / `DB_PORT` | Conexión a PostgreSQL. Deben coincidir con el usuario y la base que creaste en el paso 2 de la instalación. | Sí |
 | `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | Cuenta de Gmail y [contraseña de aplicación](https://myaccount.google.com/apppasswords) para enviar correos reales (verificación, recuperación de contraseña, certificados, comprobantes de compra). Si se dejan vacías, Django lanzará un error al intentar enviar un correo — para desarrollo sin correos reales, descomentá la línea de `EMAIL_BACKEND` de consola en `core/settings.py`. | No |
 | `SITE_URL` | URL base usada en los enlaces de los correos. | No |
-| `GROQ_API_KEY` | Clave gratuita de [Groq](https://console.groq.com/keys) para que el chatbot responda con IA real. Ver sección de abajo. | No |
-| `GROQ_MODEL` | Modelo de Groq a usar (por defecto `groq/compound-mini`). Los modelos de Groq cambian con el tiempo — si el chatbot deja de responder con IA, revisá los modelos disponibles para tu cuenta en [console.groq.com](https://console.groq.com/docs/models). | No |
+| `GEMINI_API_KEY` | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) para que el chatbot responda con IA real. Ver sección de abajo. | No |
+| `GEMINI_MODEL` | Modelo de Gemini a usar (por defecto `gemini-3.5-flash-lite`, responde en 2-3 segundos). Se usa una versión fija en vez del alias `gemini-flash-latest` porque ese alias puede apuntar a una versión nueva con demanda alta (503 "high demand"); y se usa la variante `-lite` en vez de `gemini-3.5-flash` a secas porque esta última puede tardar 15-45 segundos por respuesta. Podés cambiarlo por cualquier otro modelo que liste `GET https://generativelanguage.googleapis.com/v1beta/models?key=TU_CLAVE` con soporte para `generateContent`. | No |
 
 ## Credenciales de prueba
 
@@ -243,17 +243,19 @@ de dos formas:
 1. **Sin configurar nada:** responde usando su propia base de conocimiento
    (`ChatKnowledgeBase` / `ChatIntent` en la base de datos), con respuestas
    ya cargadas sobre cursos, compras, progreso, certificados y ayuda.
-2. **Con `GROQ_API_KEY` configurada:** además de esa base de conocimiento,
-   genera respuestas con un modelo de lenguaje real (vía la API gratuita de
-   [Groq](https://console.groq.com/keys)), usando datos reales de la
-   plataforma como contexto (cantidad de cursos, categorías, y — si el
-   usuario tiene sesión iniciada — sus propios cursos y progreso). Si la
-   llamada a la IA falla o no hay clave configurada, el chatbot vuelve a su
-   base de conocimiento automáticamente, sin que el usuario note nada.
+2. **Con `GEMINI_API_KEY` configurada:** además de esa base de conocimiento,
+   genera respuestas con un modelo de lenguaje real (la API gratuita de
+   [Gemini](https://aistudio.google.com/apikey)), usando datos reales de
+   la plataforma como contexto (catálogo real de cursos por categoría con
+   precio, y — si el usuario tiene sesión iniciada — sus propios cursos y
+   progreso), para poder recomendar cursos concretos cuando el usuario
+   cuenta un interés (p.ej. "me gusta programar"). Si la llamada a la IA
+   falla o no hay clave configurada, el chatbot vuelve a su base de
+   conocimiento automáticamente, sin que el usuario note nada.
 
-Para activarlo: creá una cuenta gratuita en Groq, generá una clave en
-[console.groq.com/keys](https://console.groq.com/keys), y ponela en
-`GROQ_API_KEY` dentro de tu `.env`.
+Para activarlo: entrá a [aistudio.google.com/apikey](https://aistudio.google.com/apikey)
+con tu cuenta de Google (no pide tarjeta), generá una clave de API, y ponela
+en `GEMINI_API_KEY` dentro de tu `.env`.
 
 ## Estructura del proyecto
 
