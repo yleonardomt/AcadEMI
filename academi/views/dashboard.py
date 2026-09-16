@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Sum, Avg
+from django.http import JsonResponse
 from django.utils import timezone
 
 from ..models import (
@@ -257,9 +258,22 @@ def dashboard_view(request):
 # ============================================
 @login_required
 def notifications_view(request):
+    # No marcamos como leídas acá: esta vista se llama con un GET normal
+    # (visitar /notifications/ es una lectura, no debería tener efectos
+    # secundarios), y hacerlo aquí borraba el resaltado de "no leída" antes
+    # de que la plantilla llegara a mostrarlo. El botón "Marcar todas como
+    # leídas" (mark_all_notifications_read_view) es el que de verdad las marca.
     notifications = Notification.objects.filter(user=request.user).order_by('-created_at')
-    notifications.filter(is_read=False).update(is_read=True)
     return render(request, 'academi/pages/notificaciones.html', {'notifications': notifications})
+
+
+@login_required
+def mark_all_notifications_read_view(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
+    Notification.objects.filter(user=request.user, is_read=False).update(is_read=True)
+    return JsonResponse({'success': True})
 
 
 @login_required

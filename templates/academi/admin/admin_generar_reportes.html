@@ -14,18 +14,18 @@
                         <div class="mb-3">
                             <label class="form-label">Tipo de reporte</label>
                             <select name="report_type" class="form-select">
-                                <option value="ventas">Ventas e ingresos</option>
-                                <option value="usuarios">Usuarios registrados</option>
-                                <option value="cursos">Rendimiento académico</option>
+                                <option value="ventas" {% if report_type != 'usuarios' and report_type != 'cursos' %}selected{% endif %}>Ventas e ingresos</option>
+                                <option value="usuarios" {% if report_type == 'usuarios' %}selected{% endif %}>Usuarios registrados</option>
+                                <option value="cursos" {% if report_type == 'cursos' %}selected{% endif %}>Rendimiento académico</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Desde</label>
-                            <input type="date" name="date_from" class="form-control">
+                            <input type="date" name="date_from" class="form-control" value="{{ date_from|default:'' }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Hasta</label>
-                            <input type="date" name="date_to" class="form-control">
+                            <input type="date" name="date_to" class="form-control" value="{{ date_to|default:'' }}">
                         </div>
                         <button type="submit" class="btn btn-primary w-100"><i class="fas fa-cogs"></i> Generar reporte</button>
                     </form>
@@ -60,7 +60,7 @@
                             </div>
                             {% elif report_type == 'cursos' %}
                             <div class="col-6">
-                                <div class="stat-card p-3 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid var(--info); color: #1a202c;">
+                                <div class="stat-card p-3 text-center rounded" style="background: #e8eaf6; border-bottom: 3px solid var(--primary-light); color: #1a202c;">
                                     <span class="d-block fw-bold h4">{{ total_courses }}</span>
                                     <small>Cursos creados{% if date_from or date_to %} en el período{% endif %}</small>
                                 </div>
@@ -73,7 +73,7 @@
                                 </div>
                             </div>
                             <div class="col-6">
-                                <div class="stat-card p-3 text-center rounded" style="background: #d1fae5; border-bottom: 3px solid var(--success); color: #1a202c;">
+                                <div class="stat-card p-3 text-center rounded" style="background: var(--secondary-light); border-bottom: 3px solid var(--secondary-dark); color: #1a202c;">
                                     <span class="d-block fw-bold h4">Bs. {{ total_revenue }}</span>
                                     <small>Ingresos del período</small>
                                 </div>

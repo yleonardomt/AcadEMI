@@ -52,18 +52,21 @@
                                         {% endif %}
                                     </td>
                                     <td>
+                                        {% if certificate.is_revoked %}
                                         <form method="post" action="{% url 'admin_certificate_toggle' certificate.id %}" class="d-inline">
                                             {% csrf_token %}
-                                            {% if certificate.is_revoked %}
-                                                <button type="submit" class="btn btn-sm btn-outline-success">
-                                                    <i class="fas fa-rotate-left"></i> Reactivar
-                                                </button>
-                                            {% else %}
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Revocar este certificado? Dejará de mostrarse como válido en la verificación pública.');">
-                                                    <i class="fas fa-ban"></i> Revocar
-                                                </button>
-                                            {% endif %}
+                                            <button type="submit" class="btn btn-sm btn-outline-success">
+                                                <i class="fas fa-rotate-left"></i> Reactivar
+                                            </button>
                                         </form>
+                                        {% else %}
+                                        <form method="post" action="{% url 'admin_certificate_toggle' certificate.id %}" class="d-inline" data-confirm="¿Revocar este certificado? Dejará de mostrarse como válido en la verificación pública.">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-ban"></i> Revocar
+                                            </button>
+                                        </form>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% empty %}

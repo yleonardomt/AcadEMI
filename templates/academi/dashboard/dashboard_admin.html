@@ -54,8 +54,8 @@
          componente .metric-card que docente/estudiante)
          ============================================ -->
     <div class="metrics-admin">
-        <div class="metric-card" style="--accent: #2563eb;">
-            <div class="metric-icon" style="background: #dbeafe; color: #2563eb;">
+        <div class="metric-card" style="--accent: #02167f;">
+            <div class="metric-icon" style="background: #e8eaf6; color: #02167f;">
                 <i class="fas fa-users"></i>
             </div>
             <div>
@@ -66,8 +66,8 @@
                 <i class="fas fa-user-plus"></i> +{{ new_users_week|default:"0" }}/sem
             </span>
         </div>
-        <div class="metric-card" style="--accent: #d97706;">
-            <div class="metric-icon" style="background: #fef3c7; color: #d97706;">
+        <div class="metric-card" style="--accent: #e0ac00;">
+            <div class="metric-icon" style="background: #ffe985; color: #e0ac00;">
                 <i class="fas fa-book"></i>
             </div>
             <div>
@@ -78,8 +78,8 @@
                 <i class="fas fa-clock"></i> {{ pending_approval_courses|default:"0" }} pend.
             </span>
         </div>
-        <div class="metric-card" style="--accent: #059669;">
-            <div class="metric-icon" style="background: #d1fae5; color: #059669;">
+        <div class="metric-card" style="--accent: #2f3fae;">
+            <div class="metric-icon" style="background: #e9ecfb; color: #2f3fae;">
                 <i class="fas fa-credit-card"></i>
             </div>
             <div>
@@ -90,8 +90,8 @@
                 <i class="fas fa-check-circle"></i> Bs. {{ monthly_revenue|default:"0" }}
             </span>
         </div>
-        <div class="metric-card" style="--accent: #7c3aed;">
-            <div class="metric-icon" style="background: #ede9fe; color: #7c3aed;">
+        <div class="metric-card" style="--accent: #b8860b;">
+            <div class="metric-icon" style="background: #fff3c4; color: #b8860b;">
                 <i class="fas fa-coins"></i>
             </div>
             <div>
@@ -108,8 +108,8 @@
             </span>
             {% endif %}
         </div>
-        <div class="metric-card" style="--accent: #0d9488;">
-            <div class="metric-icon" style="background: var(--accent-teal-light); color: var(--accent-teal);">
+        <div class="metric-card" style="--accent: #010e53;">
+            <div class="metric-icon" style="background: #dfe3f5; color: #010e53;">
                 <i class="fas fa-graduation-cap"></i>
             </div>
             <div>
@@ -120,8 +120,8 @@
                 <i class="fas fa-user-graduate"></i> {{ total_enrollments_global|default:"0" }} insc.
             </span>
         </div>
-        <div class="metric-card" style="--accent: #ea580c;">
-            <div class="metric-icon" style="background: var(--accent-orange-light); color: var(--accent-orange);">
+        <div class="metric-card" style="--accent: #c9880c;">
+            <div class="metric-icon" style="background: #fff0b8; color: #c9880c;">
                 <i class="fas fa-chalkboard-teacher"></i>
             </div>
             <div>
@@ -132,8 +132,8 @@
                 <i class="fas fa-user-check"></i> {{ active_users|default:"0" }} activos
             </span>
         </div>
-        <div class="metric-card" style="--accent: #db2777;">
-            <div class="metric-icon" style="background: var(--accent-pink-light); color: var(--accent-pink);">
+        <div class="metric-card" style="--accent: #2f3fae;">
+            <div class="metric-icon" style="background: #e9ecfb; color: #2f3fae;">
                 <i class="fas fa-certificate"></i>
             </div>
             <div>
@@ -336,7 +336,7 @@
                                 {% for p in recent_payments %}
                                 <div class="user-item d-flex justify-content-between align-items-center p-2 mb-1 rounded">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="user-avatar-sm" style="background: #d1fae5; color: #059669;">
+                                        <div class="user-avatar-sm" style="background: #e8eaf6; color: #02167f;">
                                             <i class="fas fa-credit-card"></i>
                                         </div>
                                         <div>
@@ -367,7 +367,7 @@
                                 {% for e in recent_enrollments_global %}
                                 <div class="user-item d-flex justify-content-between align-items-center p-2 mb-1 rounded">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="user-avatar-sm" style="background: #ede9fe; color: #7c3aed;">
+                                        <div class="user-avatar-sm" style="background: #ffe985; color: #e0ac00;">
                                             <i class="fas fa-user-graduate"></i>
                                         </div>
                                         <div>
@@ -400,7 +400,7 @@
                                 {% for c in recent_courses_global %}
                                 <div class="user-item d-flex justify-content-between align-items-center p-2 mb-1 rounded">
                                     <div class="d-flex align-items-center gap-3">
-                                        <div class="user-avatar-sm" style="background: #fef3c7; color: #d97706;">
+                                        <div class="user-avatar-sm" style="background: #e9ecfb; color: #2f3fae;">
                                             <i class="fas fa-book"></i>
                                         </div>
                                         <div>

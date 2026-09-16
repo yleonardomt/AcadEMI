@@ -17,33 +17,33 @@
                             <select name="course" class="form-select" required>
                                 <option value="">Selecciona un curso</option>
                                 {% for course in teacher_courses %}
-                                <option value="{{ course.id }}">{{ course.title }}</option>
+                                <option value="{{ course.id }}" {% if request.POST.course == course.id|stringformat:"s" %}selected{% endif %}>{{ course.title }}</option>
                                 {% endfor %}
                             </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Código</label>
-                            <input type="text" name="code" class="form-control text-uppercase" placeholder="VERANO2026" required>
+                            <input type="text" name="code" class="form-control text-uppercase" placeholder="VERANO2026" value="{{ request.POST.code|default:'' }}" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Tipo de descuento</label>
                             <select name="discount_type" class="form-select">
-                                <option value="percentage">Porcentaje (%)</option>
-                                <option value="fixed">Monto fijo (Bs.)</option>
+                                <option value="percentage" {% if request.POST.discount_type != 'fixed' %}selected{% endif %}>Porcentaje (%)</option>
+                                <option value="fixed" {% if request.POST.discount_type == 'fixed' %}selected{% endif %}>Monto fijo (Bs.)</option>
                             </select>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Valor del descuento</label>
-                            <input type="number" step="0.01" name="discount_value" class="form-control" required>
+                            <input type="number" step="0.01" name="discount_value" class="form-control" value="{{ request.POST.discount_value|default:'' }}" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Usos máximos</label>
-                            <input type="number" name="max_uses" class="form-control" value="1" min="1">
+                            <input type="number" name="max_uses" class="form-control" value="{{ request.POST.max_uses|default:1 }}" min="1">
                             <small class="text-muted">Ej: pon 10 para un cupón válido solo para las primeras 10 personas que lo usen.</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Fecha de expiración</label>
-                            <input type="datetime-local" name="expires_at" class="form-control" required>
+                            <input type="datetime-local" name="expires_at" class="form-control" value="{{ request.POST.expires_at|default:'' }}" required>
                             <small class="text-muted">El cupón deja de funcionar automáticamente después de esta fecha/hora.</small>
                         </div>
                         <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Crear cupón</button>
@@ -93,7 +93,7 @@
                                                     <i class="fas fa-power-off"></i>
                                                 </button>
                                             </form>
-                                            <form method="POST" action="{% url 'teacher_coupon_delete' coupon.id %}" onsubmit="return confirm('¿Eliminar el cupón {{ coupon.code }}? Esta acción no se puede deshacer.');">
+                                            <form method="POST" action="{% url 'teacher_coupon_delete' coupon.id %}" data-confirm="¿Eliminar el cupón {{ coupon.code }}? Esta acción no se puede deshacer.">
                                                 {% csrf_token %}
                                                 <button type="submit" class="btn btn-outline-danger btn-sm" title="Eliminar">
                                                     <i class="fas fa-trash"></i>

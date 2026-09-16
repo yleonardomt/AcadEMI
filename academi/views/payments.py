@@ -5,6 +5,7 @@ from decimal import Decimal
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.db import transaction
 from django.db.models import Sum
@@ -459,7 +460,7 @@ def teacher_coupons_view(request):
                 created_by=request.user,
             )
             messages.success(request, f'Cupón {code} creado correctamente.')
-        return redirect('teacher_coupons')
+            return redirect('teacher_coupons')
 
     coupons = Coupon.objects.filter(course__in=teacher_courses).select_related('course').order_by('-created_at')
     return render(request, 'academi/payments/mis_cupones.html', {
@@ -494,6 +495,7 @@ def teacher_coupon_edit(request, coupon_id):
 
 
 @login_required
+@require_POST
 def teacher_coupon_toggle(request, coupon_id):
     """RF-60: activar/desactivar un cupón de uno de los cursos propios."""
     coupon = get_object_or_404(Coupon, id=coupon_id, course__teacher=request.user)

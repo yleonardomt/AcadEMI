@@ -1,15 +1,10 @@
 /* ============================================
    PORTADA (templates/academi/index.html)
-   El fondo de la portada es el mismo de siempre (el degradado +
-   partículas 3D de base.css/particles-bg.js, detrás de TODA la
-   página vía <canvas id="bg-particles"> en partials/base.html) —
-   no se pisa con un color propio. Los nombres --ldg-* de abajo
-   son solo un alias corto de los tokens de tema reales de
-   base.css, así el CSS de esta página queda prolijo sin
-   inventar una paleta paralela. Paleta de la portada: SOLO azul
-   (--ldg-blue, el primario de marca), celeste (--ldg-celeste, el
-   --info del tema, como variante clara del mismo azul) y blanco —
-   sin dorado ni violeta, a pedido explícito.
+   Los nombres --ldg-* de abajo son solo un alias corto de los
+   tokens de tema reales de base.css, así el CSS de esta página
+   queda prolijo sin inventar una paleta paralela. La portada NO
+   fija su propio fondo: usa el mismo fondo compartido que el
+   resto del sitio (base.css + particles-bg.js), theme-aware.
    ============================================ */
 body.landing-page {
     --ldg-card: var(--card-background);
@@ -20,48 +15,20 @@ body.landing-page {
     --ldg-text-mute: var(--text-muted);
     --ldg-blue: var(--primary-text);
     --ldg-celeste: var(--info);
-    --ldg-grad: linear-gradient(90deg, var(--ldg-blue), var(--ldg-celeste));
-    --ldg-grad-accent: linear-gradient(90deg, var(--ldg-blue), var(--ldg-celeste), var(--primary-light));
-    --ldg-grad-hero: linear-gradient(90deg, var(--ldg-blue), var(--ldg-celeste));
-}
-
-/* ============================================
-   TEXTURA GLOBAL
-   Solo un punteado muy sutil sobre el fondo compartido, para que
-   la portada se sienta como una sola pieza sin taparlo.
-   ============================================ */
-.landing-page .hero,
-.landing-page .categories,
-.landing-page .courses,
-.landing-page .about-mission,
-.landing-page .how-it-works,
-.landing-page .features,
-.landing-page .testimonials,
-.landing-page .final-cta {
-    position: relative;
-}
-
-.landing-page .categories::before,
-.landing-page .courses::before,
-.landing-page .about-mission::before,
-.landing-page .how-it-works::before,
-.landing-page .features::before,
-.landing-page .testimonials::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    background-image:
-        radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-    background-size: 28px 28px;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
-    opacity: 0.5;
+    --ldg-gold: var(--secondary);
+    --ldg-gold-dark: var(--secondary-dark);
+    /* Texto claro fijo sobre superficies oscuras propias de la
+       portada (video del hero, tarjeta del CTA final): un blanco
+       levemente azulado, más suave que --white puro contra esos
+       fondos oscuros. No es un token de tema (no cambia con modo
+       noche/día) porque esas superficies tampoco cambian. */
+    --ldg-light-text: #f4f6fb;
 }
 
 .reveal {
     opacity: 0;
-    transform: translateY(28px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
 }
 
 .reveal.in-view {
@@ -69,20 +36,13 @@ body.landing-page {
     transform: translateY(0);
 }
 
-.tilt-card {
-    transition: transform 0.4s ease, box-shadow 0.4s ease;
-    transform-style: preserve-3d;
-    will-change: transform;
-}
-
 /* ============================================
    HERO
-   El video vuelve a ocupar TODA la pantalla (min-height: 100vh)
-   como fondo, con un velo oscuro solo donde hace falta para que
-   el texto se lea — no tapa el video, lo enmarca. El texto del
-   hero queda siempre claro (blanco), sin importar el modo noche/
-   día del sitio, porque siempre está sobre el video oscurecido,
-   no sobre el fondo compartido de partículas.
+   El video ocupa toda la pantalla (min-height: 100vh) como fondo,
+   con un velo oscuro solo donde hace falta para que el texto se
+   lea. El texto del hero queda siempre claro (blanco), sin
+   importar el modo noche/día del sitio, porque siempre está sobre
+   el video oscurecido, no sobre el fondo compartido.
    ============================================ */
 .hero {
     position: relative;
@@ -99,53 +59,18 @@ body.landing-page {
     left: 50%;
     min-width: 100%;
     min-height: 100%;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translate(-50%, -50%);
     object-fit: cover;
     z-index: 1;
-    animation: hero-video-zoom 24s ease-in-out infinite alternate;
 }
 
-@keyframes hero-video-zoom {
-    from { transform: translate(-50%, -50%) scale(1); }
-    to { transform: translate(-50%, -50%) scale(1.08); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .hero-video-bg { animation: none; }
-}
-
-/* Baña el video con el azul de marca (mix-blend-mode: color conserva
-   el brillo/detalle original del video y solo reemplaza su tono, así
-   no queda un cuadro plano) para que el hero se sienta parte de la
-   misma identidad azul del resto del sitio en vez de fotografía
-   suelta con sus propios colores (tierra, verde, cielo gris). */
-.hero-tint {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    background: linear-gradient(160deg, #0033a0 0%, #1a4db8 50%, #3b82f6 100%);
-    mix-blend-mode: color;
-    opacity: 0.8;
-    pointer-events: none;
-}
-
-/* Oscurece solo donde hay texto (izquierda) y el pie (para los
-   badges); el resto del video queda visible y nítido. */
 .hero-overlay {
     position: absolute;
     inset: 0;
     z-index: 2;
     background:
-        linear-gradient(180deg, rgba(4, 8, 20, 0.38) 0%, transparent 22%, transparent 60%, rgba(4, 8, 20, 0.6) 100%),
-        linear-gradient(100deg, rgba(4, 8, 20, 0.82) 0%, rgba(4, 8, 20, 0.52) 32%, rgba(4, 8, 20, 0.14) 56%, transparent 70%);
-}
-
-.hero-mesh {
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    pointer-events: none;
-    background: radial-gradient(circle at 88% 15%, rgba(59, 130, 246, 0.16), transparent 34%);
+        linear-gradient(180deg, rgba(4, 8, 20, 0.35) 0%, transparent 30%, transparent 60%, rgba(4, 8, 20, 0.55) 100%),
+        linear-gradient(100deg, rgba(4, 8, 20, 0.8) 0%, rgba(4, 8, 20, 0.45) 34%, rgba(4, 8, 20, 0.1) 58%, transparent 72%);
 }
 
 .hero-content {
@@ -153,55 +78,25 @@ body.landing-page {
     z-index: 3;
     max-width: 640px;
     padding: 60px 0;
-    color: #f4f6fb;
-    transition: transform 0.3s ease-out;
-    will-change: transform;
-}
-
-.hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(59, 130, 246, 0.16);
-    padding: 8px 18px;
-    border-radius: var(--border-radius-pill);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ldg-celeste);
-    margin-bottom: 22px;
-    border: 1px solid rgba(59, 130, 246, 0.25);
+    color: var(--ldg-light-text);
 }
 
 .hero-title {
-    font-size: 58px;
+    font-size: 54px;
     font-weight: 800;
-    margin-bottom: 22px;
-    line-height: 1.08;
-    color: #f4f6fb;
+    margin-bottom: 20px;
+    line-height: 1.1;
+    color: var(--ldg-light-text);
     letter-spacing: -0.02em;
-    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.35);
 }
 
 .hero-title span {
-    background: var(--ldg-grad-hero);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: grad-shift 7s linear infinite;
-}
-
-@keyframes grad-shift {
-    to { background-position: 200% center; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .hero-title span { animation: none; }
+    color: var(--ldg-gold);
 }
 
 .hero-subtitle {
-    font-size: 19px;
-    margin-bottom: 34px;
+    font-size: 18px;
+    margin-bottom: 32px;
     font-weight: 400;
     line-height: 1.7;
     max-width: 520px;
@@ -217,68 +112,39 @@ body.landing-page {
 
 .btn-hero {
     border-radius: var(--border-radius-pill);
-    padding: 16px 34px;
+    padding: 15px 32px;
     font-weight: 700;
     font-size: 15px;
     transition: var(--transition);
 }
 
-.btn-hero .btn-badge {
-    display: inline-block;
-    background: rgba(0, 0, 0, 0.15);
-    padding: 2px 12px;
-    border-radius: var(--border-radius-pill);
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    margin-left: 8px;
-}
-
 .btn-hero.btn-primary {
-    background: var(--ldg-grad-hero);
-    color: var(--white);
+    background: var(--ldg-gold);
+    color: var(--primary-dark);
     border: none;
-    box-shadow: 0 8px 30px rgba(79, 141, 255, 0.35);
 }
 
 .btn-hero.btn-primary:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 14px 40px rgba(79, 141, 255, 0.5);
-    color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+    color: var(--primary-dark);
 }
 
 .btn-hero.btn-outline-primary {
-    border: 1px solid rgba(255, 255, 255, 0.28);
-    color: #f4f6fb;
-    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--ldg-light-text);
+    background: rgba(0, 0, 0, 0.15);
 }
 
 .btn-hero.btn-outline-primary:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: rgba(255, 255, 255, 0.5);
-    color: #f4f6fb;
-    transform: translateY(-3px);
+    color: var(--ldg-light-text);
+    transform: translateY(-2px);
 }
 
-.hero-badges {
-    display: flex;
-    gap: 28px;
-    flex-wrap: wrap;
-}
-
-.badge-custom {
-    font-size: 14px;
-    font-weight: 500;
-    color: rgba(244, 246, 251, 0.8);
-}
-
-.badge-custom i {
-    margin-right: 8px;
-    color: var(--ldg-celeste);
-}
-
-/* ===== Tarjeta de estadísticas flotando sobre el video (esquina
-   inferior derecha, para no taparlo — se oculta en mobile) ===== */
+/* Tarjeta de estadísticas sobre el video (esquina inferior derecha,
+   para no taparlo — se oculta en mobile). */
 .hero-stats-card {
     position: absolute;
     z-index: 3;
@@ -291,17 +157,7 @@ body.landing-page {
     border-radius: var(--border-radius);
     padding: 26px 24px;
     border: 1px solid rgba(255, 255, 255, 0.18);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
-    animation: hero-card-float 6s ease-in-out infinite;
-}
-
-@keyframes hero-card-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .hero-stats-card { animation: none; }
+    box-shadow: var(--shadow-lg);
 }
 
 .stats-card-inner {
@@ -314,7 +170,7 @@ body.landing-page {
 
 .stat-number-hero {
     display: block;
-    font-size: 32px;
+    font-size: 30px;
     font-weight: 800;
     color: var(--ldg-celeste);
 }
@@ -325,43 +181,12 @@ body.landing-page {
     color: rgba(255, 255, 255, 0.65);
 }
 
+.stat-label .fa-star { color: var(--ldg-gold); }
+
 .stat-divider {
     width: 1px;
     height: 40px;
     background: rgba(255, 255, 255, 0.14);
-}
-
-/* Chips flotantes anclados a la tarjeta (hijos de .hero-stats-card,
-   que es position:relative), NO del hero completo — para que
-   siempre queden pegados a su esquina y no floten sueltos. */
-.hero-float-chip {
-    position: absolute;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(16, 20, 36, 0.92);
-    backdrop-filter: blur(10px);
-    color: #f4f6fb;
-    font-size: 13px;
-    font-weight: 700;
-    padding: 10px 18px;
-    border-radius: var(--border-radius-pill);
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
-    animation: float-chip 5s ease-in-out infinite;
-}
-
-.hero-float-chip i { color: var(--ldg-celeste); }
-.hero-float-chip.chip-1 { top: -18px; left: -8px; }
-.hero-float-chip.chip-2 { bottom: -16px; right: -6px; animation-delay: 1.2s; }
-
-@keyframes float-chip {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .hero-float-chip { animation: none; }
 }
 
 .scroll-cue {
@@ -372,50 +197,29 @@ body.landing-page {
     z-index: 3;
     color: rgba(244, 246, 251, 0.7);
     font-size: 20px;
-    animation: bounce-cue 2.2s ease-in-out infinite;
+    transition: color 0.2s ease;
 }
 
-.scroll-cue:hover { color: #f4f6fb; }
-
-@keyframes bounce-cue {
-    0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(8px); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .scroll-cue { animation: none; }
-}
+.scroll-cue:hover { color: var(--ldg-light-text); }
 
 /* ============================================
-   MARQUEE (franja angosta con scroll infinito)
+   FRANJA DE BENEFICIOS
    ============================================ */
-.marquee-bar {
+.perks-bar {
     position: relative;
-    z-index: 2;
     border-top: 1px solid var(--ldg-border);
     border-bottom: 1px solid var(--ldg-border);
-    padding: 18px 0;
-    overflow: hidden;
-    background: rgba(255, 255, 255, 0.015);
+    padding: 22px 0;
 }
 
-.marquee-track {
+.perks-track {
     display: flex;
-    gap: 48px;
-    width: max-content;
-    animation: marquee-scroll 32s linear infinite;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 32px;
 }
 
-@keyframes marquee-scroll {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .marquee-track { animation: none; }
-}
-
-.marquee-item {
+.perk-item {
     display: flex;
     align-items: center;
     gap: 10px;
@@ -425,7 +229,8 @@ body.landing-page {
     white-space: nowrap;
 }
 
-.marquee-item i { color: var(--ldg-blue); }
+.perk-item i { color: var(--ldg-blue); }
+.perk-item .fa-star { color: var(--ldg-gold-dark); }
 
 /* ============================================
    CATEGORÍAS — franja horizontal con scroll
@@ -437,50 +242,33 @@ body.landing-page {
 .section-header {
     text-align: center;
     margin-bottom: 52px;
-    position: relative;
-    z-index: 1;
 }
 
 .badge-section {
     display: inline-block;
     padding: 8px 22px;
-    background: var(--primary-lighter);
-    color: var(--primary);
+    background: var(--secondary-light);
+    color: var(--primary-dark);
     border-radius: var(--border-radius-pill);
     font-size: 12px;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     margin-bottom: 16px;
-    border: 1px solid var(--primary-lighter);
+    border: 1px solid var(--secondary-dark);
 }
 
-.badge-section i { margin-right: 8px; }
+.badge-section i { color: var(--secondary-dark); margin-right: 8px; }
 
 .section-header h2 {
-    font-size: 38px;
+    font-size: 36px;
     font-weight: 800;
     color: var(--ldg-text);
     margin-bottom: 10px;
 }
 
 .section-header h2 span {
-    background: var(--ldg-grad);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-}
-
-/* Acento decorativo bajo cada título de sección: une visualmente
-   todas las secciones con el mismo detalle azul/celeste. */
-.section-header h2::after {
-    content: '';
-    display: block;
-    width: 64px;
-    height: 3px;
-    margin: 18px auto 0;
-    border-radius: 999px;
-    background: var(--ldg-grad);
+    color: var(--primary);
 }
 
 .section-header p {
@@ -490,8 +278,6 @@ body.landing-page {
 }
 
 .category-scroll {
-    position: relative;
-    z-index: 1;
     overflow-x: auto;
     scroll-snap-type: x proximity;
     padding-bottom: 8px;
@@ -525,10 +311,9 @@ body.landing-page {
 }
 
 .category-card:hover {
-    background: rgba(255, 255, 255, 0.06);
     border-color: var(--ldg-border-hover);
     transform: translateY(-4px);
-    box-shadow: 0 14px 34px rgba(59, 130, 246, 0.16);
+    box-shadow: var(--shadow-hover);
 }
 
 .category-icon {
@@ -562,18 +347,17 @@ body.landing-page {
 .courses { padding: 60px 0 100px; }
 
 .course-card {
-    position: relative;
-    z-index: 1;
     background: var(--ldg-card);
     border-radius: var(--border-radius);
     overflow: hidden;
     border: 1px solid var(--ldg-border);
     height: 100%;
+    transition: var(--transition);
 }
 
 .course-card:hover {
     border-color: var(--ldg-border-hover);
-    box-shadow: 0 20px 44px rgba(59, 130, 246, 0.18);
+    box-shadow: var(--shadow-hover);
 }
 
 .course-image {
@@ -602,9 +386,9 @@ body.landing-page {
 /* Las 3 variantes ciclan en el template (course_card) solo para dar
    variedad visual entre tarjetas sin foto; las 3 quedan dentro de la
    misma familia de azules en vez de usar colores de marca por lenguaje. */
-.course-image-python { background: linear-gradient(135deg, #1d2b53, #2b4fa8); }
-.course-image-javascript { background: linear-gradient(135deg, #0d3a66, #3b82f6); }
-.course-image-react { background: linear-gradient(135deg, #002277, #1a4db8); }
+.course-image-python { background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); }
+.course-image-javascript { background: linear-gradient(135deg, var(--primary-dark), var(--primary-vivid)); }
+.course-image-react { background: linear-gradient(135deg, #01124a, var(--primary-light)); }
 
 .course-body { padding: 24px; }
 
@@ -662,14 +446,14 @@ body.landing-page {
     font-size: 14px;
     width: 100%;
     border: 1px solid var(--ldg-border);
-    background: rgba(255, 255, 255, 0.04);
+    background: transparent;
     color: var(--ldg-text);
     transition: var(--transition);
 }
 
 .btn-course:hover {
-    background: var(--ldg-grad);
-    border-color: transparent;
+    background: var(--primary);
+    border-color: var(--primary);
     color: var(--white);
 }
 
@@ -678,20 +462,17 @@ body.landing-page {
     padding: 16px 44px;
     font-weight: 700;
     font-size: 15px;
-    background: var(--ldg-grad);
+    background: var(--primary);
     color: var(--white);
     border: none;
-    box-shadow: 0 8px 30px rgba(79, 141, 255, 0.3);
     transition: var(--transition);
 }
 
-.btn-all-courses:hover { transform: translateY(-3px); color: var(--white); }
+.btn-all-courses:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); color: var(--white); }
 .btn-all-courses i { margin-left: 10px; transition: var(--transition); }
-.btn-all-courses:hover i { transform: translateX(6px); }
+.btn-all-courses:hover i { transform: translateX(4px); }
 
 .newest-strip {
-    position: relative;
-    z-index: 1;
     margin-top: 60px;
     padding-top: 44px;
     border-top: 1px solid var(--ldg-border);
@@ -728,10 +509,6 @@ body.landing-page {
 
 /* ============================================
    SOBRE NOSOTROS + MISIÓN / VISIÓN / VALORES
-   (el template ya traía este HTML, pero sin ninguna regla acá —
-   se renderizaba como texto plano sin tarjetas ni iconos; se le da
-   el mismo tratamiento "vidrio" que category-card/step-card/
-   bento-card del resto de la página.)
    ============================================ */
 .about-mission { padding: 90px 0; }
 
@@ -739,8 +516,6 @@ body.landing-page {
     max-width: 720px;
     margin: 0 auto 56px;
     text-align: center;
-    position: relative;
-    z-index: 1;
 }
 
 .about-lead {
@@ -750,8 +525,6 @@ body.landing-page {
 }
 
 .mission-vision-grid {
-    position: relative;
-    z-index: 1;
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 24px;
@@ -771,9 +544,8 @@ body.landing-page {
 
 .mv-card:hover {
     border-color: var(--ldg-border-hover);
-    border-top-color: var(--ldg-blue);
     transform: translateY(-4px);
-    box-shadow: 0 18px 40px rgba(59, 130, 246, 0.16);
+    box-shadow: var(--shadow-hover);
 }
 
 .mv-card.vision-card:hover { border-top-color: var(--ldg-celeste); }
@@ -804,8 +576,6 @@ body.landing-page {
 }
 
 .values-title {
-    position: relative;
-    z-index: 1;
     text-align: center;
     font-size: 24px;
     font-weight: 800;
@@ -814,8 +584,6 @@ body.landing-page {
 }
 
 .values-grid {
-    position: relative;
-    z-index: 1;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
@@ -833,7 +601,7 @@ body.landing-page {
 .value-item:hover {
     border-color: var(--ldg-border-hover);
     transform: translateY(-4px);
-    box-shadow: 0 14px 34px rgba(59, 130, 246, 0.14);
+    box-shadow: var(--shadow-hover);
 }
 
 .value-icon {
@@ -878,8 +646,6 @@ body.landing-page {
 .how-it-works { padding: 90px 0; }
 
 .steps-row {
-    position: relative;
-    z-index: 1;
     display: flex;
     align-items: flex-start;
     justify-content: center;
@@ -901,7 +667,7 @@ body.landing-page {
 .step-card:hover {
     border-color: var(--ldg-border-hover);
     transform: translateY(-4px);
-    box-shadow: 0 14px 34px rgba(59, 130, 246, 0.14);
+    box-shadow: var(--shadow-hover);
 }
 
 .step-number {
@@ -912,8 +678,8 @@ body.landing-page {
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background: var(--ldg-grad);
-    color: var(--white);
+    background: var(--ldg-gold);
+    color: var(--primary-dark);
     font-weight: 800;
     font-size: 13px;
     display: flex;
@@ -942,8 +708,7 @@ body.landing-page {
     width: 40px;
     height: 2px;
     margin: 0 4px;
-    background: repeating-linear-gradient(90deg, var(--ldg-blue) 0, var(--ldg-blue) 6px, transparent 6px, transparent 12px);
-    opacity: 0.4;
+    background: var(--ldg-border);
 }
 
 @media (max-width: 992px) {
@@ -952,49 +717,31 @@ body.landing-page {
 }
 
 /* ============================================
-   CARACTERÍSTICAS — GRID BENTO
+   CARACTERÍSTICAS
    ============================================ */
 .features { padding: 90px 0; }
 
-.bento-grid {
-    position: relative;
-    z-index: 1;
+.features-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 170px;
-    gap: 18px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
 }
 
-.bento-card {
+.feature-card {
     background: var(--ldg-card);
     border: 1px solid var(--ldg-border);
     border-radius: var(--border-radius);
-    padding: 26px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+    padding: 30px;
     transition: var(--transition);
-    position: relative;
-    overflow: hidden;
 }
 
-.bento-card:hover {
+.feature-card:hover {
     border-color: var(--ldg-border-hover);
     transform: translateY(-4px);
-    box-shadow: 0 18px 40px rgba(59, 130, 246, 0.16);
+    box-shadow: var(--shadow-hover);
 }
 
-.bento-card.bento-lg {
-    grid-column: span 2;
-    grid-row: span 2;
-    justify-content: space-between;
-}
-
-.bento-card.bento-wide {
-    grid-column: span 2;
-}
-
-.bento-icon {
+.feature-icon {
     width: 50px;
     height: 50px;
     border-radius: 14px;
@@ -1002,70 +749,30 @@ body.landing-page {
     align-items: center;
     justify-content: center;
     font-size: 21px;
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     background: var(--primary-lighter);
     color: var(--primary);
 }
 
-.bento-card.bento-lg .bento-icon {
-    width: 60px;
-    height: 60px;
-    font-size: 26px;
-    margin-bottom: 0;
-}
-
-.bento-card h5 {
+.feature-card h5 {
     font-size: 17px;
     font-weight: 700;
     color: var(--ldg-text);
     margin-bottom: 6px;
 }
 
-.bento-card.bento-lg h5 { font-size: 22px; }
-
-.bento-card p {
+.feature-card p {
     color: var(--ldg-text-dim);
-    font-size: 13px;
+    font-size: 14px;
     margin: 0;
 }
 
-.bento-card.bento-lg p { font-size: 15px; max-width: 320px; }
-
-.bento-preview {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    align-self: flex-start;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.25);
-    color: var(--ldg-celeste);
-    padding: 6px 14px;
-    border-radius: var(--border-radius-pill);
-    font-size: 12px;
-    font-weight: 700;
-}
-
-.bento-glow {
-    position: absolute;
-    width: 220px;
-    height: 220px;
-    background: var(--ldg-blue);
-    filter: blur(80px);
-    opacity: 0.18;
-    top: -60px;
-    right: -60px;
-    border-radius: 50%;
-    pointer-events: none;
-}
-
 @media (max-width: 992px) {
-    .bento-grid { grid-template-columns: repeat(2, 1fr); }
-    .bento-card.bento-lg { grid-column: span 2; grid-row: span 1; }
+    .features-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 576px) {
-    .bento-grid { grid-template-columns: 1fr; grid-auto-rows: auto; }
-    .bento-card.bento-lg, .bento-card.bento-wide { grid-column: span 1; }
+    .features-grid { grid-template-columns: 1fr; }
 }
 
 /* ============================================
@@ -1074,8 +781,6 @@ body.landing-page {
 .stats {
     padding: 80px 0;
 }
-
-.stats .container { position: relative; z-index: 1; }
 
 .stat-icon {
     width: 54px;
@@ -1091,56 +796,41 @@ body.landing-page {
     border: 1px solid var(--primary-lighter);
 }
 
+/* La calificación (última tarjeta) se resalta en dorado: es la
+   única de las 4 estadísticas con una connotación de "puntaje/
+   estrella" y no de conteo, así que además de distinguirse aporta
+   el acento terciario dentro de la franja de estadísticas. */
+.stat-icon .fa-star {
+    color: var(--ldg-gold-dark);
+}
+
+.stat-block:has(.fa-star) .stat-icon {
+    background: var(--secondary-light);
+    border-color: var(--secondary-dark);
+}
+
 .stat-number {
-    font-size: 50px;
+    font-size: 46px;
     font-weight: 800;
     margin-bottom: 4px;
-    background: var(--ldg-grad-accent);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    color: var(--ldg-text);
 }
 
 .stats p { font-size: 16px; font-weight: 500; color: var(--ldg-text); margin-bottom: 4px; }
 .stat-sub { font-size: 13px; color: var(--ldg-text-mute); }
 
 /* ============================================
-   TESTIMONIOS — MARQUEE DE DOS FILAS
+   TESTIMONIOS
    ============================================ */
-.testimonials { padding: 90px 0; overflow: hidden; }
+.testimonials { padding: 90px 0; }
 
-.testimonial-marquee {
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
-    -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
-    mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);
-}
-
-.testimonial-row {
-    display: flex;
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 20px;
-    width: max-content;
-    margin-bottom: 20px;
-}
-
-.testimonial-row.row-1 { animation: marquee-scroll 46s linear infinite; }
-.testimonial-row.row-2 { animation: marquee-scroll-rev 46s linear infinite; }
-
-@keyframes marquee-scroll-rev {
-    from { transform: translateX(-50%); }
-    to { transform: translateX(0); }
-}
-
-.testimonial-marquee:hover .testimonial-row { animation-play-state: paused; }
-
-@media (prefers-reduced-motion: reduce) {
-    .testimonial-row { animation: none; }
 }
 
 .testimonial-card {
-    flex: 0 0 auto;
-    width: 340px;
     background: var(--ldg-card);
     border: 1px solid var(--ldg-border);
     padding: 26px;
@@ -1151,10 +841,10 @@ body.landing-page {
 .testimonial-card:hover {
     border-color: var(--ldg-border-hover);
     transform: translateY(-4px);
-    box-shadow: 0 14px 34px rgba(59, 130, 246, 0.14);
+    box-shadow: var(--shadow-hover);
 }
 
-.testimonial-stars { color: var(--ldg-celeste); margin-bottom: 14px; font-size: 13px; }
+.testimonial-stars { color: var(--ldg-gold-dark); margin-bottom: 14px; font-size: 13px; }
 
 .testimonial-card p {
     font-size: 14px;
@@ -1170,7 +860,7 @@ body.landing-page {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    background: var(--ldg-grad);
+    background: var(--primary);
     color: var(--white);
     display: flex;
     align-items: center;
@@ -1183,52 +873,30 @@ body.landing-page {
 .author-name { display: block; font-weight: 700; font-size: 14px; color: var(--ldg-text); }
 .author-role { display: block; font-size: 12px; color: var(--ldg-text-mute); }
 
+@media (max-width: 992px) {
+    .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 576px) {
+    .testimonials-grid { grid-template-columns: 1fr; }
+}
+
 /* ============================================
    CTA FINAL
    ============================================ */
 .final-cta { padding: 30px 0 110px; }
 
 .final-cta-card {
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
     border-radius: var(--border-radius-lg);
-    background: linear-gradient(135deg, #0d1530, #001845);
+    background: linear-gradient(135deg, #01041f, var(--primary-dark));
     border: 1px solid var(--ldg-border);
     padding: 70px 40px;
     text-align: center;
-    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
 }
 
-.final-cta-mesh {
-    position: absolute;
-    inset: 0;
-    background:
-        radial-gradient(circle at 12% 20%, rgba(59, 130, 246, 0.15), transparent 40%),
-        radial-gradient(circle at 88% 85%, rgba(79, 141, 255, 0.25), transparent 42%);
-    pointer-events: none;
-    animation: final-cta-pulse 6s ease-in-out infinite;
-}
-
-@keyframes final-cta-pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .final-cta-mesh { animation: none; }
-}
-
-.final-cta-content { position: relative; z-index: 1; }
-
-/* Texto fijo claro (NO --ldg-text/--ldg-text-dim): la tarjeta tiene un
-   fondo azul marino fijo en los dos temas (ver .final-cta-card arriba),
-   así que un texto que se oscurece en modo claro quedaría invisible
-   sobre ese fondo — a diferencia del resto de la portada, que sí vive
-   sobre el fondo compartido y por eso usa los tokens de tema. */
 .final-cta-content h2 {
-    color: #f4f6fb;
-    font-size: 34px;
+    color: var(--ldg-light-text);
+    font-size: 32px;
     font-weight: 800;
     margin-bottom: 12px;
 }
@@ -1249,9 +917,9 @@ body.landing-page {
    RESPONSIVE
    ============================================ */
 @media (max-width: 992px) {
-    .hero-title { font-size: 42px; }
-    .section-header h2 { font-size: 32px; }
-    .final-cta-content h2 { font-size: 27px; }
+    .hero-title { font-size: 40px; }
+    .section-header h2 { font-size: 30px; }
+    .final-cta-content h2 { font-size: 26px; }
     .hero { padding: 100px 0 60px; }
 }
 
@@ -1261,7 +929,7 @@ body.landing-page {
     .hero-buttons { flex-direction: column; }
     .btn-hero { width: 100%; text-align: center; justify-content: center; }
     .section-header h2 { font-size: 26px; }
-    .stat-number { font-size: 38px; }
+    .stat-number { font-size: 36px; }
     .final-cta-card { padding: 48px 22px; }
     .hero-stats-card { display: none; }
 }
@@ -1269,4 +937,8 @@ body.landing-page {
 @media (max-width: 480px) {
     .hero-title { font-size: 27px; }
     .btn-hero { font-size: 14px; padding: 14px 22px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal { transition: none; }
 }

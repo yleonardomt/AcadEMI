@@ -1,7 +1,7 @@
 import logging
 
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout, update_session_auth_hash, get_user_model
+from django.contrib.auth import login, logout, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
@@ -171,16 +171,10 @@ def login_view(request):
     if request.method == 'POST':
         form = LoginForm(request, data=request.POST)
         if form.is_valid():
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password')
-            user = authenticate(username=username, password=password)
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    messages.success(request, f'Bienvenido de vuelta, {user.username}.')
-                    return redirect('dashboard')
-                else:
-                    messages.error(request, 'Tu cuenta está desactivada. Contacta al administrador.')
+            user = form.get_user()
+            login(request, user)
+            messages.success(request, f'Bienvenido de vuelta, {user.username}.')
+            return redirect('dashboard')
     else:
         form = LoginForm()
 

@@ -52,8 +52,8 @@
          MÉTRICAS - TARJETAS DE ESTADÍSTICAS
          ============================================ -->
     <div class="metrics-teacher">
-        <div class="metric-card" style="--accent: #2563eb;">
-            <div class="metric-icon" style="background: #dbeafe; color: #2563eb;">
+        <div class="metric-card" style="--accent: #02167f;">
+            <div class="metric-icon" style="background: #e8eaf6; color: #02167f;">
                 <i class="fas fa-book"></i>
             </div>
             <div>
@@ -64,8 +64,8 @@
                 <i class="fas fa-plus-circle"></i> Creados
             </span>
         </div>
-        <div class="metric-card" style="--accent: #059669;">
-            <div class="metric-icon" style="background: #d1fae5; color: #059669;">
+        <div class="metric-card" style="--accent: #e0ac00;">
+            <div class="metric-icon" style="background: #ffe985; color: #e0ac00;">
                 <i class="fas fa-users"></i>
             </div>
             <div>
@@ -76,8 +76,8 @@
                 <i class="fas fa-user-graduate"></i> Inscritos
             </span>
         </div>
-        <div class="metric-card" style="--accent: #7c3aed;">
-            <div class="metric-icon" style="background: #ede9fe; color: #7c3aed;">
+        <div class="metric-card" style="--accent: #2f3fae;">
+            <div class="metric-icon" style="background: #e9ecfb; color: #2f3fae;">
                 <i class="fas fa-check-circle"></i>
             </div>
             <div>
@@ -88,8 +88,8 @@
                 <i class="fas fa-check"></i> Activos
             </span>
         </div>
-        <div class="metric-card" style="--accent: #d97706;">
-            <div class="metric-icon" style="background: #fef3c7; color: #d97706;">
+        <div class="metric-card" style="--accent: #b8860b;">
+            <div class="metric-icon" style="background: #fff3c4; color: #b8860b;">
                 <i class="fas fa-pencil-alt"></i>
             </div>
             <div>
@@ -107,7 +107,7 @@
          ============================================ -->
     <div class="actions-teacher">
         <a href="{% url 'create_course' %}" class="action-card primary">
-            <div class="action-icon" style="background: #dbeafe; color: #2563eb;">
+            <div class="action-icon" style="background: #e8eaf6; color: #02167f;">
                 <i class="fas fa-plus-circle"></i>
             </div>
             <div class="action-info">
@@ -117,7 +117,7 @@
             <i class="fas fa-arrow-right action-arrow"></i>
         </a>
         <a href="{% url 'my_courses' %}" class="action-card secondary">
-            <div class="action-icon" style="background: #ede9fe; color: #7c3aed;">
+            <div class="action-icon" style="background: #ffe985; color: #e0ac00;">
                 <i class="fas fa-list"></i>
             </div>
             <div class="action-info">
@@ -127,7 +127,7 @@
             <i class="fas fa-arrow-right action-arrow"></i>
         </a>
         <a href="{% url 'catalog' %}" class="action-card tertiary">
-            <div class="action-icon" style="background: #d1fae5; color: #059669;">
+            <div class="action-icon" style="background: #e9ecfb; color: #2f3fae;">
                 <i class="fas fa-compass"></i>
             </div>
             <div class="action-info">
@@ -137,7 +137,7 @@
             <i class="fas fa-arrow-right action-arrow"></i>
         </a>
         <a href="{% url 'mis_estudiantes' %}" class="action-card quaternary">
-            <div class="action-icon" style="background: #fef3c7; color: #d97706;">
+            <div class="action-icon" style="background: #fff3c4; color: #b8860b;">
                 <i class="fas fa-users"></i>
             </div>
             <div class="action-info">
@@ -147,7 +147,7 @@
             <i class="fas fa-arrow-right action-arrow"></i>
         </a>
         <a href="{% url 'teacher_coupons' %}" class="action-card quinary">
-            <div class="action-icon" style="background: #fce7f3; color: #db2777;">
+            <div class="action-icon" style="background: #dfe3f5; color: #010e53;">
                 <i class="fas fa-ticket-alt"></i>
             </div>
             <div class="action-info">
@@ -157,7 +157,7 @@
             <i class="fas fa-arrow-right action-arrow"></i>
         </a>
         <a href="{% url 'teacher_questions' %}" class="action-card senary">
-            <div class="action-icon" style="background: #fef3c7; color: #b45309;">
+            <div class="action-icon" style="background: #fff0b8; color: #c9880c;">
                 <i class="fas fa-question-circle"></i>
             </div>
             <div class="action-info">
@@ -169,6 +169,16 @@
                         Estás al día
                     {% endif %}
                 </small>
+            </div>
+            <i class="fas fa-arrow-right action-arrow"></i>
+        </a>
+        <a href="{% url 'mis_resenas' %}" class="action-card septenary">
+            <div class="action-icon" style="background: #ffe0e0; color: #c0392b;">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="action-info">
+                <span>Mis reseñas</span>
+                <small>Opiniones de tus estudiantes</small>
             </div>
             <i class="fas fa-arrow-right action-arrow"></i>
         </a>

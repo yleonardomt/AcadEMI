@@ -9,7 +9,7 @@
    "hero" de color sólido del sitio.
    ============================================ */
 .catalog-hero {
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary-vivid) 100%);
     border-radius: var(--border-radius);
     padding: 32px 36px;
     margin-bottom: 28px;
@@ -133,7 +133,7 @@
     background: var(--primary-gradient);
     border-color: transparent;
     color: var(--white);
-    box-shadow: 0 4px 16px rgba(0, 51, 160, 0.25);
+    box-shadow: 0 4px 16px rgba(2, 22, 127, 0.25);
 }
 
 .category-pill .count {
@@ -241,7 +241,7 @@
 
 .course-card-catalog:hover {
     transform: translateY(-8px);
-    box-shadow: 0 16px 48px rgba(0, 51, 160, 0.12);
+    box-shadow: 0 16px 48px rgba(2, 22, 127, 0.12);
     border-color: var(--primary);
 }
 
@@ -333,7 +333,7 @@
     top: 12px;
     right: 12px;
     z-index: 2;
-    box-shadow: 0 2px 8px rgba(247, 198, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(255, 208, 20, 0.3);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -378,7 +378,7 @@
     padding: 4px 12px;
     border-radius: var(--border-radius-pill);
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(0, 51, 160, 0.25);
+    box-shadow: 0 2px 8px rgba(2, 22, 127, 0.25);
     text-transform: uppercase;
     letter-spacing: 0.3px;
     margin-bottom: 8px;
@@ -432,7 +432,7 @@
 
 .btn-view-course:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 16px rgba(0, 51, 160, 0.25);
+    box-shadow: 0 4px 16px rgba(2, 22, 127, 0.25);
     color: var(--white);
     text-decoration: none;
 }
@@ -458,7 +458,7 @@
     background: var(--primary);
     color: var(--white);
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 51, 160, 0.2);
+    box-shadow: 0 4px 12px rgba(2, 22, 127, 0.2);
 }
 
 .btn-add-cart.in-cart {

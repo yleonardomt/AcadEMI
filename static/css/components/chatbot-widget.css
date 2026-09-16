@@ -16,7 +16,7 @@
     align-items: center;
     justify-content: center;
     font-size: 24px;
-    box-shadow: 0 10px 30px rgba(0, 51, 160, 0.35);
+    box-shadow: 0 10px 30px rgba(2, 22, 127, 0.35);
     cursor: pointer;
     z-index: var(--z-modal);
     transition: var(--transition);
@@ -24,7 +24,7 @@
 
 .chatbot-fab:hover {
     transform: translateY(-4px) scale(1.05);
-    box-shadow: 0 14px 36px rgba(0, 51, 160, 0.4);
+    box-shadow: 0 14px 36px rgba(2, 22, 127, 0.4);
 }
 
 .chatbot-fab .fa-times { display: none; }
@@ -54,7 +54,7 @@
     background: var(--card-background);
     backdrop-filter: blur(18px);
     -webkit-backdrop-filter: blur(18px);
-    border: 1px solid rgba(0, 51, 160, 0.08);
+    border: 1px solid rgba(2, 22, 127, 0.08);
     border-radius: var(--border-radius);
     box-shadow: var(--shadow-lg);
     display: flex;

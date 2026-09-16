@@ -26,12 +26,12 @@
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Título del curso <span class="text-danger">*</span></label>
-                            <input type="text" name="title" class="form-control" placeholder="Ej: Python desde cero" required>
+                            <input type="text" name="title" class="form-control" placeholder="Ej: Python desde cero" value="{{ request.POST.title }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Descripción <span class="text-danger">*</span></label>
-                            <textarea name="description" class="form-control" rows="5" placeholder="Describe el contenido del curso" required></textarea>
+                            <textarea name="description" class="form-control" rows="5" placeholder="Describe el contenido del curso" required>{{ request.POST.description }}</textarea>
                         </div>
 
                         <div class="row">
@@ -39,23 +39,20 @@
                                 <label class="form-label fw-bold">Categoría <span class="text-danger">*</span></label>
                                 <select name="category" class="form-control">
                                     <option value="">Selecciona una categoría</option>
-                                    <option value="1">Programación</option>
-                                    <option value="2">Diseño</option>
-                                    <option value="3">Marketing</option>
-                                    <option value="4">Negocios</option>
-                                    <option value="5">Idiomas</option>
-                                    <option value="6">Ciencia</option>
-                                    <option value="7">Arte</option>
-                                    <option value="8">Música</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}" {% if request.POST.category == category.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ category.name }}
+                                    </option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Nivel <span class="text-danger">*</span></label>
                                 <select name="level" class="form-control">
-                                    <option value="beginner">Principiante</option>
-                                    <option value="intermediate">Intermedio</option>
-                                    <option value="advanced">Avanzado</option>
-                                    <option value="expert">Experto</option>
+                                    <option value="beginner" {% if request.POST.level == 'beginner' or not request.POST.level %}selected{% endif %}>Principiante</option>
+                                    <option value="intermediate" {% if request.POST.level == 'intermediate' %}selected{% endif %}>Intermedio</option>
+                                    <option value="advanced" {% if request.POST.level == 'advanced' %}selected{% endif %}>Avanzado</option>
+                                    <option value="expert" {% if request.POST.level == 'expert' %}selected{% endif %}>Experto</option>
                                 </select>
                             </div>
                         </div>
@@ -63,13 +60,13 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Precio (Bs.)</label>
-                                <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                <input type="number" name="price" class="form-control" placeholder="0.00" step="0.01" min="0" value="{{ request.POST.price }}">
                                 <div class="form-text">Deja 0 para curso gratuito</div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label class="form-label fw-bold">Imagen del curso</label>
                                 <input type="file" name="image" class="form-control" accept="image/*">
-                                <div class="form-text">Formatos: JPG, PNG, GIF</div>
+                                <div class="form-text">Formatos: JPG, PNG, GIF — vuelve a seleccionarla si el formulario se recarga por otro error, los archivos no se conservan.</div>
                             </div>
                         </div>
 
@@ -82,13 +79,13 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <div class="form-check">
-                                    <input type="checkbox" name="is_free" class="form-check-input" id="is_free">
+                                    <input type="checkbox" name="is_free" class="form-check-input" id="is_free" {% if request.POST.is_free == 'on' %}checked{% endif %}>
                                     <label class="form-check-label" for="is_free">Curso gratuito</label>
                                 </div>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <div class="form-check">
-                                    <input type="checkbox" name="is_featured" class="form-check-input" id="is_featured">
+                                    <input type="checkbox" name="is_featured" class="form-check-input" id="is_featured" {% if request.POST.is_featured == 'on' %}checked{% endif %}>
                                     <label class="form-check-label" for="is_featured">Destacar curso</label>
                                 </div>
                             </div>

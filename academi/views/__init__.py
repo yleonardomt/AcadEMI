@@ -5,7 +5,8 @@ from .auth import (
     verify_pending_view, resend_verification_email_view, terms_view,
 )
 from .dashboard import (
-    dashboard_view, notifications_view, my_courses_view, my_progress_view,
+    dashboard_view, notifications_view, mark_all_notifications_read_view,
+    my_courses_view, my_progress_view,
     my_grades_view, my_certificates_view, my_favorites_view,
     mis_estudiantes_view, mis_resenas_view, certificate_detail_view,
     verify_certificate_view,

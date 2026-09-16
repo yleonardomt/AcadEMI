@@ -26,6 +26,13 @@ class UsernameOrEmailBackend(ModelBackend):
                 Q(username__iexact=username) | Q(email__iexact=username)
             ).order_by('id').first()
 
-        if user.check_password(password) and self.user_can_authenticate(user):
+        # A propósito NO se filtra aquí por user_can_authenticate() (que
+        # rechaza is_active=False): si lo hiciéramos, authenticate()
+        # devolvería None para una cuenta desactivada exactamente igual
+        # que para una contraseña incorrecta, y LoginForm.confirm_login_allowed
+        # (heredado de AuthenticationForm) nunca llegaría a ejecutarse para
+        # mostrar el mensaje específico de "cuenta desactivada" — se vería
+        # el genérico de "usuario o contraseña incorrectos" en ambos casos.
+        if user.check_password(password):
             return user
         return None

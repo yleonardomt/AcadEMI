@@ -41,7 +41,10 @@ function confirmDeleteLesson(lessonId, lessonTitle) {
 }
 
 function reorderModule(moduleId, direction) {
-    fetch('/module/reorder/' + moduleId + '/' + direction + '/')
+    fetch('/module/reorder/' + moduleId + '/' + direction + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCsrfToken() },
+    })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -56,7 +59,10 @@ function reorderModule(moduleId, direction) {
 }
 
 function reorderLesson(lessonId, direction) {
-    fetch('/lesson/reorder/' + lessonId + '/' + direction + '/')
+    fetch('/lesson/reorder/' + lessonId + '/' + direction + '/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCsrfToken() },
+    })
         .then(response => response.json())
         .then(data => {
             if (data.success) {

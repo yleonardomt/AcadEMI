@@ -117,19 +117,20 @@ def edit_course_view(request, course_id):
 
 @login_required
 def delete_course_view(request, course_id):
+    """Se llama vía AJAX desde el botón "Eliminar" de mis_cursos.html
+    (ver static/js/mis-cursos.js), que espera una respuesta JSON — no
+    redirige a una página de confirmación aparte."""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Método no permitido'}, status=405)
+
     course = get_object_or_404(Course, id=course_id)
 
     if request.user != course.teacher and request.user.role != 'admin':
-        messages.error(request, 'No tienes permisos para eliminar este curso.')
-        return redirect('dashboard')
+        return JsonResponse({'success': False, 'message': 'No tienes permisos para eliminar este curso.'}, status=403)
 
-    if request.method == 'POST':
-        title = course.title
-        course.delete()
-        messages.success(request, f'Curso "{title}" eliminado correctamente.')
-        return redirect('my_courses')
-
-    return render(request, 'academi/courses/eliminar_curso.html', {'course': course})
+    title = course.title
+    course.delete()
+    return JsonResponse({'success': True, 'message': f'Curso "{title}" eliminado correctamente.'})
 
 
 @login_required
@@ -222,6 +223,9 @@ def delete_module_view(request, module_id):
 
 @login_required
 def reorder_module_view(request, module_id, direction):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
     module = get_object_or_404(Module, id=module_id)
     course = module.course
 

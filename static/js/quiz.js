@@ -199,11 +199,18 @@ function submitQuiz() {
 
     // Verificar si todas las preguntas están respondidas
     if (answeredQuestions < totalQuestions) {
-        if (!confirm('Faltan ' + (totalQuestions - answeredQuestions) + ' preguntas por responder. ¿Deseas enviar de todos modos?')) {
-            return;
-        }
+        showConfirm(
+            'Faltan ' + (totalQuestions - answeredQuestions) + ' preguntas por responder. ¿Deseas enviar de todos modos?',
+            function () { doSubmitQuiz(answers); },
+            { buttonLabel: '<i class="fas fa-paper-plane"></i> Enviar de todos modos' }
+        );
+        return;
     }
 
+    doSubmitQuiz(answers);
+}
+
+function doSubmitQuiz(answers) {
     // Obtener el token del campo oculto
     var token = document.getElementById('quizToken').value;
 

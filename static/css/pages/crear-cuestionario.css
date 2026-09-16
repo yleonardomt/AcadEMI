@@ -9,7 +9,7 @@
 }
 .question-item:hover {
     border-color: var(--primary);
-    box-shadow: 0 2px 12px rgba(0, 51, 160, 0.06);
+    box-shadow: 0 2px 12px rgba(2, 22, 127, 0.06);
 }
 .question-number {
     font-size: 13px;

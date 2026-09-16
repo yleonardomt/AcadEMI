@@ -76,7 +76,7 @@
 .course-hero .btn-hero-primary:hover {
     background: var(--secondary-dark);
     transform: translateY(-2px);
-    box-shadow: 0 4px 20px rgba(247, 198, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(255, 208, 20, 0.3);
     color: var(--primary-dark);
     text-decoration: none;
 }
@@ -248,7 +248,7 @@
 .video-thumbnail .play-overlay .play-icon {
     width: 80px;
     height: 80px;
-    background: rgba(247, 198, 0, 0.9);
+    background: rgba(255, 208, 20, 0.9);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -262,7 +262,7 @@
 .video-thumbnail .play-overlay:hover .play-icon {
     transform: scale(1.1);
     background: var(--secondary);
-    box-shadow: 0 0 40px rgba(247, 198, 0, 0.3);
+    box-shadow: 0 0 40px rgba(255, 208, 20, 0.3);
 }
 
 .modal-video .modal-content {

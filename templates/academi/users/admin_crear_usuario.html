@@ -19,36 +19,36 @@
                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nombre de usuario</label>
-                            <input type="text" name="username" class="form-control" required>
+                            <input type="text" name="username" class="form-control" value="{{ request.POST.username|default:'' }}" required>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Email</label>
-                            <input type="email" name="email" class="form-control" required>
+                            <input type="email" name="email" class="form-control" value="{{ request.POST.email|default:'' }}" required>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nombre completo</label>
-                            <input type="text" name="first_name" class="form-control">
+                            <input type="text" name="first_name" class="form-control" value="{{ request.POST.first_name|default:'' }}">
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Teléfono</label>
-                            <input type="text" name="phone" class="form-control" placeholder="Ej: 79123456">
+                            <input type="text" name="phone" class="form-control" placeholder="Ej: 79123456" value="{{ request.POST.phone|default:'' }}">
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Rol</label>
                             <select name="role" class="form-control">
-                                <option value="student">Estudiante</option>
-                                <option value="teacher">Docente</option>
-                                <option value="admin">Administrador</option>
+                                <option value="student" {% if request.POST.role == 'student' or not request.POST.role %}selected{% endif %}>Estudiante</option>
+                                <option value="teacher" {% if request.POST.role == 'teacher' %}selected{% endif %}>Docente</option>
+                                <option value="admin" {% if request.POST.role == 'admin' %}selected{% endif %}>Administrador</option>
                             </select>
                         </div>
-                        
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Contraseña</label>
-                            <input type="text" name="password" class="form-control" required>
+                            <input type="text" name="password" class="form-control" value="{{ request.POST.password|default:'' }}" required>
                             <div class="form-text">Mínimo 8 caracteres</div>
                         </div>
                         

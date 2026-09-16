@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Q, Count, Sum
@@ -39,6 +40,7 @@ def admin_courses_view(request):
 
 
 @login_required
+@require_POST
 def admin_course_moderate(request, course_id, action):
     """RF70: aprobar, rechazar o retirar un curso del catálogo."""
     if request.user.role != 'admin':
@@ -82,9 +84,8 @@ def admin_categories_view(request):
         if name:
             Category.objects.create(name=name, description=description)
             messages.success(request, f'Categoría "{name}" creada correctamente.')
-        else:
-            messages.error(request, 'El nombre de la categoría es obligatorio.')
-        return redirect('admin_categories')
+            return redirect('admin_categories')
+        messages.error(request, 'El nombre de la categoría es obligatorio.')
 
     categories = Category.objects.all().annotate(course_count=Count('courses')).order_by('name')
     return render(request, 'academi/admin/admin_categorias.html', {'categories': categories})
@@ -111,6 +112,7 @@ def admin_category_edit(request, category_id):
 
 
 @login_required
+@require_POST
 def admin_category_delete(request, category_id):
     if request.user.role != 'admin':
         messages.error(request, 'No tienes permisos.')
@@ -138,6 +140,7 @@ def admin_reports_view(request):
 
 
 @login_required
+@require_POST
 def admin_report_resolve(request, report_id, action):
     """RF43, RF72: revisar y gestionar contenido reportado."""
     if request.user.role != 'admin':
@@ -182,9 +185,8 @@ def admin_coupons_view(request):
                 created_by=request.user,
             )
             messages.success(request, f'Cupón "{code}" creado correctamente.')
-        else:
-            messages.error(request, 'Código y fecha de expiración son obligatorios.')
-        return redirect('admin_coupons')
+            return redirect('admin_coupons')
+        messages.error(request, 'Código y fecha de expiración son obligatorios.')
 
     coupons = Coupon.objects.all().select_related('course', 'created_by').order_by('-created_at')
     return render(request, 'academi/admin/admin_cupones.html', {'coupons': coupons})
@@ -216,6 +218,7 @@ def admin_coupon_edit(request, coupon_id):
 
 
 @login_required
+@require_POST
 def admin_coupon_toggle(request, coupon_id):
     if request.user.role != 'admin':
         messages.error(request, 'No tienes permisos.')
@@ -239,6 +242,7 @@ def admin_certificates_view(request):
 
 
 @login_required
+@require_POST
 def admin_certificate_toggle(request, certificate_id):
     """Revoca o reactiva un certificado (p. ej. si se emitió por error o hubo fraude)."""
     if request.user.role != 'admin':
@@ -342,11 +346,11 @@ def admin_user_create(request):
 
         if User.objects.filter(username=username).exists():
             messages.error(request, 'El nombre de usuario ya existe.')
-            return redirect('admin_users')
+            return render(request, 'academi/users/admin_crear_usuario.html')
 
         if User.objects.filter(email=email).exists():
             messages.error(request, 'El email ya está registrado.')
-            return redirect('admin_users')
+            return render(request, 'academi/users/admin_crear_usuario.html')
 
         user = User.objects.create_user(
             username=username,
@@ -386,6 +390,7 @@ def admin_user_edit(request, user_id):
 
 
 @login_required
+@require_POST
 def admin_user_delete(request, user_id):
     if request.user.role != 'admin':
         messages.error(request, 'No tienes permisos.')
@@ -404,6 +409,7 @@ def admin_user_delete(request, user_id):
 
 
 @login_required
+@require_POST
 def admin_user_toggle_active(request, user_id):
     if request.user.role != 'admin':
         messages.error(request, 'No tienes permisos.')
@@ -435,7 +441,7 @@ def admin_user_reset_password(request, user_id):
         new_password = request.POST.get('new_password')
         if len(new_password) < 8:
             messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
-            return redirect('admin_users')
+            return render(request, 'academi/users/admin_reset_password.html', {'reset_user': user})
 
         user.set_password(new_password)
         user.save()

@@ -190,7 +190,7 @@
     justify-content: center;
     font-size: 28px;
     flex-shrink: 0;
-    box-shadow: 0 6px 20px rgba(247, 198, 0, 0.35);
+    box-shadow: 0 6px 20px rgba(255, 208, 20, 0.35);
 }
 
 .certificate-callout .certificate-body {

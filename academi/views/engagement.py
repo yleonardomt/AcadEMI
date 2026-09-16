@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, get_object_or_404, render
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib import messages
 
 from ..models import Lesson, Comment, Question, Answer, Course, Review, Enrollment, Report
@@ -56,6 +57,7 @@ def edit_comment_view(request, comment_id):
 
 
 @login_required
+@require_POST
 def delete_comment_view(request, comment_id):
     """RF-36: gestionar (eliminar) comentarios propios."""
     comment = get_object_or_404(Comment, id=comment_id)
@@ -195,6 +197,7 @@ def edit_review_view(request, review_id):
 
 
 @login_required
+@require_POST
 def delete_review_view(request, review_id):
     """RF-41: gestionar (eliminar) reseñas propias."""
     review = get_object_or_404(Review, id=review_id)
@@ -212,6 +215,7 @@ REPORTABLE_MODELS = {
     'comment': Comment,
     'question': Question,
     'review': Review,
+    'course': Course,
 }
 
 
@@ -242,6 +246,8 @@ def report_content_view(request):
     obj.save(update_fields=['is_reported'])
     messages.success(request, 'Reporte enviado. Un administrador lo revisará.')
 
+    if report_type == 'course':
+        return redirect('course_detail', course_id=obj.id)
     if report_type == 'review':
         return redirect('course_detail', course_id=obj.course_id)
     return redirect('lesson_view', lesson_id=obj.lesson_id)

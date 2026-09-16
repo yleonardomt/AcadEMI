@@ -85,59 +85,7 @@ function updateCartCount() {
     refreshCartBadge(cartItems.length);
 }
 
-// ============================================
-// COMPRA
-// ============================================
-function openPurchaseModal(courseId, courseTitle, coursePrice, isFree) {
-    document.getElementById('purchaseCourseId').value = courseId;
-    document.getElementById('purchaseCourseTitle').innerHTML = 'Curso: <strong>' + courseTitle + '</strong>';
-    document.getElementById('purchaseCoursePrice').innerHTML = 'Precio: <strong>' + (isFree ? 'Gratis' : 'Bs. ' + coursePrice) + '</strong>';
-    document.getElementById('purchaseIsFree').value = isFree ? 'true' : 'false';
-    new bootstrap.Modal(document.getElementById('purchaseModal')).show();
-}
-
 document.addEventListener('DOMContentLoaded', function() {
-    var confirmPurchaseBtn = document.getElementById('confirmPurchaseBtn');
-    confirmPurchaseBtn.addEventListener('click', function() {
-        var courseId = document.getElementById('purchaseCourseId').value;
-        var modal = bootstrap.Modal.getInstance(document.getElementById('purchaseModal'));
-        var btn = this;
-
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Procesando...';
-
-        fetch('/purchase/' + courseId + '/', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': getCsrfToken(),
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ course_id: courseId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                modal.hide();
-                showToast('Compra realizada con éxito. ¡Disfruta tu curso!', 'success');
-                setTimeout(function() { location.reload(); }, 1500);
-            } else {
-                showToast(data.message || 'Error al procesar la compra', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
-            }
-        })
-        .catch(function() {
-            showToast('Error de conexión al servidor', 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
-        });
-    });
-
-    document.getElementById('purchaseModal').addEventListener('hidden.bs.modal', function() {
-        confirmPurchaseBtn.disabled = false;
-        confirmPurchaseBtn.innerHTML = '<i class="fas fa-check"></i> Confirmar compra';
-    });
-
     // ============================================
     // INICIALIZAR CARRITO
     // ============================================

@@ -24,18 +24,22 @@
     --line-height-body: 1.6;
     --line-height-small: 1.4;
 
-    /* COLORES PRINCIPALES */
-    --primary: #0033a0;
-    --primary-dark: #002277;
-    --primary-light: #1a4db8;
-    --primary-lighter: #e8edf5;
-    --primary-gradient: linear-gradient(135deg, #0033a0, #1a4db8);
+    /* COLORES PRINCIPALES (marca: primario #02167f) */
+    --primary: #02167f;
+    --primary-dark: #010e53;
+    --primary-light: #2f3fae;
+    --primary-lighter: #e8eaf6;
+    --primary-gradient: linear-gradient(135deg, #02167f, #2f3fae);
+    /* Azul más vivo/saturado que --primary-light, usado como tercer
+       tramo en degradados de 3 colores (headers de dashboard, portada)
+       para dar profundidad sin salir de la familia de marca. */
+    --primary-vivid: #3f57d6;
 
-    /* COLOR SECUNDARIO */
-    --secondary: #f7c600;
-    --secondary-dark: #d4a800;
-    --secondary-light: #fde68a;
-    --secondary-gradient: linear-gradient(135deg, #f7c600, #f59e0b);
+    /* COLOR TERCIARIO / ACENTO (marca: #ffd014) */
+    --secondary: #ffd014;
+    --secondary-dark: #e0ac00;
+    --secondary-light: #ffe985;
+    --secondary-gradient: linear-gradient(135deg, #ffd014, #f5a800);
 
     /* COLORES NEUTROS */
     --white: #ffffff;
@@ -84,11 +88,11 @@
     --radius-sm: var(--border-radius-sm);
 
     /* SOMBRAS */
-    --shadow: 0 4px 20px rgba(0, 51, 160, 0.08);
-    --shadow-hover: 0 8px 40px rgba(0, 51, 160, 0.15);
+    --shadow: 0 4px 20px rgba(2, 22, 127, 0.08);
+    --shadow-hover: 0 8px 40px rgba(2, 22, 127, 0.15);
     --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.06);
     --shadow-modal: 0 10px 40px rgba(0, 0, 0, 0.15);
-    --shadow-lg: 0 20px 60px rgba(0, 51, 160, 0.12);
+    --shadow-lg: 0 20px 60px rgba(2, 22, 127, 0.12);
 
     /* ESPACIADO */
     --space-1: 4px;
@@ -117,7 +121,7 @@
     --input-radius: 8px;
     --input-font-size: 15px;
     --input-border: #e2e8f0;
-    --input-focus: #0033a0;
+    --input-focus: #02167f;
 
     /* TARJETAS (semitransparentes con blur, para que el fondo de
        partículas de particles-bg.js se note detrás del contenido,
@@ -126,7 +130,7 @@
     --card-radius: 16px;
     --card-background: rgba(255, 255, 255, 0.82);
     --card-blur: 20px;
-    --card-shadow: 0 4px 20px rgba(0, 51, 160, 0.08);
+    --card-shadow: 0 4px 20px rgba(2, 22, 127, 0.08);
 
     /* ICONOS */
     --icon-xs: 14px;
@@ -174,6 +178,17 @@
        tema, que es justo el bug de "títulos negros en modo oscuro". */
     --bs-body-color: var(--ink);
     --bs-body-color-rgb: 26, 32, 44;
+    /* Bootstrap trae su propio azul (#0d6efd) en --bs-primary y lo usa en
+       clases utilitarias que no pasan por nuestros componentes (bg-primary,
+       text-primary, badge bg-primary, btn-check:checked+.btn-outline-primary,
+       spinner-border.text-primary, etc.). Sin esto, cualquier template que
+       use esas clases de Bootstrap directamente (en vez de nuestras propias
+       .btn-primary/.btn-outline-primary) mostraba el azul de Bootstrap en
+       vez del azul marino de marca. Redefinirla acá una sola vez hace que
+       "primary" de Bootstrap y "primary" de AcadEMI sean siempre el mismo
+       color, en todo el sitio. */
+    --bs-primary: var(--primary);
+    --bs-primary-rgb: 2, 22, 127;
 }
 
 /* ============================================
@@ -295,7 +310,10 @@ body {
     line-height: 1.7;
     color: var(--ink);
     min-height: 100vh;
-    background: #1e59fd linear-gradient(135deg, #eaf1ff 0%, #f8fafd 55%, #fff8e6 100%);
+    background-image: url(https://notas.emi.edu.bo/assets/gentelella2/images/page.png);
+    background-repeat: no-repeat;
+    background-position: top ;
+    background-color: #ffffff;
     overflow-x: hidden;
 }
 

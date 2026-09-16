@@ -70,6 +70,14 @@
     color: var(--primary-text);
 }
 
+.report-link {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.report-link:hover,
 .engagement-item-actions .report-link:hover {
     color: var(--danger);
 }

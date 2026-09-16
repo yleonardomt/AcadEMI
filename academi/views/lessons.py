@@ -36,7 +36,7 @@ def add_lesson_view(request, module_id):
 
         if not title:
             messages.error(request, 'El título de la lección es obligatorio.')
-            return render(request, 'academi/courses/crear_leccion.html', {'module': module})
+            return render(request, 'academi/courses/crear_leccion.html', {'module': module, 'form_data': request.POST})
 
         last_order = module.lessons.count()
         Lesson.objects.create(
@@ -286,6 +286,9 @@ def delete_lesson_view(request, lesson_id):
 
 @login_required
 def reorder_lesson_view(request, lesson_id, direction):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método no permitido'}, status=405)
+
     lesson = get_object_or_404(Lesson, id=lesson_id)
     module = lesson.module
     course = module.course
@@ -615,6 +618,46 @@ def render_lesson_form(request, module, template, form_data=None):
     })
 
 
+def _parse_quiz_questions_from_post(post_data):
+    """Reconstruye la lista de preguntas/opciones a partir de los campos
+    planos question_<n>_text / question_<n>_option_<i> / question_<n>_correct_<i>
+    del POST. Se usa para repoblar el formulario (vía data-preguntas del
+    template + crear-cuestionario.js) cuando el guardado falla por otro
+    motivo (p. ej. título u instrucciones inválidas) y el docente ya había
+    escrito todas las preguntas."""
+    preguntas_data = {}
+    for key, value in post_data.items():
+        if key.startswith('question_') and key.endswith('_text'):
+            parts = key.split('_')
+            if len(parts) >= 3 and parts[1].isdigit():
+                preguntas_data[parts[1]] = value.strip()
+
+    preguntas = []
+    for q_num, question_text in sorted(preguntas_data.items(), key=lambda item: int(item[0])):
+        if not question_text:
+            continue
+
+        options = []
+        prefix = f'question_{q_num}_option_'
+        for opt_key, opt_value in post_data.items():
+            if opt_key.startswith(prefix) and opt_key[len(prefix):].isdigit() and opt_value.strip():
+                opt_index = opt_key[len(prefix):]
+                correct_key = f'question_{q_num}_correct_{opt_index}'
+                options.append({
+                    'index': int(opt_index),
+                    'text': opt_value.strip(),
+                    'is_correct': correct_key in post_data,
+                })
+        options.sort(key=lambda opt: opt['index'])
+
+        preguntas.append({
+            'text': question_text,
+            'options': [{'text': opt['text'], 'is_correct': opt['is_correct']} for opt in options],
+        })
+
+    return preguntas
+
+
 @login_required
 def create_lesson_text_view(request, module_id):
     module, course = get_module_and_check_permission(request, module_id)
@@ -797,11 +840,14 @@ def create_lesson_quiz_view(request, module_id):
         passing_score = request.POST.get('passing_score', 70)
         max_attempts = request.POST.get('max_attempts', intentos_default)
 
+        preguntas_recuperadas = _parse_quiz_questions_from_post(request.POST)
+
         if not title or len(title) < 3:
             messages.error(request, 'El título es obligatorio y debe tener al menos 3 caracteres.')
             return render(request, 'academi/courses/lecciones/crear_cuestionario.html', {
                 'module': module,
                 'form_data': request.POST,
+                'preguntas_json': json.dumps(preguntas_recuperadas, default=str),
                 'titulo_pagina': titulo_pagina,
                 'icono': icono,
                 'tiempo_limite_default': tiempo_limite_default,
@@ -815,6 +861,7 @@ def create_lesson_quiz_view(request, module_id):
             return render(request, 'academi/courses/lecciones/crear_cuestionario.html', {
                 'module': module,
                 'form_data': request.POST,
+                'preguntas_json': json.dumps(preguntas_recuperadas, default=str),
                 'titulo_pagina': titulo_pagina,
                 'icono': icono,
                 'tiempo_limite_default': tiempo_limite_default,

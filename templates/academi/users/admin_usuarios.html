@@ -41,7 +41,7 @@
                             </div>
                         </div>
                         <div class="col-md-2 col-6">
-                            <div class="stat-card p-2 text-center rounded" style="background: #dbeafe; border-bottom: 3px solid var(--info);">
+                            <div class="stat-card p-2 text-center rounded" style="background: #e8eaf6; border-bottom: 3px solid var(--primary-light);">
                                 <span class="d-block fw-bold h5">{{ total_students }}</span>
                                 <small class="text-muted">Estudiantes</small>
                             </div>
@@ -53,7 +53,7 @@
                             </div>
                         </div>
                         <div class="col-md-2 col-6">
-                            <div class="stat-card p-2 text-center rounded" style="background: #fce4ec; border-bottom: 3px solid var(--danger);">
+                            <div class="stat-card p-2 text-center rounded" style="background: #dfe3f5; border-bottom: 3px solid var(--primary-dark);">
                                 <span class="d-block fw-bold h5">{{ total_admins }}</span>
                                 <small class="text-muted">Admins</small>
                             </div>
@@ -156,19 +156,22 @@
                                             <a href="{% url 'admin_user_reset_password' u.id %}" class="btn btn-outline-warning" title="Restablecer contraseña">
                                                 <i class="fas fa-key"></i>
                                             </a>
-                                            <a href="{% url 'admin_user_toggle' u.id %}" class="btn btn-toggle-user {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}" 
-                                               data-user="{{ u.username }}" 
-                                               data-url="{% url 'admin_user_toggle' u.id %}"
-                                               title="{% if u.is_active %}Desactivar{% else %}Activar{% endif %}">
-                                                <i class="fas {% if u.is_active %}fa-pause{% else %}fa-play{% endif %}"></i>
-                                            </a>
+                                            <form method="POST" action="{% url 'admin_user_toggle' u.id %}" class="d-inline"
+                                                  data-confirm="¿{% if u.is_active %}Desactivar{% else %}Activar{% endif %} a {{ u.username }}?{% if u.is_active %} El usuario no podrá iniciar sesión.{% else %} El usuario podrá iniciar sesión nuevamente.{% endif %}">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-toggle-user {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                                                        title="{% if u.is_active %}Desactivar{% else %}Activar{% endif %}">
+                                                    <i class="fas {% if u.is_active %}fa-pause{% else %}fa-play{% endif %}"></i>
+                                                </button>
+                                            </form>
                                             {% if u != request.user %}
-                                            <a href="#" class="btn btn-outline-danger btn-delete-user" 
-                                               data-user="{{ u.username }}" 
-                                               data-url="{% url 'admin_user_delete' u.id %}"
-                                               title="Eliminar">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
+                                            <form method="POST" action="{% url 'admin_user_delete' u.id %}" class="d-inline"
+                                                  data-confirm="¿Estás seguro de eliminar a {{ u.username }}? Esta acción no se puede deshacer.">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn btn-outline-danger" title="Eliminar">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
                                             {% else %}
                                             <button class="btn btn-outline-secondary" title="No puedes eliminarte a ti mismo" disabled>
                                                 <i class="fas fa-trash"></i>
@@ -197,36 +200,4 @@
         </div>
     </div>
 </div>
-
-<!-- ====== MODAL DE CONFIRMACIÓN (SIN ALERT) ====== -->
-<div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header" style="border-bottom: 3px solid var(--danger);">
-                <h5 class="modal-title fw-bold">
-                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> 
-                    Confirmar acción
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body text-center py-4">
-                <i class="fas fa-user-slash" style="font-size: 48px; color: var(--danger); margin-bottom: 16px;"></i>
-                <h5 id="modalMessage" class="fw-bold">¿Estás seguro de eliminar a <span id="modalUsername"></span>?</h5>
-                <p class="text-muted" id="modalSubMessage">Esta acción no se puede deshacer.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times"></i> Cancelar
-                </button>
-                <a href="#" id="modalConfirmBtn" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Eliminar
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script src="{% static_v 'js/admin-usuarios.js' %}"></script>
 {% endblock %}

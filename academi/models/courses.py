@@ -52,6 +52,7 @@ class Course(models.Model):  # RF-15, RF-16, RF-17, RF-21
     approved_at = models.DateTimeField(blank=True, null=True)  # RF-70
     approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='approved_courses')
     rejection_reason = models.TextField(blank=True, null=True)  # RF-70
+    is_reported = models.BooleanField(default=False)  # RF-42: un estudiante puede reportar el curso completo
 
     def __str__(self):
         return self.title

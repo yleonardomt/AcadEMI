@@ -7,7 +7,6 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     var prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
 
     // ===== Scroll suave para enlaces internos =====
     document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
@@ -79,43 +78,5 @@ document.addEventListener('DOMContentLoaded', function() {
         counters.forEach(function(el) { counterObserver.observe(el); });
     } else {
         counters.forEach(animateCounter);
-    }
-
-    // ===== Parallax sutil del hero al mover el mouse =====
-    // El contenido de texto se desplaza levemente en dirección opuesta
-    // al cursor: da sensación de profundidad sin marear ni tapar nada.
-    var heroSection = document.querySelector('.hero');
-    var heroContent = document.querySelector('.hero-content');
-    if (heroSection && heroContent && !prefersReducedMotion && !isCoarsePointer) {
-        heroSection.addEventListener('mousemove', function(e) {
-            var rect = heroSection.getBoundingClientRect();
-            var x = (e.clientX - rect.left) / rect.width - 0.5;
-            var y = (e.clientY - rect.top) / rect.height - 0.5;
-            heroContent.style.transform = 'translate(' + (x * -10) + 'px, ' + (y * -8) + 'px)';
-        });
-        heroSection.addEventListener('mouseleave', function() {
-            heroContent.style.transform = '';
-        });
-    }
-
-    // ===== Efecto 3D "tilt" al mover el mouse sobre tarjetas =====
-    // Rota la tarjeta levemente según la posición del cursor para dar
-    // sensación de profundidad. Se ignora en pantallas táctiles (no
-    // hay hover real) y si el usuario prefiere menos movimiento.
-    if (!prefersReducedMotion && !isCoarsePointer) {
-        document.querySelectorAll('.tilt-card').forEach(function(card) {
-            var maxTilt = 6;
-            card.addEventListener('mousemove', function(e) {
-                var rect = card.getBoundingClientRect();
-                var x = (e.clientX - rect.left) / rect.width;
-                var y = (e.clientY - rect.top) / rect.height;
-                var rotateY = (x - 0.5) * maxTilt * 2;
-                var rotateX = (0.5 - y) * maxTilt * 2;
-                card.style.transform = 'perspective(900px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) translateY(-6px)';
-            });
-            card.addEventListener('mouseleave', function() {
-                card.style.transform = '';
-            });
-        });
     }
 });

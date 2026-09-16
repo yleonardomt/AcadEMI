@@ -5,8 +5,8 @@ from reportlab.lib.pagesizes import A4, landscape
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
 
-PRIMARY = HexColor('#0033a0')
-SECONDARY = HexColor('#f7c600')
+PRIMARY = HexColor('#02167f')
+SECONDARY = HexColor('#ffd014')
 DARK = HexColor('#1a202c')
 MUTED = HexColor('#718096')
 

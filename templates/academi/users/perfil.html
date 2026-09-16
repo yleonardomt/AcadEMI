@@ -52,6 +52,9 @@
                                         <i class="fas fa-user me-1"></i> Nombre de usuario
                                     </label>
                                     {{ form.username }}
+                                    {% if form.username.errors %}
+                                        <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                                    {% endif %}
                                     <div class="form-text">Este nombre será visible públicamente</div>
                                 </div>
                             </div>
@@ -61,6 +64,9 @@
                                         <i class="fas fa-envelope me-1"></i> Correo electrónico
                                     </label>
                                     {{ form.email }}
+                                    {% if form.email.errors %}
+                                        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
                                     <div class="form-text">Usado para inicio de sesión y notificaciones</div>
                                 </div>
                             </div>
@@ -71,6 +77,9 @@
                                 <i class="fas fa-phone me-1"></i> Teléfono
                             </label>
                             {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
                             <div class="form-text">Ejemplo: 79123456</div>
                         </div>
 
@@ -79,6 +88,9 @@
                                 <i class="fas fa-info-circle me-1"></i> Biografía
                             </label>
                             {{ form.bio }}
+                            {% if form.bio.errors %}
+                                <div class="text-danger small mt-1">{{ form.bio.errors.0 }}</div>
+                            {% endif %}
                             <div class="form-text">Cuéntanos sobre ti, tus intereses y experiencia</div>
                         </div>
 
@@ -92,6 +104,9 @@
                                 <i class="fas fa-cloud-upload-alt me-1"></i> Subir foto
                             </label>
                             {{ form.profile_picture }}
+                            {% if form.profile_picture.errors %}
+                                <div class="text-danger small mt-1">{{ form.profile_picture.errors.0 }}</div>
+                            {% endif %}
                             <div class="form-text">Formatos permitidos: JPG, PNG, GIF. Tamaño máximo: 5MB</div>
                         </div>
 

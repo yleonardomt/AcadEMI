@@ -21,6 +21,7 @@ urlpatterns = [
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('profile/', views.profile_view, name='profile'),
     path('notifications/', views.notifications_view, name='notifications'),
+    path('notifications/marcar-todas/', views.mark_all_notifications_read_view, name='mark_all_notifications_read'),
     
     # ============================================
     # GESTIÓN DE CURSOS

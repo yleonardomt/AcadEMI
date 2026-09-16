@@ -279,7 +279,7 @@
                             <div class="engagement-item-actions">
                                 {% if comment.student == request.user %}
                                 <button type="button" onclick="document.getElementById('view-comment-{{ comment.id }}').style.display='none'; document.getElementById('edit-comment-{{ comment.id }}').style.display='block';"><i class="fas fa-edit"></i> Editar</button>
-                                <form method="POST" action="{% url 'delete_comment' comment.id %}" onsubmit="return confirm('¿Eliminar este comentario?');" style="display:inline;">
+                                <form method="POST" action="{% url 'delete_comment' comment.id %}" data-confirm="¿Eliminar este comentario?" style="display:inline;">
                                     {% csrf_token %}
                                     <button type="submit"><i class="fas fa-trash"></i> Eliminar</button>
                                 </form>

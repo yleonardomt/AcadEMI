@@ -25,7 +25,7 @@
     margin-bottom: 28px;
     overflow: hidden;
     padding: 32px 36px;
-    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, #2563eb 100%);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 50%, var(--primary-vivid) 100%);
 }
 
 .hero-bg-pattern {
@@ -124,7 +124,7 @@
     border: 3px solid rgba(255,255,255,0.4);
     overflow: hidden;
     flex-shrink: 0;
-    box-shadow: 0 4px 20px rgba(247, 198, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(255, 208, 20, 0.3);
     position: relative;
 }
 
@@ -328,12 +328,13 @@
     color: var(--dark);
 }
 
-.action-card.primary:hover { border-color: #2563eb; }
+.action-card.primary:hover { border-color: var(--primary-vivid); }
 .action-card.secondary:hover { border-color: var(--accent-purple); }
 .action-card.tertiary:hover { border-color: var(--success); }
 .action-card.quaternary:hover { border-color: var(--warning); }
 .action-card.quinary:hover { border-color: var(--accent-pink); }
 .action-card.senary:hover { border-color: #b45309; }
+.action-card.septenary:hover { border-color: #c0392b; }
 
 .action-icon {
     width: 44px;

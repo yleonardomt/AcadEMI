@@ -1,0 +1,31 @@
+{% if user.is_authenticated %}
+<!-- ============================================
+     MODAL DE CONFIRMACIÓN COMPARTIDO (reemplaza confirm() nativo)
+     Cualquier <form data-confirm="mensaje"> de la página pasa por acá
+     antes de enviarse de verdad — ver static/js/confirm-modal.js.
+     ============================================ -->
+<div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom: 3px solid var(--danger);">
+                <h5 class="modal-title fw-bold">
+                    <i class="fas fa-exclamation-triangle" style="color: var(--danger);"></i> Confirmar acción
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="fas fa-exclamation-circle" id="globalConfirmIcon" style="font-size: 44px; color: var(--danger); margin-bottom: 14px; display: block;"></i>
+                <p class="mb-0" id="globalConfirmMessage">¿Estás seguro?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="globalConfirmBtn">
+                    <i class="fas fa-check"></i> Confirmar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
