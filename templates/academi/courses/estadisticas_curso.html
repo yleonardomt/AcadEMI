@@ -1,44 +1,69 @@
 {% extends 'partials/base.html' %}
+{% load static static_extras %}
 
-{% block title %}Estadísticas - AcadEMI{% endblock %}
+{% block title %}Estadísticas - {{ course.title }} - AcadEMI{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static_v 'css/pages/estadisticas-curso.css' %}">
+{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <h2 class="fw-bold mb-4"><i class="fas fa-chart-bar" style="color: var(--primary);"></i> Estadísticas de cursos</h2>
-    
-    <div class="row g-4">
-        <div class="col-md-3">
-            <div class="card shadow-lg border-0 text-center p-3">
-                <h3 class="fw-bold text-primary">{{ courses|length }}</h3>
-                <p class="text-muted">Total cursos</p>
-            </div>
+<div class="container py-4">
+
+    <div class="page-header">
+        <div class="page-header-icon"><i class="fas fa-chart-bar"></i></div>
+        <div class="page-header-text">
+            <h1 class="page-title">Estadísticas del curso</h1>
+            <p class="page-subtitle">{{ course.title }}</p>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-lg border-0 text-center p-3">
-                <h3 class="fw-bold text-success">0</h3>
-                <p class="text-muted">Estudiantes totales</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-lg border-0 text-center p-3">
-                <h3 class="fw-bold text-warning">0%</h3>
-                <p class="text-muted">Progreso promedio</p>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card shadow-lg border-0 text-center p-3">
-                <h3 class="fw-bold text-danger">Bs. 0</h3>
-                <p class="text-muted">Ingresos totales</p>
-            </div>
+        <div class="page-header-actions">
+            <a href="{% url 'course_students' course.id %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-users"></i> Estudiantes</a>
+            <a href="{% url 'manage_course' course.id %}" class="btn btn-outline-primary btn-sm"><i class="fas fa-arrow-left"></i> Volver</a>
         </div>
     </div>
-    
-    <div class="card shadow-lg border-0 mt-4">
-        <div class="card-body">
-            <p class="text-center text-muted py-4">
-                <i class="fas fa-chart-line fa-2x d-block mb-2"></i>
-                No hay datos disponibles aún
-            </p>
+
+    <div class="stats-grid">
+        <div class="stat-card"><div class="stat-card-icon teal"><i class="fas fa-user-group"></i></div>
+            <div><div class="stat-card-value">{{ stats.total_students }}</div><div class="stat-card-label">Estudiantes inscritos</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon success"><i class="fas fa-graduation-cap"></i></div>
+            <div><div class="stat-card-value">{{ stats.completed }}</div><div class="stat-card-label">Completaron ({{ stats.completion_rate }}%)</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon warning"><i class="fas fa-person-running"></i></div>
+            <div><div class="stat-card-value">{{ stats.in_progress }}</div><div class="stat-card-label">En progreso</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon orange"><i class="fas fa-chart-line"></i></div>
+            <div><div class="stat-card-value">{{ stats.avg_progress }}%</div><div class="stat-card-label">Progreso promedio</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon purple"><i class="fas fa-list-check"></i></div>
+            <div><div class="stat-card-value">{{ stats.evaluations_taken }}</div><div class="stat-card-label">Evaluaciones realizadas</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon success"><i class="fas fa-circle-check"></i></div>
+            <div><div class="stat-card-value">{{ stats.pass_rate }}%</div><div class="stat-card-label">Aprobación (nota media {{ stats.avg_score }}%)</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon danger"><i class="fas fa-triangle-exclamation"></i></div>
+            <div><div class="stat-card-value">{{ stats.incidents }}</div><div class="stat-card-label">Incidencias en evaluaciones</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon"><i class="fas fa-cart-shopping"></i></div>
+            <div><div class="stat-card-value">{{ stats.sales }}</div><div class="stat-card-label">Ventas</div></div></div>
+        <div class="stat-card"><div class="stat-card-icon success"><i class="fas fa-coins"></i></div>
+            <div><div class="stat-card-value">Bs. {{ stats.revenue|floatformat:2 }}</div><div class="stat-card-label">Ingresos del curso</div></div></div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-6">
+            <div class="stats-panel">
+                <h5><i class="fas fa-star" style="color: var(--secondary-dark);"></i> Valoraciones ({{ stats.reviews }})</h5>
+                <p class="mb-3"><strong style="font-size: 28px;">{{ stats.avg_rating }}</strong> <span class="text-muted">/ 5</span></p>
+                {% for star, count in distribution %}
+                <div class="rating-row">
+                    <span>{{ star }} <i class="fas fa-star" style="color: var(--secondary-dark); font-size: 11px;"></i></span>
+                    <div class="bar"><span style="width: {% if stats.reviews %}{% widthratio count stats.reviews 100 %}{% else %}0{% endif %}%;"></span></div>
+                    <span>{{ count }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="stats-panel">
+                <h5><i class="fas fa-layer-group" style="color: var(--primary);"></i> Contenido</h5>
+                <p class="mb-2"><strong>{{ stats.total_modules }}</strong> módulos</p>
+                <p class="mb-2"><strong>{{ stats.total_lessons }}</strong> lecciones</p>
+                <p class="mb-0 text-muted small">Las incidencias por estudiante se ven en la lista de estudiantes del curso.</p>
+            </div>
         </div>
     </div>
 </div>

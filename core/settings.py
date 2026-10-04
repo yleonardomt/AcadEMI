@@ -48,6 +48,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'academi.middleware.EmailVerificationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
+    'academi.middleware.UploadValidationMiddleware',
+    'academi.middleware.AdminAuditMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
@@ -207,13 +209,18 @@ GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.5-flash-lite')
 # ============================================
 # CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN
 # ============================================
-# DESCOMENTAR PARA PRODUCCIÓN
-# SECURE_SSL_REDIRECT = True
-# SESSION_COOKIE_SECURE = True
-# CSRF_COOKIE_SECURE = True
-# SECURE_HSTS_SECONDS = 31536000
-# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-# SECURE_HSTS_PRELOAD = True
+# RNF-05: toda la comunicación por HTTPS/TLS. Se activa sola cuando DEBUG=False
+# (producción); en desarrollo (DEBUG=True) el sitio sigue funcionando por http.
+# Si el servidor está detrás de un proxy/balanceador que termina TLS, define en
+# el .env  BEHIND_PROXY=True  para que Django confíe en su cabecera.
+FORCE_HTTPS = os.environ.get('FORCE_HTTPS', str(not DEBUG)) == 'True'
+if FORCE_HTTPS:
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+if os.environ.get('BEHIND_PROXY', 'False') == 'True':
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
 # ============================================

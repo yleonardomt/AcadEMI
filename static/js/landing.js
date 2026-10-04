@@ -80,3 +80,55 @@ document.addEventListener('DOMContentLoaded', function() {
         counters.forEach(animateCounter);
     }
 });
+
+
+// ===== Puntos indicadores de los carruseles (solo se muestran en celular) =====
+document.addEventListener('DOMContentLoaded', function() {
+    function setupDots(track, itemSelector) {
+        var items = Array.prototype.slice.call(track.querySelectorAll(itemSelector));
+        if (items.length < 2) return;
+
+        var nav = document.createElement('div');
+        nav.className = 'carousel-dots';
+        nav.setAttribute('role', 'tablist');
+        var dots = items.slice(0, 10).map(function(_, i) {
+            var dot = document.createElement('button');
+            dot.type = 'button';
+            dot.className = 'carousel-dot';
+            dot.setAttribute('aria-label', 'Ir al elemento ' + (i + 1));
+            dot.addEventListener('click', function() {
+                var item = items[i];
+                track.scrollTo({
+                    left: item.offsetLeft - (track.clientWidth - item.offsetWidth) / 2,
+                    behavior: 'smooth'
+                });
+            });
+            nav.appendChild(dot);
+            return dot;
+        });
+        track.parentNode.insertBefore(nav, track.nextSibling);
+
+        function update() {
+            var center = track.scrollLeft + track.clientWidth / 2;
+            var best = 0, bestDist = Infinity;
+            items.forEach(function(item, i) {
+                var d = Math.abs(item.offsetLeft + item.offsetWidth / 2 - center);
+                if (d < bestDist) { bestDist = d; best = i; }
+            });
+            dots.forEach(function(dot, i) { dot.classList.toggle('is-active', i === Math.min(best, dots.length - 1)); });
+        }
+
+        var ticking = false;
+        track.addEventListener('scroll', function() {
+            if (ticking) return;
+            ticking = true;
+            requestAnimationFrame(function() { update(); ticking = false; });
+        }, { passive: true });
+        update();
+    }
+
+    var courses = document.querySelector('.courses .row.g-4');
+    if (courses) setupDots(courses, ':scope > [class*="col-"]');
+    var testimonials = document.querySelector('.testimonials-grid');
+    if (testimonials) setupDots(testimonials, ':scope > .testimonial-card');
+});

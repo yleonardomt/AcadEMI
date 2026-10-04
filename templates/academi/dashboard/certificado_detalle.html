@@ -27,6 +27,10 @@
         {% else %}
         <button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print"></i> Imprimir</button>
         {% endif %}
+        <form method="post" action="{% url 'certificate_send_email' certificate.id %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary"><i class="fas fa-envelope"></i> Enviar a mi correo</button>
+        </form>
         <a href="{% url 'verify_certificate' certificate.certificate_code %}" class="btn btn-outline-primary" target="_blank"><i class="fas fa-shield-alt"></i> Verificar autenticidad</a>
     </div>
 

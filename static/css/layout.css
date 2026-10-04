@@ -513,6 +513,48 @@ body.landing-page .main-content {
 
 @media (min-width: 993px) {
     .navbar-toggler.me-2 { display: none; }
+    .btn-nav-mobile-login { display: none; }
+}
+
+/* Modo oscuro: el botón de menú (hamburguesa) usa un ícono de trazo oscuro
+   por defecto; se aclara para que se lea sobre la barra oscura. */
+:root[data-theme="dark"] .navbar-toggler {
+    border-color: rgba(203, 213, 225, 0.35);
+}
+
+:root[data-theme="dark"] .navbar-toggler-icon {
+    filter: invert(1) brightness(1.4);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .navbar-toggler {
+        border-color: rgba(203, 213, 225, 0.35);
+    }
+
+    :root:not([data-theme="light"]) .navbar-toggler-icon {
+        filter: invert(1) brightness(1.4);
+    }
+}
+
+/* En celular la marca queda pegada al menú y, para quien no ha iniciado
+   sesión, aparece un acceso rápido "Ingresar" a la derecha (el resto de
+   la navegación vive en el menú lateral). */
+@media (max-width: 992px) {
+    .navbar-brand { margin-right: auto; }
+    .btn-nav-mobile-login {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 16px;
+        border-radius: var(--border-radius-pill);
+        background: var(--primary-gradient);
+        color: var(--white);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: none;
+        white-space: nowrap;
+    }
+    .btn-nav-mobile-login:hover { color: var(--white); filter: brightness(1.08); }
 }
 
 @media (max-width: 768px) {
@@ -729,13 +771,14 @@ body.landing-page .main-content {
 @media (max-width: 576px) {
     .footer { padding: 60px 16px 25px; margin-top: 40px; }
     .footer-waves { height: 80px; }
+    /* Marca arriba, y los listados de enlaces en 2 columnas para no alargar el pie */
     .footer-grid {
-        grid-template-columns: 1fr;
-        gap: var(--space-6);
-        text-align: center;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--space-6) var(--space-4);
     }
+    .footer-col-brand { text-align: center; }
     .footer-brand { justify-content: center; font-size: 24px; }
-    .footer-links a { justify-content: center; }
+    .footer-links a { justify-content: flex-start; }
     .footer-social { justify-content: center; }
     .footer-bottom { justify-content: center; text-align: center; }
 }

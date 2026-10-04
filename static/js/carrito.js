@@ -393,9 +393,12 @@ function processCheckout() {
         address: address ? address.value.trim() : '',
         payment_method: cartState.paymentMethod,
         coupon_code: cartState.couponCode,
-        card_number: document.getElementById('cardNumber') ? document.getElementById('cardNumber').value.replace(/\s/g, '') : null,
-        card_expiry: document.getElementById('cardExpiry') ? document.getElementById('cardExpiry').value : null,
-        card_cvc: document.getElementById('cardCvc') ? document.getElementById('cardCvc').value : null
+        // RNF-20: el número completo, el vencimiento y el CVC se validan
+        // aquí en el navegador y nunca se envían al servidor: solo los
+        // últimos 4 dígitos, para mostrarlos en el comprobante.
+        card_last_four: (cartState.paymentMethod === 'card' && document.getElementById('cardNumber'))
+            ? document.getElementById('cardNumber').value.replace(/\D/g, '').slice(-4)
+            : null
     };
 
     fetch('/checkout/', {

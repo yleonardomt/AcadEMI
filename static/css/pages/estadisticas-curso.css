@@ -1,0 +1,91 @@
+/* ============================================
+   ESTADÍSTICAS DEL CURSO (docente) - RF-16
+   ============================================ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+}
+
+.stat-card-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+    background: var(--primary-lighter);
+    color: var(--primary);
+}
+
+.stat-card-icon.success { background: rgba(16, 185, 129, 0.14); color: var(--success); }
+.stat-card-icon.warning { background: rgba(245, 158, 11, 0.14); color: var(--warning); }
+.stat-card-icon.purple  { background: var(--accent-purple-light); color: var(--accent-purple); }
+.stat-card-icon.teal    { background: var(--accent-teal-light); color: var(--accent-teal); }
+.stat-card-icon.orange  { background: var(--accent-orange-light); color: var(--accent-orange); }
+.stat-card-icon.danger  { background: rgba(239, 68, 68, 0.14); color: var(--danger); }
+
+.stat-card-value {
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--ink);
+}
+
+.stat-card-label {
+    font-size: 12.5px;
+    color: var(--ink-muted);
+}
+
+.stats-panel {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: 22px;
+    height: 100%;
+}
+
+.stats-panel h5 {
+    font-size: 16px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    color: var(--ink);
+}
+
+.rating-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 13px;
+    color: var(--ink-muted);
+}
+
+.rating-row .bar {
+    flex: 1;
+    height: 8px;
+    border-radius: 8px;
+    background: var(--primary-lighter);
+    overflow: hidden;
+}
+
+.rating-row .bar > span {
+    display: block;
+    height: 100%;
+    background: var(--secondary);
+}

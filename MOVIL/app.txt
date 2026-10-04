@@ -1,0 +1,163 @@
+=====================================================================
+  ACADEMI MÓVIL - PASOS PARA PROBARLA Y PROGRAMAR EN TU CELULAR
+  (Samsung A32 por cable USB, con recarga en vivo)
+=====================================================================
+
+Todos los comandos con "$" se escriben en la terminal de Ubuntu (WSL).
+Los que dicen "PowerShell" se escriben en PowerShell de Windows.
+
+---------------------------------------------------------------------
+ ANTES DE EMPEZAR (una sola vez, ya está hecho)
+---------------------------------------------------------------------
+- Flutter, JDK 17 y Android SDK instalados en ~/development y ~/Android.
+- usbipd-win instalado en Windows (pasa el celular USB hacia WSL).
+- Depuración USB activada en el celular (Ajustes > Opciones de desarrollador).
+- Permisos USB dados con:  sudo bash ~/setup-usb.sh
+- Las variables de entorno ya están en ~/.bashrc.
+  Si "flutter" no se reconoce, ejecuta:  source ~/.bashrc
+
+---------------------------------------------------------------------
+ CADA VEZ QUE QUIERAS TRABAJAR (5 pasos)
+---------------------------------------------------------------------
+
+PASO 1 - Conecta el celular por cable USB a la PC.
+         Desbloquéalo. Si dice "Cargando por USB", elige
+         "Transferencia de archivos".
+
+PASO 2 - Pasa el celular de Windows a WSL.
+         Abre PowerShell (como administrador la primera vez) y escribe:
+
+           usbipd list
+           usbipd attach --wsl --busid 2-4 --auto-attach
+
+         * 2-4 es el número de tu Samsung en la lista (si cambia, usa el
+           que diga "A32 de Yhonatan" / "ADB Interface").
+         * Deja esa ventana de PowerShell ABIERTA: con --auto-attach el
+           celular se reconecta solo si se suelta.
+         * Solo la primera vez en la vida: usbipd bind --busid 2-4
+
+PASO 3 - Comprueba que WSL ve el celular.
+
+           $ adb devices
+
+         Debe salir:  RF8T214ERDY   device
+         - "unauthorized"  -> mira la pantalla del celular y toca
+           "Permitir depuración USB" (marca "Permitir siempre").
+         - lista vacía      -> repite el PASO 2.
+
+PASO 4 - Enciende el servidor de AcadEMI (la base de datos y la API).
+
+           $ cd ~/Academi
+           $ source venv/bin/activate
+           $ python manage.py runserver 0.0.0.0:8001
+
+         Déjalo corriendo en esa terminal (no la cierres).
+         Para probar que vive (en otra terminal):
+           $ curl localhost:8001/api/v1/categories/
+
+PASO 5 - Conecta el celular al servidor y abre la app.
+         En una terminal nueva:
+
+           $ adb reverse tcp:8001 tcp:8001
+           $ cd ~/Academi/MOVIL
+           $ flutter run -d RF8T214ERDY
+
+         * "adb reverse" hace que "localhost:8001" del celular sea tu PC.
+           Hay que repetirlo cada vez que reconectes el cable.
+         * La primera vez compila unos 3-4 minutos; después, segundos.
+
+---------------------------------------------------------------------
+ PROGRAMAR CON RECARGA EN VIVO
+---------------------------------------------------------------------
+Con "flutter run" corriendo, edita cualquier archivo de lib/ y guarda.
+En la terminal de flutter run presiona:
+
+   r   recarga en vivo (hot reload): ve el cambio en el celular al instante
+   R   reinicia la app (hot restart): cuando cambias estado global
+   q   sale
+
+Si cambias cosas de pubspec.yaml (paquetes) o del AndroidManifest:
+   q, y vuelve a ejecutar:  flutter run -d RF8T214ERDY
+
+Si cambias el backend (carpeta academi/ de Django):
+   Ctrl+C en la terminal del servidor y vuelve a ejecutar el PASO 4.
+
+---------------------------------------------------------------------
+ DIRECCIÓN DEL SERVIDOR DENTRO DE LA APP
+---------------------------------------------------------------------
+Con cable USB + "adb reverse":   http://127.0.0.1:8001   (ya guardada)
+Emulador de Android:             http://10.0.2.2:8001
+Por Wi-Fi sin cable:             http://IP-DE-TU-PC:8001  (el firewall de
+                                 Hyper-V de Windows puede bloquearlo)
+
+Se cambia en la app: ícono de engranaje en el login (o Perfil > Servidor).
+Toca "Probar" -> debe decir "Conexión exitosa" -> "Guardar".
+
+---------------------------------------------------------------------
+ USUARIOS DE PRUEBA
+---------------------------------------------------------------------
+   Estudiante:     estudiante   /  estudiante
+   Docente:        teacher1     /  teacher123
+   Administrador:  admin        /  admin
+
+---------------------------------------------------------------------
+ SI ALGO FALLA
+---------------------------------------------------------------------
+- "adb devices" vacío
+    -> repite el PASO 2 (usbipd attach). Si tocaste el cable, se soltó.
+- "adb devices" dice "no permissions"
+    -> sudo bash ~/setup-usb.sh   y desconecta/reconecta el cable.
+- La app dice "No se pudo conectar con el servidor"
+    -> 1) ¿el servidor del PASO 4 sigue corriendo?
+       2) repite:  adb reverse tcp:8001 tcp:8001
+       3) en la app, engranaje > servidor = http://127.0.0.1:8001
+- flutter run dice "Lost connection to device"
+    -> el celular se soltó; repite PASOS 2, 3 y 5.
+- Error de "Gradle" o cosas raras al compilar
+    $ cd ~/Academi/MOVIL
+    $ flutter clean
+    $ flutter pub get
+    $ flutter run -d RF8T214ERDY
+- Ver errores de la app en vivo
+    $ adb logcat | grep -i flutter
+- Ver todo el estado de Flutter
+    $ flutter doctor
+
+---------------------------------------------------------------------
+ COPIAS DE SEGURIDAD Y RECUPERACIÓN (RNF-10 y RNF-11)
+---------------------------------------------------------------------
+   $ cd ~/Academi
+   $ ./scripts/backup_db.sh            copia la base de datos y media/ en ./backups
+   $ ./scripts/restore_db.sh backups/db_FECHA.dump   restaura (pide confirmar)
+Para que se haga sola cada noche a las 2:00 (cron):
+   $ crontab -e   y agrega:
+   0 2 * * * cd /home/yhonatan/Academi && ./scripts/backup_db.sh >> backups/backup.log 2>&1
+
+---------------------------------------------------------------------
+ REQUISITOS (qué tiene la web y la app)
+---------------------------------------------------------------------
+Mira REQUISITOS.md (en esta carpeta): cada RF/RNF con su estado en web y app.
+Pruebas de la API nueva:
+   $ ~/Academi/venv/bin/python tool/api_new_check.py     (servidor encendido)
+
+---------------------------------------------------------------------
+ OTROS COMANDOS ÚTILES
+---------------------------------------------------------------------
+   $ flutter analyze                       revisa errores de código
+   $ flutter test                          pruebas rápidas
+   $ dart run tool/api_check.dart http://localhost:8001
+                                           comprueba app <-> servidor
+   $ flutter build apk --debug             genera un APK de prueba
+   $ flutter build apk --release           genera el APK final
+   El APK queda en: build/app/outputs/flutter-apk/
+
+---------------------------------------------------------------------
+ DÓNDE ESTÁ CADA COSA
+---------------------------------------------------------------------
+   ~/Academi/MOVIL/lib/screens/     pantallas de la app
+   ~/Academi/MOVIL/lib/widgets/     piezas reutilizables (tarjetas, botones)
+   ~/Academi/MOVIL/lib/core/theme/  colores y estilo (igual que la web)
+   ~/Academi/MOVIL/lib/services/    llamadas a la API
+   ~/Academi/academi/api/           la API en Django que usa la app
+   ~/Academi/MOVIL/README.md        explicación técnica más completa
+=====================================================================

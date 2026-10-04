@@ -9,7 +9,7 @@ from .dashboard import (
     my_courses_view, my_progress_view,
     my_grades_view, my_certificates_view, my_favorites_view,
     mis_estudiantes_view, mis_resenas_view, certificate_detail_view,
-    verify_certificate_view,
+    verify_certificate_view, certificate_send_email_view,
 )
 from .courses import (
     create_course_view, manage_course_view, edit_course_view,
@@ -32,7 +32,7 @@ from .quizzes import quiz_view, quiz_result_view, quiz_tab_switch_alert
 from .cart import cart_add_view, cart_remove_view, cart_items_view, cart_view
 from .payments import (
     checkout_view, validate_coupon_api, get_active_coupon_api,
-    purchase_history_view, invoice_view,
+    purchase_history_view, invoice_view, invoice_pdf_view,
     teacher_coupons_view, teacher_coupon_edit, teacher_coupon_toggle, teacher_coupon_delete,
 )
 from .admin_panel import (

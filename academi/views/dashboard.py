@@ -6,6 +6,7 @@ from django.db.models import Sum, Avg
 from django.http import JsonResponse
 from django.utils import timezone
 
+from ..utils import send_certificate_email
 from ..models import (
     Notification, Enrollment, Certificate, Course, Review, Payment,
     Coupon, Report, EvaluationResult, Favorite, Question,
@@ -325,6 +326,22 @@ def verify_certificate_view(request, code):
         'certificate': certificate,
         'code': code,
     })
+
+
+@login_required
+def certificate_send_email_view(request, certificate_id):
+    """RF-41: el estudiante solicita que su certificado se envíe a su correo."""
+    certificate = get_object_or_404(Certificate, id=certificate_id, enrollment__student=request.user)
+    if request.method == 'POST':
+        if certificate.is_revoked:
+            messages.error(request, 'Este certificado fue revocado y no puede enviarse.')
+        else:
+            try:
+                send_certificate_email(certificate, request)
+                messages.success(request, f'Te enviamos el certificado a {request.user.email}.')
+            except Exception:
+                messages.error(request, 'No pudimos enviar el correo. Intenta nuevamente.')
+    return redirect('certificate_detail', certificate_id=certificate.id)
 
 
 @login_required

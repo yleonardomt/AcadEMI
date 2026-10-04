@@ -6,7 +6,7 @@ from django.utils import timezone
 from django.http import JsonResponse
 
 from ..models import Category, Course, Module, Enrollment, LessonProgress, Favorite, Review, EvaluationResult, Certificate, Coupon
-from ..utils import issue_certificate
+from ..utils import issue_certificate, compute_course_stats
 
 
 # ============================================
@@ -257,18 +257,11 @@ def course_stats_view(request, course_id):
         messages.error(request, 'No tienes permisos.')
         return redirect('dashboard')
 
-    enrollments = Enrollment.objects.filter(course=course)
-    total_students = enrollments.count()
-    completed = enrollments.filter(status='completed').count()
-    in_progress = enrollments.filter(status='in_progress').count()
-
+    stats = compute_course_stats(course)
     context = {
         'course': course,
-        'total_students': total_students,
-        'completed': completed,
-        'in_progress': in_progress,
-        'total_lessons': course.total_lessons,
-        'total_modules': course.total_modules,
+        'stats': stats,
+        'distribution': [(star, stats['rating_distribution'][star]) for star in range(5, 0, -1)],
     }
     return render(request, 'academi/courses/estadisticas_curso.html', context)
 
@@ -285,7 +278,7 @@ def course_students_view(request, course_id):
     enrollments = Enrollment.objects.filter(course=course).select_related('student').prefetch_related(
         Prefetch(
             'evaluation_results',
-            queryset=EvaluationResult.objects.select_related('evaluation__lesson').order_by('-completed_at'),
+            queryset=EvaluationResult.objects.select_related('evaluation__lesson').prefetch_related('incidents').order_by('-completed_at'),
             to_attr='results_list',
         )
     )

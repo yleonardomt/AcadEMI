@@ -21,7 +21,10 @@
 
     <div class="container">
         <div class="hero-content">
-            
+            <span class="hero-eyebrow">
+                <i class="fas fa-graduation-cap"></i> Escuela Militar de Ingeniería
+            </span>
+
             <h1 class="hero-title">
                 Aprende algo nuevo,<br>
                 <span>a tu ritmo</span>
@@ -43,6 +46,21 @@
                     <i class="fas fa-book-open"></i> Ver cursos
                 </a>
             </div>
+
+            <div class="hero-mini-stats" aria-label="Datos de la plataforma">
+                <div class="hero-mini-stat">
+                    <strong>{{ total_courses }}+</strong>
+                    <span>Cursos</span>
+                </div>
+                <div class="hero-mini-stat">
+                    <strong>{{ total_students }}+</strong>
+                    <span>Estudiantes</span>
+                </div>
+                <div class="hero-mini-stat">
+                    <strong>{{ avg_rating|default:"—" }} <i class="fas fa-star"></i></strong>
+                    <span>Calificación</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -63,7 +81,7 @@
         <span class="perk-item"><i class="fas fa-star"></i> {{ avg_rating|default:"—" }}/5 de calificación</span>
         <span class="perk-item"><i class="fas fa-user-graduate"></i> {{ total_students }}+ estudiantes activos</span>
     </div>
-</div>~
+</div>
 
 {% if categories %}
 <!-- ========== CATEGORÍAS ========== -->

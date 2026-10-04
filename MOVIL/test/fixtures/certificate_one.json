@@ -1,0 +1,1 @@
+{"success": true, "certificate": {"id": 19, "code": "2SEMXBP1755A", "course_id": 30, "course": "PRUEBA", "student": "Estudiante Demo", "issued_at": "2026-09-14T00:40:03.938895+00:00", "is_revoked": false, "pdf": "http://localhost:8001/media/certificates/certificado-2SEMXBP1755A.pdf"}}

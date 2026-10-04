@@ -60,6 +60,8 @@ urlpatterns = [
     path('my-favorites/', views.my_favorites_view, name='my_favorites'),
     path('purchase-history/', views.purchase_history_view, name='purchase_history'),
     path('purchase-history/invoice/<int:payment_id>/', views.invoice_view, name='invoice'),
+    path('purchase-history/invoice/<int:payment_id>/pdf/', views.invoice_pdf_view, name='invoice_pdf'),
+    path('my-certificates/<int:certificate_id>/send-email/', views.certificate_send_email_view, name='certificate_send_email'),
     
     # ============================================
     # CARRITO DE COMPRAS (AGREGAR ESTO)

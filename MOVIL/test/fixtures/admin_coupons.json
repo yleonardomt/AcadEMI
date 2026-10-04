@@ -1,0 +1,1 @@
+{"success": true, "coupons": [{"id": 3, "code": "12345", "type": "percentage", "value": 50.0, "course_id": 30, "course": "PRUEBA", "max_uses": 1, "used_count": 1, "is_active": false, "is_valid": false, "expires_at": "2026-09-30T17:28:00+00:00", "created_by": "Prof. Docente Demo"}]}

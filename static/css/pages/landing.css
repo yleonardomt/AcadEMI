@@ -268,7 +268,7 @@ body.landing-page {
 }
 
 .section-header h2 span {
-    color: var(--primary);
+    color: var(--primary-text);
 }
 
 .section-header p {
@@ -941,4 +941,249 @@ body.landing-page {
 
 @media (prefers-reduced-motion: reduce) {
     .reveal { transition: none; }
+}
+
+
+/* ============================================
+   PORTADA: DETALLES DE EMBELLECIMIENTO
+   ============================================ */
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    margin-bottom: 20px;
+    border-radius: var(--border-radius-pill);
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--ldg-light-text);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.hero-eyebrow i { color: var(--ldg-gold); }
+
+/* Datos de la plataforma sobre el video (cristal translúcido) */
+.hero-mini-stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.hero-mini-stat {
+    min-width: 108px;
+    padding: 12px 18px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    color: var(--ldg-light-text);
+}
+
+.hero-mini-stat strong {
+    display: block;
+    font-size: 22px;
+    font-weight: 800;
+    line-height: 1.15;
+    color: var(--ldg-gold);
+}
+
+.hero-mini-stat strong i { font-size: 15px; }
+
+.hero-mini-stat span {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(244, 246, 251, 0.78);
+}
+
+/* Comilla decorativa en los testimonios */
+.testimonial-card { position: relative; }
+
+.testimonial-card::after {
+    content: "\f10e";
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    position: absolute;
+    top: 20px;
+    right: 22px;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--primary-lighter);
+    pointer-events: none;
+}
+
+/* Puntos indicadores de los carruseles (los crea landing.js; solo se ven en celular) */
+.carousel-dots { display: none; }
+
+/* Franja de beneficios en escritorio: una sola línea, sin huérfanos */
+@media (min-width: 993px) {
+    .perks-track { gap: 14px 26px; padding: 0 24px; }
+    .perk-item { font-size: 13.5px; }
+}
+
+/* Tablet: los botones del hero vuelven a ir uno junto al otro */
+@media (min-width: 521px) and (max-width: 768px) {
+    .hero-buttons { flex-direction: row; }
+    .btn-hero { width: auto; }
+}
+
+/* ============================================
+   LANDING EN CELULAR (<= 768px)
+   Menos scroll vertical y más "deslizar": los cursos y los testimonios
+   pasan a carruseles con scroll-snap, y características, valores,
+   pasos y estadísticas a cuadrículas compactas. Solo usa las
+   variables del tema, así que funciona igual en modo claro y oscuro.
+   ============================================ */
+@media (max-width: 768px) {
+    /* Ritmo vertical más corto */
+    .categories { padding: 56px 0 20px; }
+    .courses { padding: 28px 0 56px; }
+    .about-mission,
+    .how-it-works,
+    .features,
+    .testimonials { padding: 56px 0; }
+    .stats { padding: 48px 0; }
+    .final-cta { padding: 16px 0 70px; }
+    .section-header { margin-bottom: 28px; }
+
+    /* Franja de beneficios: una sola fila deslizable con chips */
+    .perks-bar { padding: 14px 0; }
+    .perks-track {
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 2px 16px;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .perks-track::-webkit-scrollbar { display: none; }
+    .perk-item {
+        flex-shrink: 0;
+        padding: 8px 14px;
+        font-size: 13px;
+        background: var(--ldg-card);
+        border: 1px solid var(--ldg-border);
+        border-radius: var(--border-radius-pill);
+    }
+
+    /* Cursos destacados: carrusel horizontal */
+    .courses .row.g-4 {
+        --bs-gutter-x: 0;
+        --bs-gutter-y: 0;
+        flex-wrap: nowrap;
+        gap: 14px;
+        overflow-x: auto;
+        margin: 0 -12px;
+        padding: 4px 16px 22px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .courses .row.g-4::-webkit-scrollbar { display: none; }
+    .courses .row.g-4 > [class*="col-"] {
+        flex: 0 0 82%;
+        max-width: 82%;
+        padding: 0;
+        margin: 0;
+        scroll-snap-align: center;
+        /* Fuera del viewport horizontal no dispararía el reveal: se muestran ya. */
+        opacity: 1;
+        transform: none;
+    }
+    .courses .row.g-4 > [class*="col-"] .course-card { height: 100%; }
+
+    /* Testimonios: carrusel horizontal */
+    .testimonials-grid {
+        display: flex;
+        gap: 14px;
+        overflow-x: auto;
+        margin: 0 -12px;
+        padding: 4px 16px 20px;
+        scroll-snap-type: x mandatory;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .testimonials-grid::-webkit-scrollbar { display: none; }
+    .testimonial-card {
+        flex: 0 0 84%;
+        scroll-snap-align: center;
+    }
+
+    /* Características: 2 columnas compactas */
+    .features-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .feature-card { padding: 18px 16px; }
+    .feature-icon { width: 42px; height: 42px; font-size: 18px; margin-bottom: 12px; }
+    .feature-card h5 { font-size: 15px; }
+    .feature-card p { font-size: 13px; line-height: 1.5; }
+
+    /* Valores: 2 x 2 */
+    .values-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .value-item { padding: 18px 12px; }
+    .value-item p { font-size: 12.5px; }
+
+    /* Cómo funciona: 2 x 2 */
+    .steps-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 26px 12px;
+    }
+    .step-card { width: auto; padding: 28px 12px 16px; }
+    .step-card h5 { font-size: 15px; }
+
+    /* Estadísticas: 2 x 2 */
+    .stats .row > [class*="col-"] { flex: 0 0 50%; max-width: 50%; }
+    .stat-icon { width: 44px; height: 44px; font-size: 18px; margin-bottom: 10px; }
+    .stat-number { font-size: 30px; }
+    .stats p { font-size: 14px; }
+    .stat-sub { font-size: 12px; }
+
+    /* Recién agregados: icono + texto + flecha en una sola fila */
+    .newest-strip { margin-top: 36px; padding-top: 30px; }
+    .newest-strip-list .list-item { flex-wrap: nowrap; padding: 12px 14px; }
+    .newest-strip-list .list-item-actions { width: auto; }
+    .newest-strip-list .list-item-icon { width: 42px; height: 42px; font-size: 18px; }
+
+    /* Portada: el texto se ancla abajo y el video se oscurece de abajo hacia
+       arriba para que se lea bien; queda a la vista la franja de beneficios. */
+    .hero { min-height: 88vh; min-height: 88svh; align-items: flex-end; }
+    .hero-content { padding: 96px 0 64px; }
+    .hero-overlay {
+        background: linear-gradient(180deg,
+            rgba(4, 8, 20, 0.5) 0%, rgba(4, 8, 20, 0.08) 28%,
+            rgba(4, 8, 20, 0.55) 58%, rgba(4, 8, 20, 0.9) 100%);
+    }
+    .hero-eyebrow { font-size: 11px; margin-bottom: 16px; }
+    .hero-buttons { margin-bottom: 26px; }
+    .hero-mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+    .hero-mini-stat { min-width: 0; padding: 10px 12px; border-radius: 14px; text-align: center; }
+    .hero-mini-stat strong { font-size: 19px; }
+    .hero-mini-stat span { font-size: 11px; }
+    .scroll-cue { display: none; }
+
+    /* Indicadores de posición de los carruseles */
+    .courses .row.g-4,
+    .testimonials-grid { position: relative; }
+    .carousel-dots {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        margin-top: -6px;
+    }
+    .carousel-dot {
+        width: 8px;
+        height: 8px;
+        padding: 0;
+        border: 0;
+        border-radius: var(--border-radius-pill);
+        background: var(--ldg-border-hover);
+        transition: width 0.25s ease, background 0.25s ease;
+    }
+    .carousel-dot.is-active { width: 24px; background: var(--primary-text); }
 }

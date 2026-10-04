@@ -17,7 +17,8 @@ from ..models import (
     ActivityLog, Course, is_eligible_for_emi_first_purchase_discount,
     EMI_STUDENT_DISCOUNT_PERCENT,
 )
-from ..utils import get_client_ip, send_purchase_confirmation_email
+from ..utils import get_client_ip, send_purchase_confirmation_email, render_invoice_pdf
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
@@ -120,25 +121,15 @@ def checkout_view(request):
             'message': 'El correo electrónico es obligatorio'
         })
 
+    # RNF-20: el navegador/app valida la tarjeta y solo envía los últimos
+    # 4 dígitos; el servidor nunca recibe ni guarda el número completo.
+    card_last_four = ''
     if payment_method == 'card':
-        card_number = data.get('card_number', '').replace(' ', '')
-        card_expiry = data.get('card_expiry', '')
-        card_cvc = data.get('card_cvc', '')
-
-        if len(card_number) < 16:
+        card_last_four = ''.join(ch for ch in str(data.get('card_last_four') or '') if ch.isdigit())[-4:]
+        if len(card_last_four) != 4:
             return JsonResponse({
                 'success': False,
                 'message': 'Número de tarjeta inválido'
-            })
-        if not card_expiry or len(card_expiry) < 5:
-            return JsonResponse({
-                'success': False,
-                'message': 'Fecha de expiración inválida'
-            })
-        if not card_cvc or len(card_cvc) < 3:
-            return JsonResponse({
-                'success': False,
-                'message': 'CVC inválido'
             })
 
     # CREAR PAGO CON TRANSACCIÓN
@@ -158,7 +149,7 @@ def checkout_view(request):
                 billing_phone=phone,
                 billing_address=address,
                 payment_details={
-                    'card_last_four': card_number[-4:] if payment_method == 'card' else None,
+                    'card_last_four': card_last_four or None,
                     'card_brand': 'Visa/Mastercard' if payment_method == 'card' else None,
                 },
                 confirmed_at=timezone.now(),
@@ -420,6 +411,15 @@ def invoice_view(request, payment_id):
         'discount': payment.discount_applied,
         'total': payment.final_amount
     })
+
+
+@login_required
+def invoice_pdf_view(request, payment_id):
+    """RF-38: descarga el comprobante de pago como PDF."""
+    payment = get_object_or_404(Payment, id=payment_id, student=request.user)
+    response = HttpResponse(render_invoice_pdf(payment).read(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="comprobante-{payment.invoice_number or payment.id}.pdf"'
+    return response
 
 
 # ============================================

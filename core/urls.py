@@ -6,6 +6,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('captcha/', include('captcha.urls')),  # <--- AGREGAR ESTO
+    path('api/v1/', include('academi.api.urls')),  # API JSON de la app móvil (MOVIL/)
     path('', include('academi.urls')),
     
 ]
