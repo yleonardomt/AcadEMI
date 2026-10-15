@@ -1,12 +1,12 @@
 """Prueba de punta a punta de los endpoints nuevos de la API (docente, administrador,
 captcha, PDF, etc.). Crea datos temporales y los borra al final.
-Uso (con el servidor en :8001):  ~/Academi/venv/bin/python tool/api_new_check.py"""
+Uso (con el servidor en el puerto 80):  ~/Academi/venv/bin/python tool/api_new_check.py"""
 import json
 import subprocess
 
 import requests
 
-BASE = 'http://localhost:8001/api/v1/'
+BASE = 'http://localhost/api/v1/'
 ROOT = '/home/yhonatan/Academi'
 PY = ROOT + '/venv/bin/python'
 fails = []

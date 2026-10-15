@@ -31,7 +31,7 @@ El cumplimiento requisito por requisito (RF-01 a RF-51 y RNF-01 a RNF-20, web y 
    ```bash
    # en ~/Academi/.env:  ALLOWED_HOSTS=*   (solo desarrollo)
    source venv/bin/activate
-   python manage.py runserver 0.0.0.0:8001
+   python manage.py runserver 0.0.0.0:80
    ```
 
 2. Ejecuta la app:
@@ -43,8 +43,8 @@ El cumplimiento requisito por requisito (RF-01 a RF-51 y RNF-01 a RNF-20, web y 
    ```
 
 3. Dirección del servidor (ícono de engranaje en el login, o Perfil → Servidor):
-   - Emulador Android: `http://10.0.2.2:8001` (por defecto).
-   - Celular real: `http://IP-DE-TU-PC:8001` (misma red Wi-Fi). En WSL2 necesitas reenviar el
+   - Emulador Android: `http://10.0.2.2` (por defecto).
+   - Celular real: `http://IP-DE-TU-PC` (misma red Wi-Fi). En WSL2 necesitas reenviar el
      puerto o usar el modo de red *mirrored*.
 
 ## Estructura (`lib/`)
@@ -68,6 +68,6 @@ flutter build apk --release
 
 ```bash
 flutter test                                              # pruebas rápidas
-dart run tool/api_check.dart http://localhost:8001        # contrato app <-> API real
+dart run tool/api_check.dart http://localhost        # contrato app <-> API real
 flutter test --run-skipped --tags golden --update-goldens # capturas en test/screenshots/
 ```

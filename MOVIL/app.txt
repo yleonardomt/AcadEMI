@@ -49,20 +49,20 @@ PASO 4 - Enciende el servidor de AcadEMI (la base de datos y la API).
 
            $ cd ~/Academi
            $ source venv/bin/activate
-           $ python manage.py runserver 0.0.0.0:8001
+           $ python manage.py runserver 0.0.0.0:80
 
          Déjalo corriendo en esa terminal (no la cierres).
          Para probar que vive (en otra terminal):
-           $ curl localhost:8001/api/v1/categories/
+           $ curl localhost/api/v1/categories/
 
 PASO 5 - Conecta el celular al servidor y abre la app.
          En una terminal nueva:
 
-           $ adb reverse tcp:8001 tcp:8001
+           $ adb reverse tcp:80 tcp:80
            $ cd ~/Academi/MOVIL
            $ flutter run -d RF8T214ERDY
 
-         * "adb reverse" hace que "localhost:8001" del celular sea tu PC.
+         * "adb reverse" hace que "localhost" del celular sea tu PC.
            Hay que repetirlo cada vez que reconectes el cable.
          * La primera vez compila unos 3-4 minutos; después, segundos.
 
@@ -85,9 +85,9 @@ Si cambias el backend (carpeta academi/ de Django):
 ---------------------------------------------------------------------
  DIRECCIÓN DEL SERVIDOR DENTRO DE LA APP
 ---------------------------------------------------------------------
-Con cable USB + "adb reverse":   http://127.0.0.1:8001   (ya guardada)
-Emulador de Android:             http://10.0.2.2:8001
-Por Wi-Fi sin cable:             http://IP-DE-TU-PC:8001  (el firewall de
+Con cable USB + "adb reverse":   http://127.0.0.1   (ya guardada)
+Emulador de Android:             http://10.0.2.2
+Por Wi-Fi sin cable:             http://IP-DE-TU-PC  (el firewall de
                                  Hyper-V de Windows puede bloquearlo)
 
 Se cambia en la app: ícono de engranaje en el login (o Perfil > Servidor).
@@ -109,8 +109,8 @@ Toca "Probar" -> debe decir "Conexión exitosa" -> "Guardar".
     -> sudo bash ~/setup-usb.sh   y desconecta/reconecta el cable.
 - La app dice "No se pudo conectar con el servidor"
     -> 1) ¿el servidor del PASO 4 sigue corriendo?
-       2) repite:  adb reverse tcp:8001 tcp:8001
-       3) en la app, engranaje > servidor = http://127.0.0.1:8001
+       2) repite:  adb reverse tcp:80 tcp:80
+       3) en la app, engranaje > servidor = http://127.0.0.1
 - flutter run dice "Lost connection to device"
     -> el celular se soltó; repite PASOS 2, 3 y 5.
 - Error de "Gradle" o cosas raras al compilar
@@ -145,7 +145,7 @@ Pruebas de la API nueva:
 ---------------------------------------------------------------------
    $ flutter analyze                       revisa errores de código
    $ flutter test                          pruebas rápidas
-   $ dart run tool/api_check.dart http://localhost:8001
+   $ dart run tool/api_check.dart http://localhost
                                            comprueba app <-> servidor
    $ flutter build apk --debug             genera un APK de prueba
    $ flutter build apk --release           genera el APK final

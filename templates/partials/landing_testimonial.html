@@ -1,0 +1,19 @@
+<blockquote class="testimonial-card">
+    <div class="testimonial-stars" role="img" aria-label="{{ review.rating }} de 5 estrellas">
+        {% for i in "12345"|make_list %}
+            {% if forloop.counter <= review.rating %}
+                <i class="fas fa-star" aria-hidden="true"></i>
+            {% else %}
+                <i class="far fa-star" aria-hidden="true"></i>
+            {% endif %}
+        {% endfor %}
+    </div>
+    <p>"{{ review.comment|truncatechars:170 }}"</p>
+    <footer class="testimonial-author">
+        <div class="author-avatar" aria-hidden="true">{{ review.student.username|first|upper }}</div>
+        <div>
+            <cite class="author-name">{{ review.student.get_full_name|default:review.student.username }}</cite>
+            <span class="author-role">{{ review.course.title }}</span>
+        </div>
+    </footer>
+</blockquote>

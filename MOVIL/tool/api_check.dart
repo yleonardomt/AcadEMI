@@ -4,7 +4,7 @@ import 'package:academi_movil/core/network/api_client.dart';
 import 'package:academi_movil/services/services.dart';
 
 Future<void> main(List<String> args) async {
-  final base = args.isNotEmpty ? args.first : 'http://localhost:8001';
+  final base = args.isNotEmpty ? args.first : 'http://localhost';
   var failures = 0;
   Future<void> check(String name, Future<Object?> Function() f) async {
     try {

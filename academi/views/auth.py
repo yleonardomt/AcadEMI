@@ -66,7 +66,7 @@ def home_view(request):
     # inventados. Solo reseñas con comentario y buena calificación.
     testimonials = Review.objects.filter(
         rating__gte=4, comment__isnull=False
-    ).exclude(comment='').select_related('student', 'course').order_by('-rating', '-created_at')[:3]
+    ).exclude(comment='').select_related('student', 'course').order_by('-rating', '-created_at')[:8]
 
     categories = Category.objects.annotate(
         course_count=Count('courses', filter=Q(courses__status='published'), distinct=True)

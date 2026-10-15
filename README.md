@@ -31,7 +31,7 @@ anti-copia, y un asistente virtual con IA.
 
 Todo el bloque de abajo se puede copiar y pegar tal cual en una terminal
 limpia (WSL2, Ubuntu, Debian) y deja la plataforma corriendo en
-`http://127.0.0.1:8001`. Cambiá `TU_PASSWORD_DB` por una contraseña propia
+`http://127.0.0.1`. Cambiá `TU_PASSWORD_DB` por una contraseña propia
 antes de pegarlo — se usa dos veces (al crear el usuario de PostgreSQL y en
 el `.env`), así que tiene que ser la misma en ambos lugares.
 
@@ -91,10 +91,24 @@ python manage.py shell < seed.py
 # ============================================
 # 9. Levantar el servidor de desarrollo
 # ============================================
-python manage.py runserver 8001
+python manage.py runserver 80
 ```
 
-La plataforma queda disponible en `http://127.0.0.1:8001`.
+La plataforma queda disponible en `http://127.0.0.1`.
+
+> **Puerto 80 en WSL2/Linux:** un usuario normal no puede abrir puertos menores
+> a 1024 y `runserver` falla con `Permission denied`. Se habilita una sola vez
+> (persistente entre reinicios, requiere `systemd=true` en `/etc/wsl.conf`):
+>
+> ```bash
+> echo 'net.ipv4.ip_unprivileged_port_start=0' | sudo tee /etc/sysctl.d/99-puerto-80.conf
+> sudo sysctl --system
+> ```
+>
+> Desde Windows, `http://127.0.0.1` llega solo a WSL2. Para entrar desde el
+> celular por Wi-Fi hace falta, en PowerShell **como administrador**:
+> `netsh interface portproxy add v4tov4 listenport=80 listenaddress=0.0.0.0 connectport=80 connectaddress=<IP de WSL: hostname -I>`
+> y permitir el puerto 80 en el firewall.
 
 ### Reiniciar la base de datos desde cero
 
@@ -133,7 +147,7 @@ cp .env.example .env
 
 python manage.py migrate
 python manage.py shell < seed.py
-python manage.py runserver 8001
+python manage.py runserver 80
 ```
 </details>
 
@@ -163,7 +177,7 @@ python manage.py runserver 8001
 
    python manage.py migrate
    python manage.py shell < seed.py
-   python manage.py runserver 8001
+   python manage.py runserver 80
    ```
 </details>
 
@@ -178,7 +192,7 @@ Copiá `.env.example` a `.env` y completá:
 | `ALLOWED_HOSTS` | Dominios permitidos, separados por coma (vacío está bien en desarrollo). | No |
 | `DB_NAME` / `DB_USER` / `DB_PASSWORD` / `DB_HOST` / `DB_PORT` | Conexión a PostgreSQL. Deben coincidir con el usuario y la base que creaste en el paso 2 de la instalación. | Sí |
 | `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | Cuenta de Gmail y [contraseña de aplicación](https://myaccount.google.com/apppasswords) para enviar correos reales (verificación, recuperación de contraseña, certificados, comprobantes de compra). Si se dejan vacías, Django lanzará un error al intentar enviar un correo — para desarrollo sin correos reales, descomentá la línea de `EMAIL_BACKEND` de consola en `core/settings.py`. | No |
-| `SITE_URL` | URL base usada en los enlaces de los correos. | No |
+| `SITE_URL` | Reservada; hoy no la lee ningún código. Los enlaces de los correos (verificación, recuperar contraseña, certificados) se arman con el host desde el que abrís el sitio, así que en el puerto 80 salen como `http://127.0.0.1/...`. | No |
 | `GEMINI_API_KEY` | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) para que el chatbot responda con IA real. Ver sección de abajo. | No |
 | `GEMINI_MODEL` | Modelo de Gemini a usar (por defecto `gemini-3.5-flash-lite`, responde en 2-3 segundos). Se usa una versión fija en vez del alias `gemini-flash-latest` porque ese alias puede apuntar a una versión nueva con demanda alta (503 "high demand"); y se usa la variante `-lite` en vez de `gemini-3.5-flash` a secas porque esta última puede tardar 15-45 segundos por respuesta. Podés cambiarlo por cualquier otro modelo que liste `GET https://generativelanguage.googleapis.com/v1beta/models?key=TU_CLAVE` con soporte para `generateContent`. | No |
 

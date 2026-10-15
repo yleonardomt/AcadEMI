@@ -81,8 +81,8 @@ class _ServerSettingsState extends State<_ServerSettings> {
         const Text('Servidor de AcadEMI', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800)),
         const SizedBox(height: 6),
         Text(
-          'Dirección donde corre el sitio de AcadEMI. En el emulador de Android usa 10.0.2.2:8001; '
-          'en un celular real, la IP de tu PC en la red (ej. 192.168.1.10:8001).',
+          'Dirección donde corre el sitio de AcadEMI. En el emulador de Android usa 10.0.2.2; '
+          'en un celular real, la IP de tu PC en la red (ej. 192.168.1.10).',
           style: TextStyle(color: p.inkMuted, height: 1.45, fontSize: 13.5),
         ),
         const SizedBox(height: 18),
@@ -90,7 +90,7 @@ class _ServerSettingsState extends State<_ServerSettings> {
           controller: _url,
           label: 'Dirección',
           icon: FontAwesomeIcons.server,
-          hint: 'http://192.168.1.10:8001',
+          hint: 'http://192.168.1.10',
           keyboardType: TextInputType.url,
         ),
         if (_result != null) ...[

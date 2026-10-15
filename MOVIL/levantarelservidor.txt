@@ -1,0 +1,137 @@
+=====================================================================
+  LEVANTAR EL SERVIDOR PARA USAR LA APP (APK) POR WI-FI
+  (sin cable USB, sin flutter run - solo para usar el APK instalado)
+=====================================================================
+
+Esto es lo que necesitas cuando YA TIENES EL APK INSTALADO en el
+celular y solo quieres que la app se conecte al servidor por Wi-Fi.
+
+Si en cambio quieres PROGRAMAR (editar código y ver los cambios al
+instante), usa el archivo app.txt de esta misma carpeta en su lugar
+(ese es por cable USB, con recarga en vivo).
+
+---------------------------------------------------------------------
+ REQUISITO: EL CELULAR Y LA PC EN LA MISMA RED WI-FI
+---------------------------------------------------------------------
+La app y el servidor deben estar conectados al mismo router/Wi-Fi.
+No funciona con datos móviles del celular, ni si la PC está solo por
+cable Ethernet sin Wi-Fi.
+
+---------------------------------------------------------------------
+ PASO 1 - Levanta el servidor de AcadEMI
+---------------------------------------------------------------------
+En una terminal de Ubuntu (WSL):
+
+   $ cd ~/Academi
+   $ source venv/bin/activate
+   $ python manage.py runserver 0.0.0.0:8001
+
+Déjalo corriendo en esa terminal (no la cierres). Para confirmar que
+vive, en OTRA terminal:
+
+   $ curl localhost:8001/api/v1/categories/
+
+Si responde con datos (no un error de conexión), el servidor está
+funcionando.
+
+---------------------------------------------------------------------
+ PASO 2 - Averigua la dirección Wi-Fi de la PC (IMPORTANTE)
+---------------------------------------------------------------------
+Esta dirección CAMBIA cada vez que la PC se reconecta al Wi-Fi o se
+reinicia el router. Antes de usar la app, revisa cuál es hoy.
+
+En PowerShell de Windows:
+
+   Get-NetIPAddress -InterfaceAlias "Wi-Fi" -AddressFamily IPv4 | Select IPAddress
+
+Apunta el número que te dé (ejemplo real de una sesión anterior:
+172.174.0.228 - la tuya puede ser distinta, tipo 192.168.x.x).
+
+---------------------------------------------------------------------
+ PASO 3 - Abre el puerto 8001 en Windows (SOLO LA PRIMERA VEZ)
+---------------------------------------------------------------------
+WSL vive "escondido" detrás de Windows: el celular no puede llegar
+directo al servidor, tiene que pasar por Windows primero. Estas 3
+reglas dejan pasar el tráfico. Se hacen UNA SOLA VEZ (sobreviven a
+reinicios de la PC); solo hay que rehacerlas si dejan de funcionar.
+
+Abre PowerShell COMO ADMINISTRADOR y ejecuta (cambia la IP de WSL si
+es distinta - la ves con "hostname -I" en la terminal de Ubuntu, es
+el primer número que muestra, algo como 172.21.201.1):
+
+   netsh interface portproxy delete v4tov4 listenport=8001 listenaddress=0.0.0.0
+   netsh interface portproxy add v4tov4 listenport=8001 listenaddress=0.0.0.0 connectport=8001 connectaddress=172.21.201.1
+
+   New-NetFirewallRule -DisplayName "AcadEMI 8001" -Direction Inbound -Protocol TCP -LocalPort 8001 -Action Allow
+
+   New-NetFirewallHyperVRule -Name AcadEMI8001 -DisplayName "AcadEMI 8001" -Direction Inbound -VMCreatorId "{40E0AC32-46A5-438A-A0B2-2B479E8F2E90}" -Protocol TCP -LocalPorts 8001 -Action Allow
+
+* La IP de WSL (172.21.201.1 en el ejemplo) SÍ puede cambiar cada vez
+  que reinicias la PC. Si el PASO 4 falla, repite la primera línea
+  del portproxy con la IP nueva de "hostname -I".
+
+---------------------------------------------------------------------
+ PASO 4 - Comprueba que Windows sí deja pasar el tráfico
+---------------------------------------------------------------------
+En PowerShell (normal, no hace falta administrador):
+
+   Invoke-WebRequest http://TU-IP-WIFI:8001/api/v1/categories/
+
+Reemplaza TU-IP-WIFI por la del PASO 2. Si responde con "StatusCode
+200", todo está bien. Si da error o se queda pegado, repite el PASO 3
+con la IP de WSL actualizada.
+
+---------------------------------------------------------------------
+ PASO 5 - Configura la app en el celular
+---------------------------------------------------------------------
+1. Conecta el celular al MISMO Wi-Fi que la PC.
+2. Abre la app AcadEMI. En la pantalla de login, toca el ícono de
+   engranaje (arriba a la derecha).
+3. Borra lo que haya y escribe:
+
+     http://TU-IP-WIFI:8001
+
+   (la del PASO 2, con http:// adelante y :8001 al final)
+
+4. Toca "Probar". Debe decir "Conexión exitosa".
+5. Toca "Guardar".
+
+---------------------------------------------------------------------
+ USUARIOS DE PRUEBA
+---------------------------------------------------------------------
+   Estudiante:     estudiante   /  estudiante
+   Docente:        teacher1     /  teacher123
+   Administrador:  admin        /  admin
+
+---------------------------------------------------------------------
+ SI ALGO FALLA
+---------------------------------------------------------------------
+- La app dice "No se pudo conectar con el servidor"
+    1) ¿El PASO 1 (servidor) sigue corriendo en la terminal?
+    2) ¿El celular está en el mismo Wi-Fi que la PC? (no datos
+       móviles, no otro Wi-Fi)
+    3) Repite el PASO 2: la IP de la PC pudo haber cambiado.
+    4) Repite el PASO 4 desde PowerShell para descartar que sea un
+       problema de la app y no de la red.
+    5) Si el PASO 4 también falla, repite el PASO 3 (puede que la IP
+       de WSL haya cambiado; consíguela con "hostname -I").
+
+- El router bloquea la comunicación entre dispositivos ("aislamiento
+  de clientes" / "AP isolation"), común en Wi-Fi de oficinas o
+  algunos routers de ISP
+    -> No hay arreglo por software; hay que desactivar esa opción en
+       la configuración del router, o usar el método por cable USB
+       de app.txt en su lugar.
+
+- Reiniciaste la PC
+    -> Repite los PASOS 1, 2 y 4 (el portproxy y las reglas del
+       PASO 3 normalmente sobreviven, pero la IP de WSL puede haber
+       cambiado, así que si el PASO 4 falla, repite el PASO 3).
+
+---------------------------------------------------------------------
+ ALTERNATIVA SIN WI-FI: POR CABLE USB
+---------------------------------------------------------------------
+Si el Wi-Fi da problemas (aislamiento de clientes, redes distintas,
+etc.), usa app.txt en esta misma carpeta: conecta el celular por
+cable USB y la app usa http://127.0.0.1:8001 sin depender de la red.
+=====================================================================
