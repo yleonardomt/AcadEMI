@@ -1,7 +1,9 @@
-from django.test import TestCase
+from django.test import RequestFactory, SimpleTestCase, TestCase
 from django.urls import reverse
 from unittest.mock import patch
 from datetime import timedelta
+from contextlib import redirect_stdout
+from io import StringIO
 
 from django.utils import timezone
 from django.test import override_settings
@@ -10,6 +12,40 @@ from .models import User, Category, Course, Module, Lesson, Evaluation, LessonPr
 from .api.auth import make_token
 from .utils.coupons import coupon_discount, find_coupon, save_coupon
 from .forms import RegisterForm
+
+
+@override_settings(DEBUG=False, ALLOWED_HOSTS=['testserver', '192.0.2.10'], SITE_URL='http://192.0.2.10')
+class ReviewDeploymentTests(SimpleTestCase):
+    def test_404_web_y_api_tienen_respuesta_correcta(self):
+        web = self.client.get('/pagina-inexistente/')
+        api = self.client.get('/api/v1/ruta-inexistente/')
+        self.assertEqual(web.status_code, 404)
+        self.assertContains(web, 'No encontramos esta página', status_code=404)
+        self.assertEqual(api.status_code, 404)
+        self.assertEqual(api.json()['message'], 'Página no encontrada.')
+
+    def test_500_no_requiere_sesion_ni_base_de_datos(self):
+        from core.error_views import server_error
+        response = server_error(RequestFactory().get('/'))
+        self.assertContains(response, 'No pudimos cargar la página', status_code=500)
+
+    def test_enlace_de_recuperacion_usa_site_url(self):
+        from .utils.email import generate_reset_link
+        user = User(pk=1, username='test', email='test@example.com', password='hash')
+        link = generate_reset_link(user, RequestFactory().get('/', HTTP_HOST='testserver'))
+        self.assertTrue(link.startswith('http://192.0.2.10/reset-password/'))
+
+
+class CatalogBootstrapTests(TestCase):
+    def test_initial_catalog_has_bundled_images_and_is_idempotent(self):
+        from scripts.load_emi_catalog import COURSES, run
+        with redirect_stdout(StringIO()):
+            run(no_images=True, only_if_empty=True)
+        self.assertEqual(Course.objects.count(), len(COURSES))
+        self.assertEqual(Course.objects.exclude(image='').count(), len(COURSES))
+        with redirect_stdout(StringIO()):
+            run(no_images=True, only_if_empty=True)
+        self.assertEqual(Course.objects.count(), len(COURSES))
 
 
 @override_settings(DEMO_CHECKOUT=False)

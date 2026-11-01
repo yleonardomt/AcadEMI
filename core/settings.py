@@ -4,6 +4,9 @@ Django settings for core project.
 
 from pathlib import Path
 import os
+from urllib.parse import parse_qsl, unquote, urlparse
+
+from django.core.exceptions import ImproperlyConfigured
 
 from dotenv import load_dotenv
 
@@ -14,12 +17,49 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / '.env')
 
+def env_bool(name, default=False):
+    return os.environ.get(name, str(default)).strip().lower() in ('1', 'true', 'yes', 'on')
+
+
+def env_list(name):
+    return [item.strip() for item in os.environ.get(name, '').split(',') if item.strip()]
+
+
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-tu-clave-secreta-aqui')
 
-DEBUG = os.environ.get('DEBUG', 'False') == 'True'
-DEMO_CHECKOUT = os.environ.get('DEMO_CHECKOUT', 'False') == 'True'
+DEBUG = env_bool('DEBUG')
+DEMO_CHECKOUT = env_bool('DEMO_CHECKOUT')
 
-ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
+RENDER_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
+RENDER_URL = os.environ.get('RENDER_EXTERNAL_URL', '').strip().rstrip('/')
+ON_RENDER = bool(os.environ.get('RENDER'))
+
+ALLOWED_HOSTS = env_list('ALLOWED_HOSTS')
+if RENDER_HOSTNAME and RENDER_HOSTNAME not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(RENDER_HOSTNAME)
+SITE_URL = os.environ.get('SITE_URL', '').strip().rstrip('/') or RENDER_URL
+if not SITE_URL and RENDER_HOSTNAME:
+    SITE_URL = f'https://{RENDER_HOSTNAME}'
+CSRF_TRUSTED_ORIGINS = env_list('CSRF_TRUSTED_ORIGINS')
+if SITE_URL:
+    parsed_site = urlparse(SITE_URL)
+    if (parsed_site.scheme not in ('http', 'https') or not parsed_site.hostname
+            or parsed_site.path or parsed_site.query or parsed_site.fragment
+            or parsed_site.username or parsed_site.password):
+        raise ImproperlyConfigured('SITE_URL debe ser una URL de origen válida, sin ruta ni parámetros.')
+    origin = f'{parsed_site.scheme}://{parsed_site.netloc}'
+    if origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(origin)
+
+if not DEBUG:
+    if SECRET_KEY.startswith('django-insecure-') or SECRET_KEY == 'change-me-to-a-random-secret-key':
+        raise ImproperlyConfigured('Define una SECRET_KEY única en las variables de entorno antes de usar DEBUG=False.')
+    if not ALLOWED_HOSTS:
+        raise ImproperlyConfigured('Define ALLOWED_HOSTS con la IP o dominio público antes de usar DEBUG=False.')
+    if '*' in ALLOWED_HOSTS:
+        raise ImproperlyConfigured('ALLOWED_HOSTS no puede contener * con DEBUG=False.')
+    if not SITE_URL:
+        raise ImproperlyConfigured('Define SITE_URL con la URL pública antes de usar DEBUG=False.')
 
 
 # ============================================
@@ -43,6 +83,7 @@ INSTALLED_APPS = [
 # ============================================
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -94,16 +135,34 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # ============================================
 # BASE DE DATOS
 # ============================================
-DATABASES = {
-    'default': {
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+if DATABASE_URL:
+    database = urlparse(DATABASE_URL)
+    if (database.scheme not in ('postgres', 'postgresql') or not database.hostname
+            or not database.path.strip('/') or database.fragment):
+        raise ImproperlyConfigured('DATABASE_URL debe ser una URL PostgreSQL válida.')
+    try:
+        database_port = database.port or 5432
+    except ValueError as exc:
+        raise ImproperlyConfigured('DATABASE_URL tiene un puerto inválido.') from exc
+    DATABASES = {'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': unquote(database.path.lstrip('/')),
+        'USER': unquote(database.username or ''),
+        'PASSWORD': unquote(database.password or ''),
+        'HOST': database.hostname,
+        'PORT': str(database_port),
+        'OPTIONS': dict(parse_qsl(database.query, keep_blank_values=True)),
+    }}
+else:
+    DATABASES = {'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.environ.get('DB_NAME', 'academi_db'),
         'USER': os.environ.get('DB_USER', 'academi_user'),
         'PASSWORD': os.environ.get('DB_PASSWORD', ''),
         'HOST': os.environ.get('DB_HOST', 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
-    }
-}
+    }}
 
 
 # ============================================
@@ -132,6 +191,35 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage'},
+}
+
+# Archivos de cursos, entregas y certificados. Render Free pierde los archivos
+# locales al reiniciar; un bucket S3 compatible permite conservarlos.
+S3_ENDPOINT = os.environ.get('AWS_ENDPOINT_URL_S3', '').strip()
+S3_BUCKET = os.environ.get('AWS_STORAGE_BUCKET_NAME', '').strip()
+S3_ACCESS_KEY = os.environ.get('AWS_ACCESS_KEY_ID', '').strip()
+S3_SECRET_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '').strip()
+if any((S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY, S3_SECRET_KEY)):
+    if not all((S3_ENDPOINT, S3_BUCKET, S3_ACCESS_KEY, S3_SECRET_KEY)):
+        raise ImproperlyConfigured('Completa AWS_ENDPOINT_URL_S3, AWS_STORAGE_BUCKET_NAME, AWS_ACCESS_KEY_ID y AWS_SECRET_ACCESS_KEY.')
+    STORAGES['default'] = {
+        'BACKEND': 'storages.backends.s3.S3Storage',
+        'OPTIONS': {
+            'endpoint_url': S3_ENDPOINT,
+            'bucket_name': S3_BUCKET,
+            'access_key': S3_ACCESS_KEY,
+            'secret_key': S3_SECRET_KEY,
+            'region_name': os.environ.get('AWS_REGION', 'us-east-2'),
+            'addressing_style': 'path',
+            'signature_version': 's3v4',
+            'querystring_auth': True,
+            'default_acl': None,
+            'file_overwrite': False,
+        },
+    }
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -171,22 +259,22 @@ RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
 # CONFIGURACIÓN DE EMAIL (GMAIL)
 # ============================================
 # BACKEND DE EMAIL
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
 
 # CONFIGURACIÓN SMTP DE GMAIL
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = env_bool('EMAIL_USE_TLS', True)
 
 # CREDENCIALES DE GMAIL
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')  # Contraseña de aplicación (SIN ESPACIOS)
 
 # EMAIL DE ORIGEN
-DEFAULT_FROM_EMAIL = f'AcadEMI <{EMAIL_HOST_USER}>'
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', f'AcadEMI <{EMAIL_HOST_USER}>')
 
 # URL DEL SITIO (PARA ENLACES EN CORREOS)
-SITE_URL = os.environ.get('SITE_URL', 'http://127.0.0.1')
+# SITE_URL se define arriba y sirve también para CSRF y los enlaces de correo.
 
 # OPCIÓN PARA DESARROLLO (MUESTRA CORREOS EN CONSOLA)
 # DESCOMENTAR PARA DESARROLLO SIN ENVIAR CORREOS REALES
@@ -210,19 +298,19 @@ GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.5-flash-lite')
 # ============================================
 # CONFIGURACIÓN DE SEGURIDAD PARA PRODUCCIÓN
 # ============================================
-# RNF-05: toda la comunicación por HTTPS/TLS. Se activa sola cuando DEBUG=False
-# (producción); en desarrollo (DEBUG=True) el sitio sigue funcionando por http.
-# Si el servidor está detrás de un proxy/balanceador que termina TLS, define en
-# el .env  BEHIND_PROXY=True  para que Django confíe en su cabecera.
-FORCE_HTTPS = os.environ.get('FORCE_HTTPS', str(not DEBUG)) == 'True'
+# Render publica el servicio por HTTPS. En un VPS por HTTP, configurar
+# FORCE_HTTPS=False y BEHIND_PROXY según el proxy utilizado.
+FORCE_HTTPS = env_bool('FORCE_HTTPS', ON_RENDER)
+SECURE_SSL_REDIRECT = FORCE_HTTPS
+SESSION_COOKIE_SECURE = FORCE_HTTPS
+CSRF_COOKIE_SECURE = FORCE_HTTPS
+SECURE_HSTS_SECONDS = int(os.environ.get('SECURE_HSTS_SECONDS', '3600')) if FORCE_HTTPS else 0
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
 if FORCE_HTTPS:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-if os.environ.get('BEHIND_PROXY', 'False') == 'True':
+    if SITE_URL and urlparse(SITE_URL).scheme != 'https':
+        raise ImproperlyConfigured('Con FORCE_HTTPS=True, SITE_URL debe empezar por https://.')
+if env_bool('BEHIND_PROXY', ON_RENDER):
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
@@ -262,11 +350,9 @@ CSP_IMG_SRC = ("'self'", "data:", "https:")
 CSP_FRAME_SRC = ("'self'", "https://www.youtube.com", "https://player.vimeo.com")
 CSP_CONNECT_SRC = ("'self'",)
 
-# Seguridad de sesión (cookies "Secure" solo tienen sentido bajo HTTPS, es decir, cuando DEBUG=False)
-SESSION_COOKIE_SECURE = not DEBUG
+# Las cookies Secure solo funcionan cuando el navegador accede por HTTPS.
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Strict'
-CSRF_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 

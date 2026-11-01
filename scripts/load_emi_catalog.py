@@ -23,6 +23,8 @@ django.setup()
 import requests  # noqa: E402
 from django.conf import settings  # noqa: E402
 from django.db import transaction  # noqa: E402
+from django.core.files import File  # noqa: E402
+from django.core.files.storage import default_storage  # noqa: E402
 from django.utils import timezone  # noqa: E402
 from academi.models import (  # noqa: E402
     Category, Course, Evaluation, Lesson, Module, QuestionEvaluation,
@@ -151,7 +153,10 @@ def upsert_lesson(module, order, title, kind, content='', video='', is_free=Fals
     return lesson
 
 
-def run(archive_legacy=False, no_images=False):
+def run(archive_legacy=False, no_images=False, only_if_empty=False):
+    if only_if_empty and Course.objects.exists():
+        print('La base ya contiene cursos; no se modifica el catálogo.')
+        return
     teacher, _ = User.objects.get_or_create(username='equipo_academi', defaults={
         'email': 'equipo@academi.local', 'first_name': 'Equipo', 'last_name': 'AcadEMI',
         'role': 'teacher', 'is_active': True, 'email_verified': True,
@@ -173,7 +178,14 @@ def run(archive_legacy=False, no_images=False):
             'description': f'Cursos aplicados a {item["area"].lower()} para estudiantes de ingeniería.'})
         slug = re.sub(r'[^a-z0-9]+', '-', item['title'].lower().translate(str.maketrans('áéíóúñ', 'aeioun'))).strip('-')
         image_path = None
-        if not no_images:
+        bundled_image = ROOT / 'media' / 'courses' / f'emi-{slug}.jpg'
+        if bundled_image.is_file():
+            image_path = f'courses/{bundled_image.name}'
+            if settings.STORAGES['default']['BACKEND'] != 'django.core.files.storage.FileSystemStorage':
+                if not default_storage.exists(image_path):
+                    with bundled_image.open('rb') as source:
+                        default_storage.save(image_path, File(source))
+        elif not no_images:
             try:
                 image_path, credit = download_image(item['image'], slug)
                 if credit:
@@ -240,5 +252,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--archive-legacy', action='store_true', help='Archiva cursos publicados anteriores, sin borrar datos históricos')
     parser.add_argument('--no-images', action='store_true', help='Omite descarga de imágenes')
+    parser.add_argument('--only-if-empty', action='store_true', help='Solo crea el catálogo si aún no hay cursos')
     arguments = parser.parse_args()
-    run(arguments.archive_legacy, arguments.no_images)
+    run(arguments.archive_legacy, arguments.no_images, arguments.only_if_empty)

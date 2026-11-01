@@ -5,19 +5,28 @@ from django.utils.html import strip_tags
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth import get_user_model
+from django.urls import reverse
+from urllib.parse import urlparse
 
 User = get_user_model()
+
+
+def _public_link(request, view_name, *args):
+    path = reverse(view_name, args=args)
+    return f'{settings.SITE_URL}{path}' if settings.SITE_URL else request.build_absolute_uri(path)
+
+
+def _public_domain(request):
+    return urlparse(settings.SITE_URL).netloc if settings.SITE_URL else request.get_host()
 
 
 def send_verification_email(user, request):
     """RF-07: Enviar correo de verificación"""
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    current_site = get_current_site(request)
-    domain = current_site.domain
-    verify_link = f"http://{domain}/verify-email/{uid}/{token}/"
+    domain = _public_domain(request)
+    verify_link = _public_link(request, 'verify_email', uid, token)
 
     context = {
         'user': user,
@@ -43,7 +52,7 @@ def send_password_reset_email(user, request, reset_link):
     context = {
         'user': user,
         'reset_link': reset_link,
-        'domain': get_current_site(request).domain,
+        'domain': _public_domain(request),
     }
 
     html_message = render_to_string('academi/emails/password_reset_email.html', context)
@@ -62,9 +71,8 @@ def send_password_reset_email(user, request, reset_link):
 def send_certificate_email(certificate, request):
     """RF-66: Enviar certificado por correo electrónico"""
     user = certificate.enrollment.student
-    current_site = get_current_site(request)
-    domain = current_site.domain
-    certificate_link = f"http://{domain}/my-certificates/{certificate.id}/"
+    domain = _public_domain(request)
+    certificate_link = _public_link(request, 'certificate_detail', certificate.id)
 
     context = {
         'user': user,
@@ -94,9 +102,8 @@ def send_certificate_email(certificate, request):
 
 def send_purchase_confirmation_email(payment, items, request):
     """RF-58, RF-62: enviar confirmación de compra y comprobante por correo."""
-    current_site = get_current_site(request)
-    domain = current_site.domain
-    invoice_link = f"http://{domain}/purchase-history/invoice/{payment.id}/"
+    domain = _public_domain(request)
+    invoice_link = _public_link(request, 'invoice', payment.id)
 
     context = {
         'payment': payment,
@@ -122,9 +129,7 @@ def generate_reset_link(user, request):
     """RF-03: Generar enlace de recuperación"""
     token = default_token_generator.make_token(user)
     uid = urlsafe_base64_encode(force_bytes(user.pk))
-    current_site = get_current_site(request)
-    domain = current_site.domain
-    return f"http://{domain}/reset-password/{uid}/{token}/"
+    return _public_link(request, 'password_reset_confirm', uid, token)
 
 
 def validate_reset_token(uidb64, token):

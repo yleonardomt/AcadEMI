@@ -6,6 +6,9 @@ contenido, y a administradores moderar la plataforma — con carrito de
 compras, cupones, certificados automáticos, cuestionarios con medidas
 anti-copia, y un asistente virtual con IA.
 
+Para publicar la revisión con servicios gratuitos, sigue
+[la guía de Render Free y Neon Free](docs/RENDER_GRATIS.md).
+
 **Estado de ventas:** existe un modo académico de checkout (`DEMO_CHECKOUT=True`)
 para mostrar compras, inscripciones, historial, cupones y reportes sin pasarela.
 Registra las operaciones como método interno `demo`, no envía confirmaciones de
@@ -196,10 +199,12 @@ Copiá `.env.example` a `.env` y completá:
 |---|---|---|
 | `SECRET_KEY` | Clave secreta de Django. Generá una propia para producción. | Sí |
 | `DEBUG` | `True` en desarrollo, `False` en producción. | Sí |
-| `ALLOWED_HOSTS` | Dominios permitidos, separados por coma (vacío está bien en desarrollo). | No |
-| `DB_NAME` / `DB_USER` / `DB_PASSWORD` / `DB_HOST` / `DB_PORT` | Conexión a PostgreSQL. Deben coincidir con el usuario y la base que creaste en el paso 2 de la instalación. | Sí |
+| `ALLOWED_HOSTS` | Dominios permitidos, separados por coma. En Render se añade automáticamente su dominio público. | Fuera de Render |
+| `DATABASE_URL` | URL de PostgreSQL externo. Si existe, tiene prioridad sobre las variables `DB_*`. | Si usas URL |
+| `DB_NAME` / `DB_USER` / `DB_PASSWORD` / `DB_HOST` / `DB_PORT` | Conexión a PostgreSQL cuando no se usa `DATABASE_URL`. | Si no usas URL |
 | `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | Cuenta de Gmail y [contraseña de aplicación](https://myaccount.google.com/apppasswords) para enviar correos reales (verificación, recuperación de contraseña, certificados, comprobantes de compra). Si se dejan vacías, Django lanzará un error al intentar enviar un correo — para desarrollo sin correos reales, descomentá la línea de `EMAIL_BACKEND` de consola en `core/settings.py`. | No |
-| `SITE_URL` | Reservada; hoy no la lee ningún código. Los enlaces de los correos (verificación, recuperar contraseña, certificados) se arman con el host desde el que abrís el sitio, así que en el puerto 80 salen como `http://127.0.0.1/...`. | No |
+| `SITE_URL` | URL pública para enlaces de correo y origen CSRF. En Render se toma automáticamente de `RENDER_EXTERNAL_URL`. | Fuera de Render |
+| `FORCE_HTTPS` / `BEHIND_PROXY` | Protegen cookies, redirección HTTPS y cabeceras del proxy. En Render se activan automáticamente; en un servidor propio se configuran según su proxy. | No |
 | `GEMINI_API_KEY` | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) para que el chatbot responda con IA real. Ver sección de abajo. | No |
 | `GEMINI_MODEL` | Modelo de Gemini a usar (por defecto `gemini-3.5-flash-lite`). Debe admitir `generateContent`; comprueba su disponibilidad con tu cuenta antes de publicar. | No |
 | `DEMO_CHECKOUT` | `True` habilita el checkout académico de cursos pagos sin cobro; `False` bloquea compras pagas hasta integrar una pasarela verificable. Nunca lo uses para cobrar dinero real. | No |

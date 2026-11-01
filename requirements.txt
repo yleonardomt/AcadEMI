@@ -7,6 +7,7 @@ django-crispy-forms==2.7
 django-csp==4.0
 django-defender==0.9.8
 django-formtools==2.7
+gunicorn==23.0.0
 django-ipware==7.0.1
 django-otp==1.7.0
 django-phonenumber-field==8.5.0
@@ -15,6 +16,7 @@ django-ratelimit==4.1.0
 django-sesame==3.2.3
 django-simple-captcha==0.7.0
 django-stronghold==0.4.0
+django-storages[s3]==1.14.6
 django-two-factor-auth==1.18.1
 django-user-agents==0.4.0
 packaging==26.3
