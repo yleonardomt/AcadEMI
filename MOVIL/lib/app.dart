@@ -97,6 +97,8 @@ class _Splash extends StatelessWidget {
               BrandLogo(size: 38, light: true),
               SizedBox(height: 28),
               SizedBox(width: 26, height: 26, child: CircularProgressIndicator(strokeWidth: 2.6, color: AppColors.secondary)),
+              SizedBox(height: 18),
+              Text('Preparando tus cursos...', style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600)),
             ]),
           ),
         ),
