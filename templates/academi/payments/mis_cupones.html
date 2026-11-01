@@ -49,7 +49,7 @@
                         <button type="submit" class="btn btn-primary w-100"><i class="fas fa-save"></i> Crear cupón</button>
                     </form>
                     {% else %}
-                    <p class="text-muted small mb-0">Necesitas al menos un curso creado para poder generar cupones.</p>
+                    <p class="text-muted small mb-0">Necesitas al menos un curso pago publicado para generar cupones.</p>
                     {% endif %}
                 </div>
             </div>
@@ -73,13 +73,13 @@
                                     <td class="fw-semibold">{{ coupon.code }}</td>
                                     <td>{{ coupon.course.title|truncatechars:25 }}</td>
                                     <td>{% if coupon.discount_type == 'percentage' %}{{ coupon.discount_value }}%{% else %}Bs. {{ coupon.discount_value }}{% endif %}</td>
-                                    <td>{{ coupon.used_count }} / {{ coupon.max_uses }}</td>
+                                    <td>{{ coupon.current_uses }} / {{ coupon.max_uses }}</td>
                                     <td>{{ coupon.expires_at|date:"d/m/Y" }}</td>
                                     <td>
-                                        {% if coupon.is_active %}
-                                            <span class="badge-status published">Activo</span>
+                                        {% if coupon.is_valid %}
+                                            <span class="badge-status published">Vigente</span>
                                         {% else %}
-                                            <span class="badge-status archived">Inactivo</span>
+                                            <span class="badge-status archived">No vigente</span>
                                         {% endif %}
                                     </td>
                                     <td>

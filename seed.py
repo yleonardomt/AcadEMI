@@ -27,7 +27,7 @@ from academi.models import (
     LessonProgress, Comment, Question, Answer, Review,
     Favorite, Notification, ActivityLog, SystemSetting, Certificate,
     Evaluation, QuestionEvaluation, QuestionOption, EvaluationResult,
-    UserAnswer, Coupon, Cart, CartItem,
+    UserAnswer, Coupon, Cart, CartItem, Payment, PaymentItem,
 )
 from academi.utils import issue_certificate
 
@@ -86,9 +86,9 @@ for data in admin_data:
 # Crear docentes
 teacher_data = [
     {'username': 'docente', 'email': 'docente@academi.com', 'password': 'docente',
-     'role': 'teacher', 'teacher_full_name': 'Prof. Docente Demo', 'teacher_email': 'docente@academi.com',
-     'specialty': 'Demostración general', 'experience_years': '5', 'institution': 'AcadEMI',
-     'teacher_bio': 'Cuenta de docente para pruebas: tiene cursos propios, cupones y preguntas respondidas.',
+     'role': 'teacher', 'teacher_full_name': 'Prof. AcadEMI', 'teacher_email': 'docente@academi.com',
+     'specialty': 'Educación en línea', 'experience_years': '5', 'institution': 'AcadEMI',
+     'teacher_bio': 'Docente de AcadEMI con cursos propios, cupones y preguntas respondidas.',
      'email_verified': True, 'is_active': True},
 
     {'username': 'teacher1', 'email': 'teacher1@academi.com', 'password': 'teacher123',
@@ -436,6 +436,8 @@ courses_data[5]['price'] = Decimal('0.00')
 # Guardar cursos
 courses = []
 for course_data in courses_data:
+    if course_data['price'] == 0:
+        course_data['is_free'] = True
     course, created = Course.objects.get_or_create(
         title=course_data['title'],
         defaults=course_data
@@ -583,7 +585,7 @@ if course_completed:
         code='BIENVENIDA10', course=course_completed,
         defaults={
             'discount_type': 'percentage', 'discount_value': Decimal('20.00'),
-            'max_uses': 10, 'used_count': 3, 'is_active': True,
+            'max_uses': 10, 'used_count': 0, 'demo_used_count': 3, 'is_active': True,
             'expires_at': timezone.now() + datetime.timedelta(days=30),
             'created_by': docente_user,
         }
@@ -592,7 +594,7 @@ if course_completed:
         code='PROMOVENCIDA', course=course_completed,
         defaults={
             'discount_type': 'fixed', 'discount_value': Decimal('10.00'),
-            'max_uses': 5, 'used_count': 5, 'is_active': False,
+            'max_uses': 5, 'used_count': 0, 'demo_used_count': 5, 'is_active': False,
             'expires_at': timezone.now() - datetime.timedelta(days=5),
             'created_by': docente_user,
         }
@@ -742,7 +744,7 @@ for user in User.objects.all()[:10]:
         ActivityLog.objects.create(
             user=user,
             action_type=random.choice(['login', 'course_create', 'enrollment', 'payment', 'profile_update']),
-            description=f'Actividad de prueba {i+1} para {user.username}',
+            description=f'Actividad registrada {i+1} para {user.username}',
             ip_address=f'192.168.{random.randint(1, 255)}.{random.randint(1, 255)}',
             user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         )
@@ -766,6 +768,39 @@ for student in students[:10]:
         )
 
 print(f"✅ Total favoritos: {Favorite.objects.count()}")
+
+# Compras académicas coherentes con las inscripciones de cursos pagos. El
+# método interno 'demo' permite mostrar historial y ventas sin cobro real.
+Course.objects.filter(enrollments__isnull=False).exclude(status='published').distinct().update(
+    status='published', approved_by=admins[0], approved_at=timezone.now(), published_at=timezone.now())
+Enrollment.objects.filter(course__is_free=True).update(
+    payment_method='free', payment_status='paid', payment_amount=Decimal('0.00'), transaction_id=None)
+for enrollment in Enrollment.objects.select_related('student', 'course').filter(
+        course__is_free=False, course__status='published'):
+    reference = f'SEED-ENR-{enrollment.id}'
+    price = enrollment.course.price
+    payment, _ = Payment.objects.get_or_create(
+        transaction_id=reference,
+        defaults={
+            'student': enrollment.student, 'amount': price, 'final_amount': price,
+            'discount_applied': Decimal('0.00'), 'payment_method': 'demo',
+            'status': 'completed', 'confirmed_at': timezone.now(),
+            'billing_name': enrollment.student.get_full_name() or enrollment.student.username,
+            'billing_email': enrollment.student.email,
+            'payment_details': {'source': 'academic_seed'},
+        })
+    PaymentItem.objects.get_or_create(
+        payment=payment, course=enrollment.course,
+        defaults={'price': price, 'final_price': price, 'discount_applied': Decimal('0.00')})
+    if enrollment.payment_method != 'demo':
+        enrollment.payment_method = 'demo'
+        enrollment.payment_status = 'demo'
+        enrollment.payment_amount = Decimal('0.00')
+        enrollment.transaction_id = reference
+        enrollment.payment_date = timezone.now()
+        enrollment.save(update_fields=['payment_method', 'payment_status', 'payment_amount',
+                                       'transaction_id', 'payment_date'])
+print(f"✅ Compras académicas: {Payment.objects.filter(payment_method='demo').count()}")
 
 # ============================================
 # RESUMEN FINAL

@@ -139,10 +139,10 @@ class _ManageCourseScreenState extends State<ManageCourseScreen> {
                 ),
               ]),
             ),
-            if (status != 'published') ...[
+            if (status == 'draft' || status == 'rejected' || status == 'archived') ...[
               const SizedBox(height: 14),
               LoadingButton(
-                label: 'Publicar curso',
+                label: 'Enviar a revisión',
                 icon: FontAwesomeIcons.rocket,
                 accent: true,
                 onPressed: () => _run(() async => showToast(context, await api.publishCourse(widget.courseId), success: true)),

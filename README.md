@@ -1,10 +1,19 @@
 # AcadEMI
 
 Plataforma educativa online (estilo Udemy) construida con Django. Permite a
-estudiantes comprar e inscribirse en cursos, a docentes crear y gestionar
+estudiantes inscribirse en cursos gratuitos, a docentes crear y gestionar
 contenido, y a administradores moderar la plataforma — con carrito de
 compras, cupones, certificados automáticos, cuestionarios con medidas
 anti-copia, y un asistente virtual con IA.
+
+**Estado de ventas:** existe un modo académico de checkout (`DEMO_CHECKOUT=True`)
+para mostrar compras, inscripciones, historial, cupones y reportes sin pasarela.
+Registra las operaciones como método interno `demo`, no envía confirmaciones de
+cobro ni consume usos de cupones reales. En la instalación local está activado.
+Con `DEMO_CHECKOUT=False`, las compras pagas se bloquean hasta integrar una
+pasarela que confirme el cobro desde el servidor; las inscripciones gratuitas
+siguen funcionando. Antes de cobrar dinero real se necesitan credenciales del
+proveedor, confirmación verificable y pruebas de extremo a extremo.
 
 ## Índice
 
@@ -29,9 +38,8 @@ anti-copia, y un asistente virtual con IA.
 
 ## Instalación manual completa (Ubuntu/Debian)
 
-Todo el bloque de abajo se puede copiar y pegar tal cual en una terminal
-limpia (WSL2, Ubuntu, Debian) y deja la plataforma corriendo en
-`http://127.0.0.1`. Cambiá `TU_PASSWORD_DB` por una contraseña propia
+Este procedimiento es para desarrollo local. Deja la plataforma corriendo en
+`http://127.0.0.1`; no uses `runserver` como servidor público. Cambiá `TU_PASSWORD_DB` por una contraseña propia
 antes de pegarlo — se usa dos veces (al crear el usuario de PostgreSQL y en
 el `.env`), así que tiene que ser la misma en ambos lugares.
 
@@ -83,8 +91,7 @@ sed -i "s/SECRET_KEY=change-me-to-a-random-secret-key/SECRET_KEY=$(python3 -c 'i
 python manage.py migrate
 
 # ============================================
-# 8. Cargar datos de ejemplo: usuarios, cursos, exámenes, cupones, etc.
-#    (usuario/contraseña de prueba: ver sección "Credenciales de prueba")
+# 8. SOLO EN DESARROLLO: cargar cuentas y cursos de ejemplo con contraseñas conocidas
 # ============================================
 python manage.py shell < seed.py
 
@@ -194,7 +201,19 @@ Copiá `.env.example` a `.env` y completá:
 | `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD` | Cuenta de Gmail y [contraseña de aplicación](https://myaccount.google.com/apppasswords) para enviar correos reales (verificación, recuperación de contraseña, certificados, comprobantes de compra). Si se dejan vacías, Django lanzará un error al intentar enviar un correo — para desarrollo sin correos reales, descomentá la línea de `EMAIL_BACKEND` de consola en `core/settings.py`. | No |
 | `SITE_URL` | Reservada; hoy no la lee ningún código. Los enlaces de los correos (verificación, recuperar contraseña, certificados) se arman con el host desde el que abrís el sitio, así que en el puerto 80 salen como `http://127.0.0.1/...`. | No |
 | `GEMINI_API_KEY` | Clave gratuita de [Google AI Studio](https://aistudio.google.com/apikey) para que el chatbot responda con IA real. Ver sección de abajo. | No |
-| `GEMINI_MODEL` | Modelo de Gemini a usar (por defecto `gemini-3.5-flash-lite`, responde en 2-3 segundos). Se usa una versión fija en vez del alias `gemini-flash-latest` porque ese alias puede apuntar a una versión nueva con demanda alta (503 "high demand"); y se usa la variante `-lite` en vez de `gemini-3.5-flash` a secas porque esta última puede tardar 15-45 segundos por respuesta. Podés cambiarlo por cualquier otro modelo que liste `GET https://generativelanguage.googleapis.com/v1beta/models?key=TU_CLAVE` con soporte para `generateContent`. | No |
+| `GEMINI_MODEL` | Modelo de Gemini a usar (por defecto `gemini-3.5-flash-lite`). Debe admitir `generateContent`; comprueba su disponibilidad con tu cuenta antes de publicar. | No |
+| `DEMO_CHECKOUT` | `True` habilita el checkout académico de cursos pagos sin cobro; `False` bloquea compras pagas hasta integrar una pasarela verificable. Nunca lo uses para cobrar dinero real. | No |
+
+Antes de publicar, usá una `SECRET_KEY` aleatoria de al menos 50 caracteres,
+`DEBUG=False`, `ALLOWED_HOSTS` con tu dominio y HTTPS. No ejecutes `seed.py`
+en producción: crea cuentas con contraseñas conocidas.
+
+Para descargar una copia de PostgreSQL y los archivos subidos, instalá las
+herramientas cliente `pg_dump`/`pg_restore`, verificá que PostgreSQL esté
+activo y ejecutá `./scripts/backup_db.sh`. Los archivos privados quedan en
+`backups/`. Probá una restauración en una base separada antes de depender de
+estas copias. `./scripts/restore_db.sh backups/db_FECHA.dump` reemplaza la
+base actual tras pedir confirmación.
 
 ## Credenciales de prueba
 
@@ -218,8 +237,9 @@ certificados, reseñas y favoritos aleatorios):
 | Docentes extra | `teacher1` … `teacher5` | `teacher123` |
 | Estudiantes extra | `estudiante01` … `estudiante20` | `student123` |
 
-Cambiá estas contraseñas antes de exponer la plataforma fuera de tu
-máquina (Perfil → Cambiar contraseña), o creá un administrador propio:
+Estas cuentas son únicamente para pruebas locales. Nunca ejecutes `seed.py`
+en una instalación pública. Crea un administrador propio con una contraseña
+única y robusta antes de operar la plataforma:
 
 ```bash
 python manage.py shell -c "
@@ -258,11 +278,11 @@ de dos formas:
    (`ChatKnowledgeBase` / `ChatIntent` en la base de datos), con respuestas
    ya cargadas sobre cursos, compras, progreso, certificados y ayuda.
 2. **Con `GEMINI_API_KEY` configurada:** además de esa base de conocimiento,
-   genera respuestas con un modelo de lenguaje real (la API gratuita de
-   [Gemini](https://aistudio.google.com/apikey)), usando datos reales de
-   la plataforma como contexto (catálogo real de cursos por categoría con
-   precio, y — si el usuario tiene sesión iniciada — sus propios cursos y
-   progreso), para poder recomendar cursos concretos cuando el usuario
+   genera respuestas con un modelo de lenguaje real (la API de
+   [Gemini](https://aistudio.google.com/apikey)), usando una muestra del catálogo
+   publicado como contexto. Las preguntas sobre los propios cursos y el progreso
+   se responden directamente desde la base de datos, sin enviar esos datos a Gemini.
+   El asistente puede recomendar cursos concretos cuando el usuario
    cuenta un interés (p.ej. "me gusta programar"). Si la llamada a la IA
    falla o no hay clave configurada, el chatbot vuelve a su base de
    conocimiento automáticamente, sin que el usuario note nada.

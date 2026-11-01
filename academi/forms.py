@@ -23,15 +23,15 @@ class RegisterForm(UserCreationForm):
     # genera solo a partir del email en save().
     email = forms.EmailField(required=True, widget=forms.EmailInput(attrs={
         'class': 'form-control',
-        'placeholder': 'ejemplo@correo.com'
+        'placeholder': 'tu@correo.com', 'autocomplete': 'email'
     }))
     password1 = forms.CharField(required=True, widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Mínimo 8 caracteres'
+        'placeholder': 'Crea una contraseña', 'autocomplete': 'new-password'
     }))
     password2 = forms.CharField(required=True, widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Confirma tu contraseña'
+        'placeholder': 'Repite tu contraseña', 'autocomplete': 'new-password'
     }))
     role = forms.ChoiceField(choices=ROLES_CHOICES, required=True, widget=forms.Select(attrs={
         'class': 'form-control',
@@ -41,7 +41,7 @@ class RegisterForm(UserCreationForm):
     # ===== CAMPOS PARA ESTUDIANTE =====
     full_name = forms.CharField(required=False, widget=forms.TextInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Tu nombre completo'
+        'placeholder': 'Tu nombre completo', 'autocomplete': 'name'
     }))
     phone = forms.CharField(required=False, widget=forms.TextInput(attrs={
         'class': 'form-control',
@@ -91,7 +91,7 @@ class RegisterForm(UserCreationForm):
     # ===== CAMPOS PARA DOCENTE =====
     teacher_full_name = forms.CharField(required=False, widget=forms.TextInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Tu nombre completo'
+        'placeholder': 'Tu nombre completo', 'autocomplete': 'name'
     }))
     teacher_phone = forms.CharField(required=False, widget=forms.TextInput(attrs={
         'class': 'form-control',
@@ -170,9 +170,9 @@ class RegisterForm(UserCreationForm):
                 self.initial.setdefault(name, [])
 
     def clean_email(self):
-        email = self.cleaned_data.get('email')
-        if User.objects.filter(email=email).exists():
-            raise ValidationError('Este email ya está registrado')
+        email = self.cleaned_data.get('email', '').strip().lower()
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError('Este correo ya está registrado. Puedes iniciar sesión o recuperar tu contraseña.')
         return email
 
     def clean_password1(self):
@@ -196,18 +196,12 @@ class RegisterForm(UserCreationForm):
         if role == 'student':
             if not cleaned_data.get('full_name'):
                 self.add_error('full_name', 'El nombre completo es requerido para estudiantes')
-            if not cleaned_data.get('university'):
-                self.add_error('university', 'La universidad/institución es requerida')
-            if not cleaned_data.get('career'):
-                self.add_error('career', 'La carrera es requerida')
                 
         elif role == 'teacher':
             if not cleaned_data.get('teacher_full_name'):
                 self.add_error('teacher_full_name', 'El nombre completo es requerido para docentes')
             if not cleaned_data.get('specialty'):
                 self.add_error('specialty', 'La especialidad es requerida')
-            if not cleaned_data.get('experience_years'):
-                self.add_error('experience_years', 'Los años de experiencia son requeridos')
                 
         return cleaned_data
 
@@ -235,10 +229,20 @@ class RegisterForm(UserCreationForm):
         elif self.cleaned_data.get('teacher_phone'):
             user.phone = self.cleaned_data.get('teacher_phone')
             
-        if self.cleaned_data.get('full_name'):
-            user.first_name = self.cleaned_data.get('full_name')
-        elif self.cleaned_data.get('teacher_full_name'):
-            user.first_name = self.cleaned_data.get('teacher_full_name')
+        if user.role == 'student':
+            user.full_name = self.cleaned_data.get('full_name', '').strip()
+            user.first_name = user.full_name
+            for field in ('birth_date', 'city', 'education_level', 'university', 'career', 'semester'):
+                setattr(user, field, self.cleaned_data.get(field) or None)
+            user.interests = ', '.join(self.cleaned_data.get('interests') or [])
+        else:
+            user.teacher_full_name = self.cleaned_data.get('teacher_full_name', '').strip()
+            user.first_name = user.teacher_full_name
+            user.teacher_phone = self.cleaned_data.get('teacher_phone') or None
+            for field in ('teacher_email', 'specialty', 'experience_years', 'institution', 'teacher_bio', 'linkedin', 'website'):
+                setattr(user, field, self.cleaned_data.get(field) or None)
+            user.teaching_materials = ', '.join(self.cleaned_data.get('teaching_materials') or [])
+            user.teaching_level = ', '.join(self.cleaned_data.get('teaching_level') or [])
             
         if commit:
             user.save()
@@ -251,11 +255,11 @@ class RegisterForm(UserCreationForm):
 class LoginForm(AuthenticationForm):
     username = forms.CharField(widget=forms.TextInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Usuario o email'
+        'placeholder': 'tu@correo.com', 'autocomplete': 'username'
     }))
     password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control',
-        'placeholder': 'Contraseña'
+        'placeholder': 'Tu contraseña', 'autocomplete': 'current-password'
     }))
     captcha = CaptchaField(label='Código de seguridad')
 

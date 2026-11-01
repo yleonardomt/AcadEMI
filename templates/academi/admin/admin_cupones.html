@@ -57,13 +57,13 @@
                                 <tr>
                                     <td class="fw-semibold">{{ coupon.code }}</td>
                                     <td>{% if coupon.discount_type == 'percentage' %}{{ coupon.discount_value }}%{% else %}Bs. {{ coupon.discount_value }}{% endif %}</td>
-                                    <td>{{ coupon.used_count }} / {{ coupon.max_uses }}</td>
+                                    <td>{{ coupon.current_uses }} / {{ coupon.max_uses }}</td>
                                     <td>{{ coupon.expires_at|date:"d/m/Y" }}</td>
                                     <td>
-                                        {% if coupon.is_active %}
-                                            <span class="badge-status published">Activo</span>
+                                        {% if coupon.is_valid %}
+                                            <span class="badge-status published">Vigente</span>
                                         {% else %}
-                                            <span class="badge-status archived">Inactivo</span>
+                                            <span class="badge-status archived">No vigente</span>
                                         {% endif %}
                                     </td>
                                     <td>
@@ -117,7 +117,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Usos máximos</label>
-                        <input type="number" name="max_uses" class="form-control" value="{{ coupon.max_uses }}" min="{{ coupon.used_count }}">
+                        <input type="number" name="max_uses" class="form-control" value="{{ coupon.max_uses }}" min="{{ coupon.current_uses }}">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Fecha de expiración</label>

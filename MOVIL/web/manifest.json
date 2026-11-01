@@ -1,11 +1,11 @@
 {
-    "name": "academi_movil",
-    "short_name": "academi_movil",
+    "name": "AcadEMI",
+    "short_name": "AcadEMI",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#02167F",
+    "theme_color": "#02167F",
+    "description": "Cursos de ingeniería con prácticas y evaluaciones.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

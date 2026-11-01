@@ -2,6 +2,8 @@
 from django.db.models import Avg, Sum
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.conf import settings
+from ..utils.demo_sales import visible_sales
 
 from ..models import (
     User, Course, Enrollment, Review, Question, Answer, Payment, EvaluationResult,
@@ -47,9 +49,10 @@ def dashboard(request):
     } for c in top]
 
     if user.role == 'admin':
-        completed = Payment.objects.filter(status='completed')
+        completed = visible_sales(Payment.objects.filter(status='completed', amount__gt=0))
         month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         payload['admin'] = {
+            'demo_mode': settings.DEMO_CHECKOUT,
             'users': User.objects.count(), 'students': User.objects.filter(role='student').count(),
             'teachers': User.objects.filter(role='teacher').count(),
             'courses_pending_approval': Course.objects.filter(status='pending').count(),

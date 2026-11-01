@@ -228,9 +228,13 @@
                         <i class="fas fa-arrow-left"></i> Volver al curso
                     </a>
 
-                    <button class="btn btn-success" onclick="markComplete({{ lesson.id }})" id="completeBtn">
-                        <i class="fas fa-check"></i> Marcar como completada
-                    </button>
+                    {% if enrollment and not is_quiz %}
+                        {% if lesson.lesson_type != 'assignment' or my_submission %}
+                        <button class="btn btn-success" onclick="markComplete({{ lesson.id }})" id="completeBtn">
+                            <i class="fas fa-check"></i> Marcar como completada
+                        </button>
+                        {% endif %}
+                    {% endif %}
 
                     {% if next_lesson %}
                         <a href="{% url 'lesson_view' next_lesson.id %}" class="btn btn-primary">

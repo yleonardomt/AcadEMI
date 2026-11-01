@@ -49,7 +49,14 @@
             </div>
 
             <!-- Mensajes dinámicos -->
-            <div id="messagesContainer"></div>
+            <div id="messagesContainer" data-feedback-url="{% url 'chatbot_feedback' %}" data-authenticated="{% if user.is_authenticated %}true{% else %}false{% endif %}">
+                {% for message in chat_messages %}
+                <div class="chat-message {{ message.sender }}" {% if message.sender == 'bot' %}data-message-id="{{ message.id }}"{% endif %}>
+                    <div class="avatar"><i class="fas fa-{% if message.sender == 'bot' %}robot{% else %}user{% endif %}"></i></div>
+                    <div class="bubble"><span>{{ message.message }}</span><span class="time">{{ message.created_at|date:'H:i' }}</span></div>
+                </div>
+                {% endfor %}
+            </div>
 
             <!-- Indicador de escritura -->
             <div id="typingIndicator" style="display: none;">
@@ -87,6 +94,7 @@
             <input type="text"
                    class="form-control"
                    id="chatInput"
+                   maxlength="1000"
                    placeholder="Escribe tu mensaje..."
                    autofocus
                    onkeypress="if(event.key==='Enter') sendMessage()">

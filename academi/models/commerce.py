@@ -2,6 +2,8 @@ from decimal import Decimal
 
 from django.db import models
 from django.utils import timezone
+from django.db.models.functions import Lower
+from django.conf import settings
 
 from .users import User
 from .courses import Course
@@ -33,7 +35,10 @@ def is_eligible_for_emi_first_purchase_discount(user):
     """True si el usuario es de la EMI y todavía no completó ninguna compra."""
     if not is_emi_student_email(user.email):
         return False
-    return not Payment.objects.filter(student=user, status='completed').exists()
+    purchases = Payment.objects.filter(student=user, status='completed', amount__gt=0)
+    if not settings.DEMO_CHECKOUT:
+        purchases = purchases.exclude(payment_method='demo')
+    return not purchases.exists()
 
 class Cart(models.Model):
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='cart')
@@ -72,10 +77,14 @@ class Coupon(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True, related_name='coupons')
     max_uses = models.IntegerField(default=1)
     used_count = models.IntegerField(default=0)
+    demo_used_count = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     expires_at = models.DateTimeField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE, related_name='created_coupons')
+
+    class Meta:
+        constraints = [models.UniqueConstraint(Lower('code'), name='unique_coupon_code_ci')]
 
     def __str__(self):
         return self.code
@@ -83,11 +92,17 @@ class Coupon(models.Model):
     def is_valid(self):
         if not self.is_active:
             return False
-        if self.used_count >= self.max_uses:
+        if self.current_uses >= self.max_uses:
             return False
         if self.expires_at < timezone.now():
             return False
+        if self.course_id and (self.course.status != 'published' or self.course.is_free):
+            return False
         return True
+
+    @property
+    def current_uses(self):
+        return self.demo_used_count if settings.DEMO_CHECKOUT else self.used_count
 
     def apply_discount(self, amount):
         if self.discount_type == 'percentage':
@@ -111,6 +126,8 @@ class Payment(models.Model):
     )
 
     PAYMENT_METHODS = (
+        ('free', 'Inscripción gratuita'),
+        ('demo', 'Pago online'),
         ('stripe', 'Stripe'),
         ('paypal', 'PayPal'),
         ('bank_transfer', 'Transferencia bancaria'),
@@ -197,17 +214,23 @@ class Payment(models.Model):
         if not self.invoice_number:
             self.invoice_number = self.generate_invoice_number()
 
-        if self.final_amount > 0:
+        if self.payment_method == 'demo':
+            self.commission_amount = Decimal('0')
+            self.teacher_amount = Decimal('0')
+        elif self.final_amount > 0:
             self.commission_amount = self.final_amount * PLATFORM_COMMISSION_RATE
             self.teacher_amount = self.final_amount - self.commission_amount
 
         super().save(*args, **kwargs)
 
     def generate_invoice_number(self):
+        if self.payment_method == 'demo':
+            import secrets
+            return f'ORD-{timezone.now():%Y%m%d}-{secrets.token_hex(6).upper()}'
         year = timezone.now().year
         last_payment = Payment.objects.filter(
-            created_at__year=year
-        ).order_by('-created_at').first()
+            invoice_number__startswith=f'FAC-{year}-'
+        ).order_by('-invoice_number').first()
 
         if last_payment and last_payment.invoice_number:
             try:

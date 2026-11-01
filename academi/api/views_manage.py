@@ -3,8 +3,10 @@ lecciones, evaluaciones, cupones y estadísticas (RF-13, RF-14, RF-16, RF-28,
 RF-32 y RF-36). Aplica los mismos permisos que las vistas web: solo el
 docente dueño del curso (o un administrador)."""
 import json
+from decimal import Decimal, InvalidOperation
 
 from django.db import transaction
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 
@@ -13,6 +15,7 @@ from ..models import (
     Enrollment, EvaluationResult, AssignmentSubmission, Notification,
 )
 from ..utils import compute_course_stats
+from ..utils.course_review import require_course_review
 from .auth import api_view, error, ok, parse_body
 from .serializers import display_name, media_url, money
 from .support import log_action, validate_upload
@@ -103,13 +106,13 @@ def _save_course(request, course):
         return error('Nivel inválido.')
     is_free = _flag(data['is_free']) if 'is_free' in data else (course.is_free if course else False)
     try:
-        price = float(data['price']) if data.get('price') not in (None, '') else (float(course.price) if course else 0)
-    except ValueError:
+        price = Decimal(str(data['price'])) if data.get('price') not in (None, '') else (course.price if course else Decimal('0'))
+    except (InvalidOperation, ValueError, TypeError):
         return error('Precio inválido.')
-    if price < 0:
-        return error('El precio no puede ser negativo.')
     if is_free:
-        price = 0
+        price = Decimal('0')
+    if not price.is_finite() or (not is_free and price <= 0) or price.as_tuple().exponent < -2:
+        return error('El precio de un curso pago debe ser mayor que cero y tener hasta dos decimales.')
     category = None
     category_id = data.get('category') or data.get('category_id')
     if category_id not in (None, ''):
@@ -130,7 +133,7 @@ def _save_course(request, course):
         course = Course(teacher=request.user, status='draft')
     course.title, course.description, course.level = title, description, level
     course.price, course.is_free = price, is_free
-    if 'is_featured' in data:
+    if 'is_featured' in data and request.user.role == 'admin':
         course.is_featured = _flag(data['is_featured'])
     if category:
         course.category = category
@@ -139,6 +142,8 @@ def _save_course(request, course):
     if promo:
         course.video_promo = promo
     course.save()
+    if not creating:
+        require_course_review(course, request.user)
     log_action(request, request.user, 'course_create' if creating else 'course_edit',
                f'{"Creó" if creating else "Editó"} el curso "{course.title}"')
     return ok(message=f'Curso "{title}" {"creado" if creating else "actualizado"} correctamente.',
@@ -151,6 +156,10 @@ def course_delete(request, course_id):
     if problem:
         return problem
     title = course.title
+    if course.enrollments.exists():
+        course.status = 'archived'
+        course.save(update_fields=['status'])
+        return ok(message=f'Curso "{title}" archivado para conservar las inscripciones.')
     course.delete()
     log_action(request, request.user, 'course_delete', f'Eliminó el curso "{title}"')
     return ok(message=f'Curso "{title}" eliminado correctamente.')
@@ -163,11 +172,17 @@ def course_publish(request, course_id):
         return problem
     if course.total_lessons == 0:
         return error('El curso debe tener al menos una lección para publicarse.')
-    course.status = 'published'
-    course.published_at = timezone.now()
+    if request.user.role == 'admin':
+        course.status = 'published'
+        course.published_at = timezone.now()
+        course.approved_at = timezone.now()
+        course.approved_by = request.user
+    else:
+        course.status = 'pending'
+        course.rejection_reason = ''
     course.save()
-    log_action(request, request.user, 'course_edit', f'Publicó el curso "{course.title}"')
-    return ok(message=f'Curso "{course.title}" publicado exitosamente.', status=course.status)
+    log_action(request, request.user, 'course_edit', f'Envió a revisión el curso "{course.title}"' if course.status == 'pending' else f'Publicó el curso "{course.title}"')
+    return ok(message=f'Curso "{course.title}" enviado a revisión.' if course.status == 'pending' else f'Curso "{course.title}" publicado.', status=course.status)
 
 
 @api_view(('GET',), roles=TEACHER)
@@ -176,7 +191,7 @@ def course_stats(request, course_id):
     course, problem = _own_course(request.user, course_id)
     if problem:
         return problem
-    return ok(course={'id': course.id, 'title': course.title}, stats=compute_course_stats(course))
+    return ok(course={'id': course.id, 'title': course.title}, stats=compute_course_stats(course), demo_mode=settings.DEMO_CHECKOUT)
 
 
 # ============================================
@@ -194,12 +209,14 @@ def module_save(request, course_id=None, module_id=None):
             return problem
         module.title, module.description = title, (data.get('description') or '').strip()
         module.save()
+        require_course_review(module.course, request.user)
         return ok(message='Módulo actualizado correctamente.')
     course, problem = _own_course(request.user, course_id)
     if problem:
         return problem
     Module.objects.create(course=course, title=title, description=(data.get('description') or '').strip(),
                           order=course.modules.count() + 1)
+    require_course_review(course, request.user)
     return ok(message='Módulo creado correctamente.')
 
 
@@ -209,7 +226,10 @@ def module_delete(request, module_id):
     if problem:
         return problem
     title = module.title
+    if module.course.enrollments.exists():
+        return error('No se puede eliminar un módulo de un curso con estudiantes inscritos.')
     module.delete()
+    require_course_review(module.course, request.user)
     return ok(message=f'Módulo "{title}" eliminado correctamente.')
 
 
@@ -236,6 +256,7 @@ def module_move(request, module_id, direction):
         return problem
     if not _swap(module.course.modules.all(), module, direction):
         return error('Movimiento inválido.')
+    require_course_review(module.course, request.user)
     return ok(message='Módulo reordenado.')
 
 
@@ -246,6 +267,7 @@ def lesson_move(request, lesson_id, direction):
         return problem
     if not _swap(lesson.module.lessons.all(), lesson, direction):
         return error('Movimiento inválido.')
+    require_course_review(lesson.module.course, request.user)
     return ok(message='Lección reordenada.')
 
 
@@ -255,7 +277,10 @@ def lesson_delete(request, lesson_id):
     if problem:
         return problem
     title = lesson.title
+    if lesson.module.course.enrollments.exists():
+        return error('No se puede eliminar una lección de un curso con estudiantes inscritos.')
     lesson.delete()
+    require_course_review(lesson.module.course, request.user)
     return ok(message=f'Lección "{title}" eliminada correctamente.')
 
 
@@ -427,6 +452,7 @@ def lesson_save(request, module_id=None, lesson_id=None):
                     QuestionOption.objects.bulk_create([
                         QuestionOption(question=question, text=o['text'], is_correct=o['is_correct'])
                         for o in q['options']])
+        require_course_review(module.course, request.user)
     log_action(request, request.user, 'course_edit',
                f'{"Creó" if creating else "Editó"} la lección "{title}" del curso "{module.course.title}"')
     return ok(message=f'Lección "{title}" {"creada" if creating else "actualizada"} correctamente.',
@@ -508,7 +534,7 @@ def coupons(request):
     courses = Course.objects.all() if request.user.role == 'admin' else Course.objects.filter(teacher=request.user)
     rows = _teacher_coupons(request.user).select_related('course', 'created_by').order_by('-created_at')
     return ok(coupons=[coupon_row(c) for c in rows],
-              courses=[{'id': c.id, 'title': c.title} for c in courses.filter(status='published')])
+              courses=[{'id': c.id, 'title': c.title} for c in courses.filter(status='published', is_free=False)])
 
 
 @api_view(('POST',), roles=TEACHER)

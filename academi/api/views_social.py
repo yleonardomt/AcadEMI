@@ -1,15 +1,13 @@
 """Reseñas, reportes, notificaciones, certificados, calificaciones y chatbot."""
-import time
 
 from django.shortcuts import get_object_or_404
 
 from ..models import (
     Course, Comment, Question, Review, Report, Notification, Certificate, EvaluationResult,
-    Enrollment, ChatSession, ChatMessage, ChatAnalytics,
+    Enrollment, ChatSession, ChatMessage,
 )
-from ..utils.ai_chatbot import get_ai_response
 from ..utils import send_certificate_email
-from ..views.chatbot import build_platform_context, get_chat_history, match_knowledge_base
+from ..views.chatbot import answer_chat
 from .auth import api_view, error, ok, parse_body
 from .serializers import ACTIVE_STATUSES, certificate_json, review_json
 
@@ -163,7 +161,7 @@ def _message_json(m):
 
 @api_view(('GET',))
 def chatbot_history(request):
-    session = ChatSession.objects.filter(user=request.user, is_active=True).first()
+    session = ChatSession.objects.filter(user=request.user, is_active=True).order_by('-id').first()
     if not session:
         return ok(messages=[])
     rows = session.messages.order_by('-created_at')[:40][::-1]
@@ -172,25 +170,9 @@ def chatbot_history(request):
 
 @api_view(('POST',))
 def chatbot_send(request):
-    text = (parse_body(request).get('message') or '').strip()
-    if not text:
-        return error('Escribe un mensaje.')
-
-    session, _ = ChatSession.objects.get_or_create(user=request.user, is_active=True, defaults={})
-    history = get_chat_history(session)
-
-    start = time.time()
-    reply = get_ai_response(text, build_platform_context(request.user), history)
-    used_ai = reply is not None
-    if not reply:
-        reply = match_knowledge_base(text)
-    elapsed = round(time.time() - start, 3)
-
-    ChatMessage.objects.create(session=session, sender='user', message=text)
-    bot = ChatMessage.objects.create(session=session, sender='bot', message=reply, response_time=elapsed)
-    analytics, _ = ChatAnalytics.objects.get_or_create(session=session)
-    analytics.total_messages = session.messages.count()
-    analytics.user_messages = session.messages.filter(sender='user').count()
-    analytics.bot_messages = session.messages.filter(sender='bot').count()
-    analytics.save()
-    return ok(reply=_message_json(bot), ai=used_ai)
+    payload = parse_body(request)
+    data, problem, status = answer_chat(request, payload.get('message', '') if isinstance(payload, dict) else '')
+    if problem:
+        return error(problem, status)
+    bot = ChatMessage.objects.get(id=data['message_id'])
+    return ok(reply=_message_json(bot), ai=data['ai'])

@@ -14,13 +14,11 @@ class AuthShell extends StatelessWidget {
     required this.subtitle,
     required this.child,
     this.showBack = false,
-    this.icon = FontAwesomeIcons.graduationCap,
   });
 
   final String title, subtitle;
   final Widget child;
   final bool showBack;
-  final FaIconData icon;
 
   @override
   Widget build(BuildContext context) {
@@ -59,15 +57,7 @@ class AuthShell extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Container(
-                          width: 58,
-                          height: 58,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.14),
-                            borderRadius: BorderRadius.circular(18),
-                          ),
-                          child: Center(child: FaIcon(icon, size: 26, color: AppColors.secondary)),
-                        ),
+                        Image.asset('assets/icon/icon.png', width: 58, height: 58),
                         const SizedBox(height: 18),
                         Text(title,
                             style: const TextStyle(

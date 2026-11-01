@@ -8,6 +8,7 @@ from ..models import (
     Certificate,
 )
 from ..utils import get_client_ip
+from ..utils.lesson_completion import completion_blocker
 from .auth import api_view, error, ok, parse_body
 from .progress import mark_lesson_done
 from .support import validate_upload
@@ -59,7 +60,7 @@ def teacher_courses(request):
 
 @api_view(('GET',))
 def learn(request, course_id):
-    course = get_object_or_404(Course, id=course_id, status='published')
+    course = get_object_or_404(Course, id=course_id)
     user = request.user
 
     if _is_staff_of(user, course):
@@ -212,6 +213,9 @@ def lesson_complete(request, lesson_id):
     lesson = get_object_or_404(Lesson.objects.select_related('module__course'), id=lesson_id)
     enrollment = get_object_or_404(Enrollment, student=request.user, course=lesson.module.course,
                                    status__in=ACTIVE_STATUSES)
+    blocked = completion_blocker(enrollment, lesson)
+    if blocked:
+        return error(blocked, 403, code='ACTIVITY_REQUIRED')
     result = mark_lesson_done(enrollment, lesson, request)
     return ok(message='Lección completada', **result)
 

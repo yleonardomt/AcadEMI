@@ -16,7 +16,8 @@ load_dotenv(BASE_DIR / '.env')
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-tu-clave-secreta-aqui')
 
-DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+DEBUG = os.environ.get('DEBUG', 'False') == 'True'
+DEMO_CHECKOUT = os.environ.get('DEMO_CHECKOUT', 'False') == 'True'
 
 ALLOWED_HOSTS = [h.strip() for h in os.environ.get('ALLOWED_HOSTS', '').split(',') if h.strip()]
 
@@ -120,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # IDIOMA Y ZONA HORARIA
 # ============================================
 LANGUAGE_CODE = 'es-es'
-TIME_ZONE = 'America/Lima'
+TIME_ZONE = 'America/La_Paz'
 USE_I18N = True
 USE_TZ = True
 
@@ -216,6 +217,8 @@ GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-3.5-flash-lite')
 FORCE_HTTPS = os.environ.get('FORCE_HTTPS', str(not DEBUG)) == 'True'
 if FORCE_HTTPS:
     SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True

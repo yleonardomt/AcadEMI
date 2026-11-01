@@ -4,9 +4,14 @@ from django.contrib import messages
 from django.db.models import Q, Count, Prefetch
 from django.utils import timezone
 from django.http import JsonResponse
+from django.http import Http404
+from decimal import Decimal, InvalidOperation
+from types import SimpleNamespace
 
 from ..models import Category, Course, Module, Enrollment, LessonProgress, Favorite, Review, EvaluationResult, Certificate, Coupon
 from ..utils import issue_certificate, compute_course_stats
+from ..utils.course_review import require_course_review
+from ..utils.coupons import coupon_discount
 
 
 # ============================================
@@ -25,12 +30,26 @@ def create_course_view(request):
         level = request.POST.get('level')
         price = request.POST.get('price')
         is_free = request.POST.get('is_free') == 'on'
-        is_featured = request.POST.get('is_featured') == 'on'
+        is_featured = False
         image = request.FILES.get('image')
         video_promo = request.FILES.get('video_promo')
 
         if not title or not description:
             messages.error(request, 'El título y la descripción son obligatorios.')
+            return render(request, 'academi/courses/crear_curso.html', {'categories': Category.objects.all()})
+        try:
+            price = Decimal('0') if is_free else Decimal(str(price))
+            if not price.is_finite() or (not is_free and price <= 0) or price.as_tuple().exponent < -2:
+                raise InvalidOperation
+        except (InvalidOperation, TypeError, ValueError):
+            messages.error(request, 'El precio de un curso pago debe ser mayor que cero y tener hasta dos decimales.')
+            return render(request, 'academi/courses/crear_curso.html', {'categories': Category.objects.all()})
+        if level not in dict(Course.LEVEL_CHOICES):
+            messages.error(request, 'Nivel inválido.')
+            return render(request, 'academi/courses/crear_curso.html', {'categories': Category.objects.all()})
+        category = Category.objects.filter(id=category_id).first() if str(category_id).isdigit() else None
+        if category_id and not category:
+            messages.error(request, 'La categoría no existe.')
             return render(request, 'academi/courses/crear_curso.html', {'categories': Category.objects.all()})
 
         course = Course.objects.create(
@@ -38,21 +57,14 @@ def create_course_view(request):
             description=description,
             teacher=request.user,
             level=level or 'beginner',
-            price=price or 0.00,
+            price=price,
+            category=category,
             is_free=is_free,
             is_featured=is_featured,
             image=image,
             video_promo=video_promo,
             status='draft'
         )
-
-        if category_id:
-            try:
-                category = Category.objects.get(id=category_id)
-                course.category = category
-                course.save()
-            except Category.DoesNotExist:
-                pass
 
         messages.success(request, f'Curso "{title}" creado exitosamente.')
         return redirect('manage_course', course_id=course.id)
@@ -85,12 +97,24 @@ def edit_course_view(request, course_id):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        course.title = request.POST.get('title')
-        course.description = request.POST.get('description')
-        course.level = request.POST.get('level')
-        course.price = request.POST.get('price') or 0.00
-        course.is_free = request.POST.get('is_free') == 'on'
-        course.is_featured = request.POST.get('is_featured') == 'on'
+        title = (request.POST.get('title') or '').strip()
+        description = (request.POST.get('description') or '').strip()
+        level = request.POST.get('level')
+        is_free = request.POST.get('is_free') == 'on'
+        try:
+            price = Decimal('0') if is_free else Decimal(str(request.POST.get('price')))
+            if not price.is_finite() or (not is_free and price <= 0) or price.as_tuple().exponent < -2:
+                raise InvalidOperation
+        except (InvalidOperation, TypeError, ValueError):
+            messages.error(request, 'El precio de un curso pago debe ser mayor que cero y tener hasta dos decimales.')
+            return redirect('edit_course', course_id=course.id)
+        if len(title) < 3 or not description or level not in dict(Course.LEVEL_CHOICES):
+            messages.error(request, 'Título, descripción o nivel inválidos.')
+            return redirect('edit_course', course_id=course.id)
+        course.title, course.description, course.level = title, description, level
+        course.price, course.is_free = price, is_free
+        if request.user.role == 'admin':
+            course.is_featured = request.POST.get('is_featured') == 'on'
 
         if request.FILES.get('image'):
             course.image = request.FILES.get('image')
@@ -99,10 +123,15 @@ def edit_course_view(request, course_id):
 
         category_id = request.POST.get('category')
         if category_id:
-            try:
-                course.category = Category.objects.get(id=category_id)
-            except Category.DoesNotExist:
-                pass
+            category = Category.objects.filter(id=category_id).first() if str(category_id).isdigit() else None
+            if not category:
+                messages.error(request, 'La categoría no existe.')
+                return redirect('edit_course', course_id=course.id)
+            course.category = category
+
+        if request.user.role != 'admin' and course.status == 'published':
+            course.status = 'pending'
+            course.rejection_reason = ''
 
         course.save()
         messages.success(request, 'Curso actualizado correctamente.')
@@ -129,6 +158,10 @@ def delete_course_view(request, course_id):
         return JsonResponse({'success': False, 'message': 'No tienes permisos para eliminar este curso.'}, status=403)
 
     title = course.title
+    if course.enrollments.exists():
+        course.status = 'archived'
+        course.save(update_fields=['status'])
+        return JsonResponse({'success': True, 'message': f'Curso "{title}" archivado para conservar las inscripciones.'})
     course.delete()
     return JsonResponse({'success': True, 'message': f'Curso "{title}" eliminado correctamente.'})
 
@@ -146,10 +179,16 @@ def publish_course_view(request, course_id):
             messages.error(request, 'El curso debe tener al menos una lección para publicarse.')
             return redirect('manage_course', course_id=course.id)
 
-        course.status = 'published'
-        course.published_at = timezone.now()
+        if request.user.role == 'admin':
+            course.status = 'published'
+            course.published_at = timezone.now()
+            course.approved_at = timezone.now()
+            course.approved_by = request.user
+        else:
+            course.status = 'pending'
+            course.rejection_reason = ''
         course.save()
-        messages.success(request, f'Curso "{course.title}" publicado exitosamente.')
+        messages.success(request, f'Curso "{course.title}" enviado a revisión.' if course.status == 'pending' else f'Curso "{course.title}" publicado.')
         return redirect('my_courses')
 
     return render(request, 'academi/courses/publicar_curso.html', {'course': course})
@@ -178,6 +217,7 @@ def add_module_view(request, course_id):
             description=description,
             order=last_order + 1
         )
+        require_course_review(course, request.user)
         messages.success(request, 'Módulo creado correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -197,6 +237,7 @@ def edit_module_view(request, module_id):
         module.title = request.POST.get('title')
         module.description = request.POST.get('description')
         module.save()
+        require_course_review(course, request.user)
         messages.success(request, 'Módulo actualizado correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -213,8 +254,12 @@ def delete_module_view(request, module_id):
         return redirect('dashboard')
 
     if request.method == 'POST':
+        if course.enrollments.exists():
+            messages.error(request, 'No se puede eliminar un módulo de un curso con estudiantes inscritos.')
+            return redirect('manage_course', course_id=course.id)
         title = module.title
         module.delete()
+        require_course_review(course, request.user)
         messages.success(request, f'Módulo "{title}" eliminado correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -245,6 +290,8 @@ def reorder_module_view(request, module_id, direction):
     for i, m in enumerate(modules, start=1):
         m.order = i
         m.save()
+
+    require_course_review(course, request.user)
 
     return JsonResponse({'success': True})
 
@@ -308,19 +355,18 @@ def attach_active_coupons(*course_lists):
     _course_card.html pueda mostrar el badge de descuento y "válido
     hasta" sin tener que hacer lookups por id en el template. Reutiliza
     Coupon.is_valid() en vez de repetir sus reglas acá."""
-    candidates = [
-        c for c in Coupon.objects.filter(is_active=True).select_related('course').order_by('-discount_value')
-        if c.is_valid()
-    ]
+    candidates = [c for c in Coupon.objects.filter(is_active=True).select_related('course') if c.is_valid()]
     global_coupons = [c for c in candidates if c.course_id is None]
     per_course = {}
     for c in candidates:
         if c.course_id is not None:
-            per_course.setdefault(c.course_id, c)
+            per_course.setdefault(c.course_id, []).append(c)
 
     for course_list in course_lists:
         for course in course_list:
-            course.active_coupon = per_course.get(course.id) or (global_coupons[0] if global_coupons else None)
+            applicable = global_coupons + per_course.get(course.id, []) if not course.is_free else []
+            item = SimpleNamespace(course=course, course_id=course.id)
+            course.active_coupon = max(applicable, key=lambda c: coupon_discount(c, [item]), default=None)
 
 
 def catalog_view(request):
@@ -397,7 +443,15 @@ def categories_view(request):
 
 
 def course_detail_view(request, course_id):
-    course = get_object_or_404(Course, id=course_id, status='published')
+    course = get_object_or_404(Course, id=course_id)
+    if course.status != 'published':
+        allowed = request.user.is_authenticated and (
+            request.user == course.teacher or request.user.role == 'admin' or
+            Enrollment.objects.filter(student=request.user, course=course,
+                                      status__in=['enrolled', 'in_progress', 'completed']).exists()
+        )
+        if not allowed:
+            raise Http404
     is_favorite = False
     is_enrolled = False
     user_review = None
@@ -446,7 +500,7 @@ def favorite_toggle_view(request, course_id):
 # ============================================
 @login_required
 def course_learn_view(request, course_id):
-    course = get_object_or_404(Course, id=course_id, status='published')
+    course = get_object_or_404(Course, id=course_id)
 
     enrollment = get_object_or_404(
         Enrollment,

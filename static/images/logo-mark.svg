@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title desc">
+  <title id="title">AcadEMI</title>
+  <desc id="desc">Emblema de fortaleza y libro abierto</desc>
+  <defs>
+    <linearGradient id="navy" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#063397"/><stop offset="1" stop-color="#010e55"/></linearGradient>
+  </defs>
+  <rect x="1" y="1" width="62" height="62" rx="14" fill="url(#navy)"/>
+  <rect x="3.5" y="3.5" width="57" height="57" rx="12" fill="none" stroke="#ffd014" stroke-width=".8"/>
+  <g fill="none" stroke="#ffd014" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M14 37V22h2.5v-4.5h3V22H22v-4.5h2.5V37" stroke-width="2.2"/>
+    <path d="M14 37V22h2.5v-4.5h3V22H22v-4.5h2.5V37" transform="translate(64 0) scale(-1 1)" stroke-width="2.2"/>
+    <path d="M26 37V18h2v-5h2v5h4v-5h2v5h2v19" stroke-width="2.4"/>
+    <path d="M13 38h38" stroke-width="1.6"/>
+  </g>
+  <path d="M17 27v7m4-7v7m22-7v7m4-7v7M29.5 36v-7l2.5-3 2.5 3v7" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M31.3 44c-5.3-3.5-12.3-3.6-19.3-1.5V51c7-2 13-1 19.3 3zm1.4 0c5.3-3.5 12.3-3.6 19.3-1.5V51c-7-2-13-1-19.3 3z" fill="#fff"/>
+  <path d="M16 45h8l5 2m19-2h-8l-5 2" fill="none" stroke="#ffd014" stroke-width="1" stroke-linecap="round"/>
+  <path d="M32 44v10" fill="none" stroke="#ffd014" stroke-width="2.1" stroke-linecap="round"/>
+</svg>

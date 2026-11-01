@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.functions import Lower
 
 from .users import User
 
@@ -17,6 +18,7 @@ class Category(models.Model):  # RF-71
 
     class Meta:
         verbose_name_plural = "Categories"
+        constraints = [models.UniqueConstraint(Lower('name'), name='unique_category_name_ci')]
 
 
 class Course(models.Model):  # RF-15, RF-16, RF-17, RF-21

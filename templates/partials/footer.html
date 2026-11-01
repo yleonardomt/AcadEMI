@@ -1,3 +1,4 @@
+{% load static static_extras %}
 <footer class="footer">
     <!-- ============================================
          ONDAS SUAVES Y BONITAS
@@ -15,20 +16,12 @@
             <!-- MARCA -->
             <div class="footer-col footer-col-brand">
                 <div class="footer-brand">
-                    <i class="fas fa-graduation-cap"></i>
-                    <span>AcadEMI</span>
+                    <img src="{% static_v 'images/logo-mark.svg' %}" alt="" class="brand-logo" width="40" height="40">
+                    <span class="brand-wordmark">Acad<strong>EMI</strong></span>
                 </div>
                 <p class="footer-description">
-                    Transformando vidas a través de la educación online.
-                    Aprende de los mejores expertos y alcanza tus metas profesionales.
+                    Cursos con lecciones, prácticas y evaluaciones para avanzar a tu ritmo.
                 </p>
-                <div class="footer-social">
-                    <a href="#" class="social-link" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="social-link" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                    <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="social-link" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
-                </div>
             </div>
 
             <!-- EXPLORAR -->

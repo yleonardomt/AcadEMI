@@ -16,7 +16,7 @@ from ..forms import (
     CustomPasswordChangeForm,
 )
 from ..models import (
-    Course, Category, Enrollment, Review, Notification,
+    Course, Category, Enrollment, Review, Notification, Lesson,
     is_emi_student_email, EMI_STUDENT_DISCOUNT_PERCENT,
 )
 from ..utils import send_verification_email, send_password_reset_email, generate_reset_link
@@ -29,6 +29,12 @@ logger = logging.getLogger(__name__)
 # coincidencia parcial de palabras clave para la portada y usamos un
 # ícono genérico si ninguna palabra clave coincide con el nombre.
 CATEGORY_ICONS = (
+    ('civil', 'fa-bridge'), ('industrial', 'fa-industry'),
+    ('ambiental', 'fa-leaf'), ('mecatrón', 'fa-robot'),
+    ('electrón', 'fa-microchip'), ('geográfica', 'fa-map'),
+    ('petrolera', 'fa-oil-well'), ('telecom', 'fa-tower-broadcast'),
+    ('sistemas', 'fa-laptop-code'), ('comercial', 'fa-chart-line'),
+    ('básicas', 'fa-calculator'),
     ('dato', 'fa-chart-pie'), ('data', 'fa-chart-pie'),
     ('ia', 'fa-robot'), ('inteligencia artificial', 'fa-robot'),
     ('program', 'fa-code'), ('desarroll', 'fa-code'), ('web', 'fa-globe'),
@@ -65,7 +71,7 @@ def home_view(request):
     # RF-29: testimonios reales (reseñas de estudiantes), no textos
     # inventados. Solo reseñas con comentario y buena calificación.
     testimonials = Review.objects.filter(
-        rating__gte=4, comment__isnull=False
+        course__status='published', rating__gte=4, comment__isnull=False
     ).exclude(comment='').select_related('student', 'course').order_by('-rating', '-created_at')[:8]
 
     categories = Category.objects.annotate(
@@ -81,6 +87,9 @@ def home_view(request):
         'categories': categories,
         'newest_courses': newest_courses,
         'total_courses': published.count(),
+        'total_lessons': Lesson.objects.filter(module__course__status='published', is_published=True).count(),
+        'total_exams': Lesson.objects.filter(module__course__status='published', lesson_type='exam', is_published=True).count(),
+        'total_assignments': Lesson.objects.filter(module__course__status='published', lesson_type='assignment', is_published=True).count(),
         'total_students': User.objects.filter(role='student').count(),
         'total_teachers': User.objects.filter(role='teacher').count(),
         'total_enrollments': Enrollment.objects.count(),

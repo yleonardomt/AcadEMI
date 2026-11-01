@@ -55,7 +55,6 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     final p = context.palette;
     return AuthShell(
       showBack: true,
-      icon: FontAwesomeIcons.key,
       title: 'Recupera tu contraseña',
       subtitle: 'Te enviaremos un enlace a tu correo para crear una nueva.',
       child: _sent

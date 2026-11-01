@@ -7,6 +7,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 
 from ..utils import send_certificate_email
+from ..utils.demo_sales import visible_sales
 from ..models import (
     Notification, Enrollment, Certificate, Course, Review, Payment,
     Coupon, Report, EvaluationResult, Favorite, Question,
@@ -113,23 +114,17 @@ def dashboard_view(request):
     featured_courses = Course.objects.filter(is_featured=True).count()
     free_courses = Course.objects.filter(is_free=True).count()
 
-    total_payments = Payment.objects.filter(status='completed').count()
-    total_revenue = Payment.objects.filter(status='completed').aggregate(total=Sum('final_amount'))['total'] or 0
+    sales_payments = visible_sales(Payment.objects.filter(status='completed', amount__gt=0))
+    total_payments = sales_payments.count()
+    total_revenue = sales_payments.aggregate(total=Sum('final_amount'))['total'] or 0
 
     # Ingresos del mes actual
     month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    monthly_revenue = Payment.objects.filter(
-        status='completed',
-        confirmed_at__gte=month_start
-    ).aggregate(total=Sum('final_amount'))['total'] or 0
+    monthly_revenue = sales_payments.filter(confirmed_at__gte=month_start).aggregate(total=Sum('final_amount'))['total'] or 0
 
     # Ingresos del mes pasado
     last_month_start = (month_start - timezone.timedelta(days=1)).replace(day=1)
-    last_month_revenue = Payment.objects.filter(
-        status='completed',
-        confirmed_at__gte=last_month_start,
-        confirmed_at__lt=month_start
-    ).aggregate(total=Sum('final_amount'))['total'] or 0
+    last_month_revenue = sales_payments.filter(confirmed_at__gte=last_month_start, confirmed_at__lt=month_start).aggregate(total=Sum('final_amount'))['total'] or 0
 
     # Porcentaje de crecimiento
     revenue_growth = 0
@@ -155,7 +150,7 @@ def dashboard_view(request):
     recent_users = User.objects.all().order_by('-date_joined')[:10]
 
     # Últimos pagos
-    recent_payments = Payment.objects.filter(status='completed').order_by('-confirmed_at').select_related('student')[:5]
+    recent_payments = sales_payments.order_by('-confirmed_at').select_related('student')[:5]
 
     # Últimas inscripciones
     recent_enrollments_global = Enrollment.objects.order_by('-enrollment_date').select_related('student', 'course')[:5]

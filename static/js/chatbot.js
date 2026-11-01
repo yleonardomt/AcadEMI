@@ -18,7 +18,7 @@ function chatbotSendMessage(message, onResponse, onError) {
     .then(function(response) { return response.json(); })
     .then(function(data) {
         if (data.success) {
-            onResponse(data.response);
+            onResponse(data.response, data);
         } else {
             onError(data.message || 'No se pudo procesar tu mensaje.');
         }

@@ -72,7 +72,6 @@ class _VerifyPendingScreenState extends State<VerifyPendingScreen> with WidgetsB
     final p = context.palette;
     final auth = context.watch<AuthProvider>();
     return AuthShell(
-      icon: FontAwesomeIcons.envelopeOpenText,
       title: 'Verifica tu correo',
       subtitle: 'Un último paso para activar tu cuenta.',
       child: Column(children: [

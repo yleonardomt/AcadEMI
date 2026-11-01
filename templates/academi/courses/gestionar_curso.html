@@ -39,9 +39,9 @@
             <a href="{% url 'course_students' course.id %}" class="btn btn-outline-secondary btn-sm">
                 <i class="fas fa-users"></i> Estudiantes
             </a>
-            {% if course.status == 'draft' %}
+            {% if course.status == 'draft' or course.status == 'rejected' or course.status == 'archived' %}
             <a href="#" class="btn btn-success btn-sm" id="publishBtn">
-                <i class="fas fa-rocket"></i> Publicar
+                <i class="fas fa-rocket"></i> Enviar a revisión
             </a>
             {% endif %}
             <a href="{% url 'my_courses' %}" class="btn btn-outline-secondary btn-sm">
@@ -230,14 +230,14 @@
                 <div class="modal-icon warning">
                     <i class="fas fa-rocket"></i>
                 </div>
-                <h5 class="fw-bold mb-2">Publicar curso</h5>
-                <p class="text-muted mb-4">¿Estás seguro de publicar el curso <strong>"{{ course.title }}"</strong>? Los estudiantes podrán verlo y comprarlo.</p>
+                <h5 class="fw-bold mb-2">Enviar curso a revisión</h5>
+                <p class="text-muted mb-4">¿Enviar el curso <strong>"{{ course.title }}"</strong> a revisión del administrador?</p>
                 <div class="d-flex gap-3 justify-content-center">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
                         <i class="fas fa-times"></i> Cancelar
                     </button>
                     <a href="{% url 'publish_course' course.id %}" class="btn btn-success">
-                        <i class="fas fa-check"></i> Publicar
+                        <i class="fas fa-check"></i> Enviar a revisión
                     </a>
                 </div>
             </div>

@@ -39,12 +39,14 @@ class CartData {
     this.discountLabel,
     this.couponCode,
     this.emiDiscount,
+    this.demoMode = false,
   });
 
   final List<CartItem> items;
   final double subtotal, discount, total;
   final String? discountLabel, couponCode;
   final double? emiDiscount;
+  final bool demoMode;
 
   static CartData empty() => CartData(items: [], subtotal: 0, discount: 0, total: 0);
 
@@ -58,6 +60,7 @@ class CartData {
       discountLabel: asStringOrNull(c['discount_label']),
       couponCode: asStringOrNull(c['coupon_code']),
       emiDiscount: j['emi_discount'] == null ? null : asDouble(j['emi_discount']),
+      demoMode: asBool(j['demo_mode']),
     );
   }
 }

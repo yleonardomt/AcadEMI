@@ -1,4 +1,5 @@
 from .models import Notification, Cart, Question
+from django.conf import settings
 
 
 def header_counters(request):
@@ -6,9 +7,10 @@ def header_counters(request):
     preguntas sin responder) disponibles en cada página, no solo en el
     dashboard."""
     if not request.user.is_authenticated:
-        return {}
+        return {'demo_mode': settings.DEMO_CHECKOUT}
 
     context = {
+        'demo_mode': settings.DEMO_CHECKOUT,
         'unread_notifications': Notification.objects.filter(user=request.user, is_read=False).count(),
     }
 

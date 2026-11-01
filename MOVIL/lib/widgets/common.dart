@@ -62,7 +62,7 @@ Future<bool> confirmDialog(
   return result ?? false;
 }
 
-/// Logo de la marca: birrete + "AcadEMI".
+/// Identidad visual compartida con la web y los iconos de la aplicación.
 class BrandLogo extends StatelessWidget {
   const BrandLogo({super.key, this.size = 22, this.light = false});
 
@@ -74,12 +74,15 @@ class BrandLogo extends StatelessWidget {
     final p = context.palette;
     final color = light ? Colors.white : p.primaryText;
     return Row(mainAxisSize: MainAxisSize.min, children: [
-      FaIcon(FontAwesomeIcons.graduationCap, size: size, color: AppColors.secondary),
+      Image.asset('assets/icon/icon.png', width: size * 1.35, height: size * 1.35),
       const SizedBox(width: 8),
-      Text('Acad', style: TextStyle(fontSize: size, fontWeight: FontWeight.w800, color: color, letterSpacing: -0.5)),
-      Text('EMI',
-          style: TextStyle(
-              fontSize: size, fontWeight: FontWeight.w800, color: AppColors.secondary, letterSpacing: -0.5)),
+      Text.rich(
+        TextSpan(children: [
+          TextSpan(text: 'Acad', style: TextStyle(color: color)),
+          const TextSpan(text: 'EMI', style: TextStyle(color: AppColors.secondary)),
+        ]),
+        style: TextStyle(fontSize: size, fontWeight: FontWeight.w800, letterSpacing: -0.5),
+      ),
     ]);
   }
 }

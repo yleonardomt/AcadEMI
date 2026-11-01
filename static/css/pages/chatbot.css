@@ -96,6 +96,7 @@
 .chat-message.user .time {
     text-align: right;
 }
+.chat-feedback { display: flex; gap: 6px; margin-top: 8px; font-size: 0.8rem; }
 
 .chat-input-area {
     padding: 16px 20px;

@@ -44,6 +44,7 @@ class Enrollment(models.Model):  # RF-09, RF-56, RF-63
     payment_status = models.CharField(max_length=20, choices=(
         ('pending', 'Pendiente'),
         ('paid', 'Pagado'),
+        ('demo', 'Pagado'),
         ('failed', 'Fallido'),
         ('refunded', 'Reembolsado'),
     ), default='pending')

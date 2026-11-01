@@ -65,10 +65,10 @@
                                 <input type="checkbox" name="is_free" class="form-check-input" id="is_free" {% if course.is_free %}checked{% endif %}>
                                 <label class="form-check-label" for="is_free">Curso gratuito</label>
                             </div>
-                            <div class="col-md-6 mb-3 form-check">
+                            {% if request.user.role == 'admin' %}<div class="col-md-6 mb-3 form-check">
                                 <input type="checkbox" name="is_featured" class="form-check-input" id="is_featured" {% if course.is_featured %}checked{% endif %}>
                                 <label class="form-check-label" for="is_featured">Destacar curso</label>
-                            </div>
+                            </div>{% endif %}
                         </div>
                         <div class="d-flex gap-3 mt-4">
                             <button type="submit" class="btn btn-primary flex-grow-1">

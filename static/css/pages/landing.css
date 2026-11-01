@@ -1,10 +1,9 @@
 /* ============================================
    PORTADA (templates/academi/index.html)
    Los nombres --ldg-* de abajo son solo un alias corto de los
-   tokens de tema reales de base.css, así el CSS de esta página
-   queda prolijo sin inventar una paleta paralela. La portada NO
-   fija su propio fondo: usa el mismo fondo compartido que el
-   resto del sitio (base.css + particles-bg.js), theme-aware.
+   tokens de tema reales de base.css. La escena principal usa el
+   azul y el amarillo oficiales de AcadEMI; las demás secciones
+   usan las superficies compartidas con el resto del sitio.
 
    Movimiento: curvas fuertes de salida (--ldg-ease-out), solo se
    anima transform/opacity, los hover están agrupados al final y
@@ -69,7 +68,7 @@ div[id] { scroll-margin-top: 76px; }
         color 200ms ease;
 }
 
-:where(.category-card, .course-card, .hero-spotlight, .list-item, .btn-hero, .btn-course, .btn-all-courses, .scroll-cue, .hero-video-toggle, .carousel-dot):focus-visible {
+:where(.category-card, .course-card, .hero-spotlight, .list-item, .btn-hero, .btn-course, .btn-all-courses, .scroll-cue, .carousel-dot):focus-visible {
     outline: 2px solid var(--secondary);
     outline-offset: 3px;
 }
@@ -134,30 +133,17 @@ div[id] { scroll-margin-top: 76px; }
 
 /* ============================================
    HERO
-   El video ocupa toda la pantalla como fondo, con un velo oscuro
-   solo donde hace falta para que el texto se lea. El texto del
-   hero queda siempre claro sin importar el modo noche/día porque
-   siempre está sobre el video oscurecido.
+   La escena principal usa el azul de marca y conserva un velo
+   oscuro detrás del texto para asegurar su legibilidad.
    ============================================ */
 .hero {
     position: relative;
-    min-height: 100vh;
-    min-height: 100svh;
+    min-height: min(850px, 100svh);
     display: flex;
     align-items: center;
     overflow: hidden;
-    background: #05070d;
-}
-
-.hero-video-bg {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    min-width: 100%;
-    min-height: 100%;
-    transform: translate(-50%, -50%);
-    object-fit: cover;
-    z-index: 1;
+    background: radial-gradient(circle at 76% 45%, var(--primary-light) 0, var(--primary) 38%, var(--primary-dark) 82%);
+    isolation: isolate;
 }
 
 .hero-overlay {
@@ -165,15 +151,15 @@ div[id] { scroll-margin-top: 76px; }
     inset: 0;
     z-index: 2;
     background:
-        linear-gradient(180deg, rgba(4, 8, 20, 0.5) 0%, transparent 28%, transparent 58%, rgba(4, 8, 20, 0.7) 100%),
-        linear-gradient(100deg, rgba(4, 8, 20, 0.82) 0%, rgba(4, 8, 20, 0.5) 36%, rgba(4, 8, 20, 0.12) 60%, transparent 74%);
+        linear-gradient(90deg, var(--primary-dark) 0%, rgba(1, 14, 83, .96) 30%, rgba(1, 14, 83, .62) 56%, rgba(1, 14, 83, .14) 100%),
+        linear-gradient(0deg, rgba(1, 14, 83, .42), transparent 38%);
 }
 
 .hero-content {
     position: relative;
     z-index: 3;
-    max-width: 660px;
-    padding: 110px 0 96px;
+    max-width: 610px;
+    padding: 130px 0 110px;
     color: var(--ldg-light-text);
 }
 
@@ -187,28 +173,8 @@ div[id] { scroll-margin-top: 76px; }
 .hero-content > :nth-child(4) { animation-delay: 270ms; }
 .hero-content > :nth-child(5) { animation-delay: 340ms; }
 
-.hero-eyebrow {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 7px 16px;
-    margin-bottom: 22px;
-    border-radius: var(--border-radius-pill);
-    background: var(--ldg-glass);
-    border: 1px solid var(--ldg-glass-border);
-    -webkit-backdrop-filter: blur(10px);
-    backdrop-filter: blur(10px);
-    color: var(--ldg-light-text);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-}
-
-.hero-eyebrow i { color: var(--ldg-gold); }
-
 .hero-title {
-    font-size: clamp(2.1rem, 1.1rem + 3.8vw, 3.9rem);
+    font-size: clamp(2.8rem, 1.5rem + 4vw, 5.3rem);
     font-weight: 800;
     margin-bottom: 20px;
     line-height: 1.08;
@@ -219,7 +185,7 @@ div[id] { scroll-margin-top: 76px; }
 
 .hero-title span {
     color: var(--ldg-gold);
-    background: linear-gradient(100deg, var(--secondary-light) 0%, var(--secondary) 45%, #ffb703 100%);
+    background: linear-gradient(100deg, var(--secondary-light) 0%, var(--secondary) 45%, var(--secondary-dark) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -262,41 +228,6 @@ div[id] { scroll-margin-top: 76px; }
     background: rgba(0, 0, 0, 0.18);
     -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
-}
-
-/* Datos de la plataforma sobre el video (cristal translúcido) */
-.hero-mini-stats {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.hero-mini-stat {
-    min-width: 108px;
-    padding: 12px 18px;
-    border-radius: 16px;
-    background: var(--ldg-glass);
-    border: 1px solid var(--ldg-glass-border);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    color: var(--ldg-light-text);
-}
-
-.hero-mini-stat strong {
-    display: block;
-    font-size: 22px;
-    font-weight: 800;
-    line-height: 1.15;
-    color: var(--ldg-gold);
-    font-variant-numeric: tabular-nums;
-}
-
-.hero-mini-stat strong i { font-size: 15px; }
-
-.hero-mini-stat span {
-    font-size: 12px;
-    font-weight: 600;
-    color: rgba(244, 246, 251, 0.78);
 }
 
 /* Tarjeta flotante con el curso destacado (solo pantallas anchas) */
@@ -367,29 +298,6 @@ div[id] { scroll-margin-top: 76px; }
     transition: transform 220ms var(--ldg-ease-out);
 }
 
-.hero-video-toggle {
-    position: absolute;
-    z-index: 3;
-    left: clamp(16px, 3vw, 32px);
-    bottom: 26px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid var(--ldg-glass-border);
-    border-radius: 50%;
-    background: rgba(0, 0, 0, 0.3);
-    color: var(--ldg-light-text);
-    font-size: 13px;
-    cursor: pointer;
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    transition: transform 160ms var(--ldg-ease-out), background-color 200ms ease;
-}
-
-.hero-video-toggle:active { transform: scale(0.94); }
-
 .scroll-cue {
     position: absolute;
     left: 50%;
@@ -407,56 +315,12 @@ div[id] { scroll-margin-top: 76px; }
 }
 
 /* ============================================
-   FRANJA DE BENEFICIOS
-   ============================================ */
-.perks-bar {
-    position: relative;
-    border-top: 1px solid var(--ldg-border);
-    border-bottom: 1px solid var(--ldg-border);
-    background: var(--ldg-card);
-    -webkit-backdrop-filter: blur(var(--card-blur));
-    backdrop-filter: blur(var(--card-blur));
-    padding: 20px 0;
-}
-
-.marquee--perks { --marquee-gap: 44px; --marquee-duration: 38s; }
-
-.perk-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--ldg-text-dim);
-    white-space: nowrap;
-}
-
-.perk-item i { color: var(--ldg-blue); }
-.perk-item .fa-star { color: var(--ldg-gold-dark); }
-
-/* ============================================
    ENCABEZADOS DE SECCIÓN
    ============================================ */
 .section-header {
     text-align: center;
     margin-bottom: 52px;
 }
-
-.badge-section {
-    display: inline-block;
-    padding: 8px 22px;
-    background: var(--secondary-light);
-    color: var(--primary-dark);
-    border-radius: var(--border-radius-pill);
-    font-size: 12px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    margin-bottom: 16px;
-    border: 1px solid var(--secondary-dark);
-}
-
-.badge-section i { color: var(--secondary-dark); margin-right: 8px; }
 
 .section-header h2 {
     font-size: clamp(1.65rem, 1.2rem + 1.6vw, 2.35rem);
@@ -597,7 +461,7 @@ div[id] { scroll-margin-top: 76px; }
    entre tarjetas sin foto; las 3 quedan dentro de la misma familia de azules. */
 .course-image-python { background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); }
 .course-image-javascript { background: linear-gradient(135deg, var(--primary-dark), var(--primary-vivid)); }
-.course-image-react { background: linear-gradient(135deg, #01124a, var(--primary-light)); }
+.course-image-react { background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); }
 
 .course-body { padding: 24px; }
 
@@ -1249,7 +1113,7 @@ div[id] { scroll-margin-top: 76px; }
     isolation: isolate;
     overflow: hidden;
     border-radius: var(--border-radius-lg);
-    background: linear-gradient(135deg, #01041f, var(--primary-dark));
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     border: 1px solid var(--ldg-border);
     padding: 76px 40px;
     text-align: center;
@@ -1345,7 +1209,6 @@ div[id] { scroll-margin-top: 76px; }
     .hero-spotlight:hover { transform: translateY(-4px); background: rgba(255, 255, 255, 0.16); border-color: rgba(255, 255, 255, 0.34); }
     .hero-spotlight:hover .hero-spotlight-go { transform: translateX(4px); }
 
-    .hero-video-toggle:hover { background: rgba(0, 0, 0, 0.5); }
     .scroll-cue:hover { color: var(--ldg-light-text); }
 }
 
@@ -1406,16 +1269,8 @@ div[id] { scroll-margin-top: 76px; }
             rgba(4, 8, 20, 0.5) 0%, rgba(4, 8, 20, 0.08) 26%,
             rgba(4, 8, 20, 0.58) 56%, rgba(4, 8, 20, 0.92) 100%);
     }
-    .hero-eyebrow { font-size: 11px; margin-bottom: 16px; }
-    .hero-mini-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-    .hero-mini-stat { min-width: 0; padding: 10px 12px; border-radius: 14px; text-align: center; }
-    .hero-mini-stat strong { font-size: 19px; }
-    .hero-mini-stat span { font-size: 11px; }
     .scroll-cue { display: none; }
-    .hero-video-toggle { bottom: 20px; width: 36px; height: 36px; }
 
-    .marquee--perks { --marquee-gap: 28px; }
-    .perks-bar { padding: 15px 0; }
     .testimonial-card { flex-basis: 288px; padding: 22px; }
 
     /* Cursos destacados: carrusel horizontal */
@@ -1537,4 +1392,42 @@ div[id] { scroll-margin-top: 76px; }
     .step-card,
     .feature-card,
     .testimonial-card { transition-property: border-color, box-shadow, background-color, color; }
+}
+/* Fotografía de ingeniería con tratamiento de la paleta de marca. */
+.hero-photo {
+    position: absolute;
+    z-index: 1;
+    inset: 0 0 0 auto;
+    width: 66%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    filter: saturate(.82);
+}
+.hero-content { max-width: 650px; }
+@media (max-width: 768px) {
+    .landing-page .hero { min-height: 760px; min-height: min(760px, 100svh); align-items: flex-end; }
+    .hero-photo { width: 100%; object-position: center top; }
+    .hero-overlay {
+        background: linear-gradient(180deg, rgba(1, 14, 83, .1), rgba(1, 14, 83, .75) 46%, var(--primary-dark) 85%);
+    }
+    .landing-page .hero-content { padding: 175px 0 90px; }
+}
+@media (max-width: 480px) {
+    .landing-page .hero { min-height: 710px; }
+    .landing-page .hero-content { padding: 145px 0 76px; }
+}
+
+/* Presentación editorial: fotografía y texto, sin tarjetas ornamentales. */
+.about-editorial { padding: clamp(72px, 9vw, 128px) 0; }
+.about-editorial-grid { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, .92fr); gap: clamp(34px, 6vw, 92px); align-items: center; }
+.about-editorial-photo { overflow: hidden; border-radius: var(--border-radius-lg); box-shadow: var(--shadow); }
+.about-editorial-photo img { display: block; width: 100%; aspect-ratio: 5 / 4; object-fit: cover; }
+.about-editorial-copy h2 { color: var(--ink); font-weight: 800; font-size: clamp(2rem, 3.6vw, 3.6rem); line-height: 1.12; letter-spacing: -.04em; margin-bottom: 24px; }
+.about-editorial-copy p { color: var(--ink-muted); font-size: clamp(1rem, 1.2vw, 1.13rem); line-height: 1.75; margin-bottom: 30px; }
+.about-editorial-link { display: inline-flex; align-items: center; gap: 12px; color: var(--primary-text); font-weight: 750; text-decoration: none; border-bottom: 2px solid var(--secondary); padding-bottom: 7px; }
+.about-editorial-link:hover { color: var(--primary-text); gap: 17px; }
+@media (max-width: 768px) {
+    .about-editorial-grid { grid-template-columns: 1fr; }
+    .about-editorial-photo img { aspect-ratio: 16 / 10; }
 }

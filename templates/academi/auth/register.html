@@ -1,347 +1,79 @@
 {% load static static_extras %}
-<!DOCTYPE html>
-<html lang="es" data-theme="light">
+<!doctype html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro - AcadEMI</title>
-    
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Google Fonts - Inter -->
+    {% include 'partials/theme_init.html' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Crea tu cuenta en AcadEMI y aprende ingeniería con cursos, prácticas y exámenes.">
+    <title>Crear cuenta | AcadEMI</title>
+    <link rel="icon" type="image/svg+xml" href="{% static_v 'images/logo-mark.svg' %}">
+    <link rel="apple-touch-icon" href="{% static_v 'images/apple-touch-icon.png' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Estilos propios: la misma base de todo el sitio + los extras
-         de las páginas de login/registro (tarjeta centrada sin navbar). -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="{% static_v 'css/base.css' %}">
-    <link rel="stylesheet" href="{% static_v 'css/components/buttons.css' %}">
-    <link rel="stylesheet" href="{% static_v 'css/components/cards.css' %}">
     <link rel="stylesheet" href="{% static_v 'css/components/forms.css' %}">
-    <link rel="stylesheet" href="{% static_v 'css/components/alerts.css' %}">
-    <link rel="stylesheet" href="{% static_v 'css/components/particles-bg.css' %}">
     <link rel="stylesheet" href="{% static_v 'css/pages/auth.css' %}">
 </head>
-<body>
-
-    <!-- ============================================
-         FONDO 3D DE PARTÍCULAS (ver static/js/particles-bg.js)
-         ============================================ -->
-    <canvas id="bg-particles"></canvas>
-
-    <!-- ============================================
-         BOTÓN VOLVER
-         ============================================ -->
-    <a href="/" class="btn-back">
-        <i class="fas fa-arrow-left"></i>
-        <span>Volver</span>
-    </a>
-
-    <!-- ============================================
-         CONTENIDO PRINCIPAL
-         ============================================ -->
-    <main class="main-content">
-        <div class="container py-4">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card shadow-lg border-0">
-                        <div class="card-body p-4 p-md-5">
-                            
-                            <!-- ===== HEADER ===== -->
-                            <div class="text-center mb-3">
-                                <div class="icon-circle">
-                                    <i class="fas fa-user-plus"></i>
-                                </div>
-                                <h3 class="mt-3 fw-bold">Crear cuenta</h3>
-                                <p class="text-muted small">Únete a AcadEMI y comienza a aprender</p>
-                            </div>
-
-                            <!-- ===== FORMULARIO ===== -->
-                            <form method="POST" id="registerForm" novalidate>
-                                {% csrf_token %}
-
-                                <!-- ===== DATOS BÁSICOS =====
-                                     No se pide un "nombre de usuario" aparte: el nombre completo
-                                     (más abajo, según el rol) es el único campo de nombre. El
-                                     username interno para el login se genera solo del email. -->
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-envelope me-1"></i> Email <span class="text-danger">*</span>
-                                    </label>
-                                    {{ form.email }}
-                                    {% if form.email.errors %}
-                                        <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-bold small">
-                                            <i class="fas fa-lock me-1"></i> Contraseña <span class="text-danger">*</span>
-                                        </label>
-                                        {{ form.password1 }}
-                                        <div class="password-strength mt-1">
-                                            <div class="strength-bar"></div>
-                                            <small class="strength-text text-muted">Mínimo 8 caracteres</small>
-                                        </div>
-                                        {% if form.password1.errors %}
-                                            <div class="text-danger small mt-1">{{ form.password1.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label class="form-label fw-bold small">
-                                            <i class="fas fa-lock me-1"></i> Confirmar contraseña <span class="text-danger">*</span>
-                                        </label>
-                                        {{ form.password2 }}
-                                        {% if form.password2.errors %}
-                                            <div class="text-danger small mt-1">{{ form.password2.errors.0 }}</div>
-                                        {% endif %}
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label fw-bold small">
-                                        <i class="fas fa-user-tag me-1"></i> Tipo de usuario <span class="text-danger">*</span>
-                                    </label>
-                                    <div class="role-picker" id="rolePicker">
-                                        <button type="button" class="role-card" data-role="student">
-                                            <i class="fas fa-graduation-cap"></i>
-                                            <span class="role-card-title">Estudiante</span>
-                                            <span class="role-card-desc">Quiero aprender con cursos</span>
-                                        </button>
-                                        <button type="button" class="role-card" data-role="teacher">
-                                            <i class="fas fa-chalkboard-teacher"></i>
-                                            <span class="role-card-title">Docente</span>
-                                            <span class="role-card-desc">Quiero crear y vender cursos</span>
-                                        </button>
-                                    </div>
-                                    {{ form.role }}
-                                    <div class="form-text">Selecciona tu rol para personalizar tu experiencia</div>
-                                    {% if form.role.errors %}
-                                        <div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <!-- ===== CAMPOS ESTUDIANTE ===== -->
-                                <div id="studentFields" style="display: none;">
-                                    <hr>
-                                    <h5 class="fw-bold mb-3 small">
-                                        <i class="fas fa-graduation-cap" style="color: var(--primary);"></i> 
-                                        Información de estudiante
-                                    </h5>
-                                    <div class="alert alert-info py-2 small">
-                                        <i class="fas fa-info-circle me-1"></i> Completa esta información para obtener recomendaciones personalizadas
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Nombre completo <span class="text-danger">*</span></label>
-                                            {{ form.full_name }}
-                                            {% if form.full_name.errors %}
-                                                <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Teléfono</label>
-                                            {{ form.phone }}
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Fecha de nacimiento</label>
-                                            {{ form.birth_date }}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Ciudad</label>
-                                            {{ form.city }}
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Nivel de estudios</label>
-                                            {{ form.education_level }}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Universidad o Institución <span class="text-danger">*</span></label>
-                                            {{ form.university }}
-                                            {% if form.university.errors %}
-                                                <div class="text-danger small mt-1">{{ form.university.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Carrera o área de estudio <span class="text-danger">*</span></label>
-                                            {{ form.career }}
-                                            {% if form.career.errors %}
-                                                <div class="text-danger small mt-1">{{ form.career.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Año o semestre actual</label>
-                                            {{ form.semester }}
-                                            <div class="form-text">Ejemplo: 3er semestre, 2do año</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold small">Áreas de interés</label>
-                                        <div class="row">
-                                            {% for value, label in form.interests.field.choices %}
-                                            <div class="col-md-4">
-                                                <div class="form-check">
-                                                    <input type="checkbox" name="interests" value="{{ value }}" class="form-check-input" id="interest_{{ value }}" {% if value in form.interests.value %}checked{% endif %}>
-                                                    <label class="form-check-label small" for="interest_{{ value }}">{{ label }}</label>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- ===== CAMPOS DOCENTE ===== -->
-                                <div id="teacherFields" style="display: none;">
-                                    <hr>
-                                    <h5 class="fw-bold mb-3 small">
-                                        <i class="fas fa-chalkboard-teacher" style="color: var(--primary);"></i> 
-                                        Información de docente
-                                    </h5>
-                                    <div class="alert alert-info py-2 small">
-                                        <i class="fas fa-info-circle me-1"></i> Completa esta información para crear cursos de calidad
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Nombre completo <span class="text-danger">*</span></label>
-                                            {{ form.teacher_full_name }}
-                                            {% if form.teacher_full_name.errors %}
-                                                <div class="text-danger small mt-1">{{ form.teacher_full_name.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Teléfono</label>
-                                            {{ form.teacher_phone }}
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Email profesional</label>
-                                            {{ form.teacher_email }}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Especialidad o área de expertise <span class="text-danger">*</span></label>
-                                            {{ form.specialty }}
-                                            {% if form.specialty.errors %}
-                                                <div class="text-danger small mt-1">{{ form.specialty.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Años de experiencia <span class="text-danger">*</span></label>
-                                            {{ form.experience_years }}
-                                            {% if form.experience_years.errors %}
-                                                <div class="text-danger small mt-1">{{ form.experience_years.errors.0 }}</div>
-                                            {% endif %}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Institución o empresa</label>
-                                            {{ form.institution }}
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold small">Biografía profesional</label>
-                                        {{ form.teacher_bio }}
-                                        <div class="form-text">Cuéntanos sobre tu trayectoria y experiencia</div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold small">Materiales que enseñas</label>
-                                        <div class="row">
-                                            {% for value, label in form.teaching_materials.field.choices %}
-                                            <div class="col-md-4">
-                                                <div class="form-check">
-                                                    <input type="checkbox" name="teaching_materials" value="{{ value }}" class="form-check-input" id="material_{{ value }}" {% if value in form.teaching_materials.value %}checked{% endif %}>
-                                                    <label class="form-check-label small" for="material_{{ value }}">{{ label }}</label>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-bold small">Niveles que enseñas</label>
-                                        <div class="row">
-                                            {% for value, label in form.teaching_level.field.choices %}
-                                            <div class="col-md-3">
-                                                <div class="form-check">
-                                                    <input type="checkbox" name="teaching_level" value="{{ value }}" class="form-check-input" id="level_{{ value }}" {% if value in form.teaching_level.value %}checked{% endif %}>
-                                                    <label class="form-check-label small" for="level_{{ value }}">{{ label }}</label>
-                                                </div>
-                                            </div>
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">LinkedIn</label>
-                                            {{ form.linkedin }}
-                                        </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label class="form-label fw-bold small">Sitio web</label>
-                                            {{ form.website }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- ===== TÉRMINOS Y CONDICIONES ===== -->
-                                <hr>
-                                <div class="mb-3 form-check">
-                                    {{ form.accept_terms }}
-                                    <label class="form-check-label small" for="id_accept_terms">
-                                        Acepto los <a href="{% url 'terms' %}" target="_blank">términos y condiciones</a> de AcadEMI <span class="text-danger">*</span>
-                                    </label>
-                                    {% if form.accept_terms.errors %}
-                                        <div class="text-danger small mt-1">{{ form.accept_terms.errors.0 }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
-                                    <i class="fas fa-user-plus me-2"></i> Registrarse
-                                </button>
-                            </form>
-
-                            <div class="text-center mt-4">
-                                <p class="text-muted small">¿Ya tienes cuenta? <a href="{% url 'login' %}" class="fw-bold" style="color: var(--primary);">Iniciar sesión</a></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<body class="auth-page auth-register-page">
+<main class="auth-shell">
+    <aside class="auth-story" aria-label="AcadEMI">
+        <a class="auth-brand" href="{% url 'home' %}"><img src="{% static_v 'images/logo-mark.svg' %}" alt="" class="brand-logo" width="42" height="42"> <span class="brand-wordmark">Acad<strong>EMI</strong></span></a>
+        <div class="auth-story-content">
+            <h1>Empieza a aprender<br><em>ingeniería.</em></h1>
+            <p>Explora contenidos de ingeniería, resuelve casos y demuestra lo que sabes.</p>
         </div>
-    </main>
-
-    <!-- ============================================
-         SCRIPTS
-         ============================================ -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static_v 'js/forms-validation.js' %}"></script>
-
-    <!-- Three.js (fondo 3D de partículas) -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
-    <script src="{% static_v 'js/particles-bg.js' %}"></script>
+    </aside>
+    <section class="auth-panel" aria-labelledby="register-title">
+        <div class="auth-panel-inner">
+            <div class="auth-topbar"><a href="{% url 'home' %}" class="auth-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</a><button type="button" class="auth-theme-toggle theme-toggle-btn" aria-label="Cambiar modo noche o día" title="Cambiar modo noche o día"><i class="fas fa-moon" aria-hidden="true"></i></button></div>
+            <div class="auth-heading"><h2 id="register-title">Crea tu cuenta</h2><p>Empieza gratis. Completar el registro toma unos minutos.</p></div>
+            {% if form.non_field_errors %}<div class="auth-notice auth-notice-error" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>{% endif %}
+            <form method="post" class="auth-form" id="registerForm">
+                {% csrf_token %}
+                <div class="auth-field">
+                    <label for="id_role">Quiero participar como</label>
+                    <div class="role-picker" id="rolePicker">
+                        <button type="button" class="role-card" data-role="student" aria-pressed="false"><i class="fas fa-graduation-cap" aria-hidden="true"></i><strong>Estudiante</strong><small>Quiero aprender</small></button>
+                        <button type="button" class="role-card" data-role="teacher" aria-pressed="false"><i class="fas fa-chalkboard-user" aria-hidden="true"></i><strong>Docente</strong><small>Quiero enseñar</small></button>
+                    </div>
+                    {{ form.role }}
+                    {% for error in form.role.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}
+                </div>
+                <div class="auth-field"><label for="id_email">Correo electrónico</label><div class="auth-input-wrap"><i class="fas fa-envelope" aria-hidden="true"></i>{{ form.email }}</div>{% for error in form.email.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                <div id="studentFields" class="role-fields">
+                    <div class="auth-field"><label for="id_full_name">Nombre completo</label><div class="auth-input-wrap"><i class="fas fa-user" aria-hidden="true"></i>{{ form.full_name }}</div>{% for error in form.full_name.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                    <details class="auth-details" {% if form.university.errors or form.career.errors %}open{% endif %}><summary>Agregar información académica <span>Opcional</span></summary><div class="auth-details-content">
+                        <div class="auth-field"><label for="id_university">Universidad o institución</label>{{ form.university }}{% for error in form.university.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                        <div class="auth-field"><label for="id_career">Carrera o área de estudio</label>{{ form.career }}{% for error in form.career.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                        <div class="auth-field"><label for="id_city">Ciudad</label>{{ form.city }}</div>
+                    </div></details>
+                </div>
+                <div id="teacherFields" class="role-fields" hidden>
+                    <div class="auth-field"><label for="id_teacher_full_name">Nombre completo</label><div class="auth-input-wrap"><i class="fas fa-user" aria-hidden="true"></i>{{ form.teacher_full_name }}</div>{% for error in form.teacher_full_name.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                    <div class="auth-field"><label for="id_specialty">Especialidad</label>{{ form.specialty }}{% for error in form.specialty.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                    <details class="auth-details"><summary>Agregar experiencia profesional <span>Opcional</span></summary><div class="auth-details-content">
+                        <div class="auth-field"><label for="id_experience_years">Años de experiencia</label>{{ form.experience_years }}</div>
+                        <div class="auth-field"><label for="id_institution">Institución o empresa</label>{{ form.institution }}</div>
+                        <div class="auth-field"><label for="id_teacher_bio">Breve presentación</label>{{ form.teacher_bio }}</div>
+                    </div></details>
+                </div>
+                <div class="auth-field"><label for="id_password1">Contraseña</label><div class="auth-input-wrap auth-password-wrap"><i class="fas fa-lock" aria-hidden="true"></i>{{ form.password1 }}<button type="button" class="password-toggle" data-password-toggle="id_password1" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div>{% for error in form.password1.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}
+                    <div class="password-strength" aria-hidden="true"><span class="strength-bar"></span></div>
+                    <ul class="password-rules" aria-label="Requisitos de la contraseña"><li data-rule="length">8 caracteres como mínimo</li><li data-rule="upper">Una mayúscula</li><li data-rule="lower">Una minúscula</li><li data-rule="digit">Un número</li><li data-rule="symbol">Un símbolo: ! @ # $ % ^ &amp; * ( ) , . ? : { } | &lt; &gt;</li></ul>
+                </div>
+                <div class="auth-field"><label for="id_password2">Confirmar contraseña</label><div class="auth-input-wrap auth-password-wrap"><i class="fas fa-lock" aria-hidden="true"></i>{{ form.password2 }}<button type="button" class="password-toggle" data-password-toggle="id_password2" aria-label="Mostrar contraseña" aria-pressed="false"><i class="fas fa-eye" aria-hidden="true"></i></button></div><small id="password-match" class="auth-field-hint" aria-live="polite"></small>{% for error in form.password2.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                <div class="auth-terms">{{ form.accept_terms }}<label for="id_accept_terms">Acepto los <a href="{% url 'terms' %}" target="_blank" rel="noopener">términos y condiciones</a> de AcadEMI.</label></div>{% for error in form.accept_terms.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}
+                <button class="auth-submit" type="submit">Crear cuenta <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </form>
+            <p class="auth-switch">¿Ya tienes una cuenta? <a href="{% url 'login' %}">Iniciar sesión</a></p>
+        </div>
+    </section>
+</main>
+<script src="{% static_v 'js/theme-toggle.js' %}"></script>
+<script src="{% static_v 'js/auth.js' %}"></script>
 </body>
 </html>

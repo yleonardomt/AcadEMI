@@ -13,6 +13,8 @@ from ..models import (
     AssignmentSubmission,
 )
 from ..utils import send_certificate_email, issue_certificate
+from ..utils.course_review import require_course_review
+from ..utils.lesson_completion import completion_blocker
 
 
 # ============================================
@@ -48,6 +50,7 @@ def add_lesson_view(request, module_id):
             is_free=is_free,
             order=last_order + 1
         )
+        require_course_review(course, request.user)
         messages.success(request, 'Lección creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -161,6 +164,7 @@ def edit_lesson_view(request, lesson_id):
                                                 is_correct=(i == 0)
                                             )
 
+        require_course_review(course, request.user)
         messages.success(request, f'Lección "{lesson.title}" actualizada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -276,8 +280,12 @@ def delete_lesson_view(request, lesson_id):
         return redirect('dashboard')
 
     if request.method == 'POST':
+        if course.enrollments.exists():
+            messages.error(request, 'No se puede eliminar una lección de un curso con estudiantes inscritos.')
+            return redirect('manage_course', course_id=course.id)
         title = lesson.title
         lesson.delete()
+        require_course_review(course, request.user)
         messages.success(request, f'Lección "{title}" eliminada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -310,6 +318,8 @@ def reorder_lesson_view(request, lesson_id, direction):
         l.order = i
         l.save()
 
+    require_course_review(course, request.user)
+
     return JsonResponse({'success': True})
 
 
@@ -328,6 +338,7 @@ def upload_video_view(request, lesson_id):
             lesson.video_file = video
             lesson.lesson_type = 'video'
             lesson.save()
+            require_course_review(course, request.user)
             messages.success(request, 'Video subido correctamente.')
         else:
             messages.error(request, 'No se seleccionó ningún video.')
@@ -356,6 +367,7 @@ def upload_document_view(request, lesson_id):
             )
             lesson.lesson_type = 'document'
             lesson.save()
+            require_course_review(course, request.user)
             messages.success(request, 'Documento subido correctamente.')
         else:
             messages.error(request, 'No se seleccionó ningún documento.')
@@ -545,6 +557,10 @@ def mark_lesson_complete(request, lesson_id):
         status__in=['enrolled', 'in_progress', 'completed']
     )
 
+    blocked = completion_blocker(enrollment, lesson)
+    if blocked:
+        return JsonResponse({'success': False, 'message': blocked}, status=403)
+
     lesson_progress, created = LessonProgress.objects.get_or_create(
         enrollment=enrollment,
         lesson=lesson,
@@ -696,6 +712,7 @@ def create_lesson_text_view(request, module_id):
             order=last_order + 1
         )
 
+        require_course_review(course, request.user)
         messages.success(request, f'Lección de texto "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -747,6 +764,7 @@ def create_lesson_video_view(request, module_id):
             lesson.video_file = video_file
             lesson.save()
 
+        require_course_review(course, request.user)
         messages.success(request, f'Lección de video "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -795,6 +813,7 @@ def create_lesson_document_view(request, module_id):
         lesson.document_file = document_file
         lesson.save()
 
+        require_course_review(course, request.user)
         messages.success(request, f'Lección de documento "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 
@@ -958,6 +977,7 @@ def create_lesson_quiz_view(request, module_id):
                         is_correct=(i == 0)
                     )
 
+        require_course_review(course, request.user)
         if question_count == 0:
             messages.warning(request, f'No se agregaron preguntas al {titulo_pagina.lower()}. Puedes editarlo después.')
         else:
@@ -1028,6 +1048,7 @@ def create_lesson_assignment_view(request, module_id):
             assignment_deadline_hours=assignment_deadline_hours
         )
 
+        require_course_review(course, request.user)
         messages.success(request, f'Tarea "{title}" creada correctamente.')
         return redirect('manage_course', course_id=course.id)
 

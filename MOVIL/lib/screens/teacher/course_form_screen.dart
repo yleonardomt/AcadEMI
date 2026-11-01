@@ -34,7 +34,6 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
   int? _category;
   String _level = 'beginner';
   bool _free = false;
-  bool _featured = false;
   String? _imageUrl;
   String? _imagePath;
   bool _loading = true;
@@ -66,7 +65,6 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
         _category = c['category_id'] == null ? null : asInt(c['category_id']);
         _level = asString(c['level'], 'beginner');
         _free = asBool(c['is_free']);
-        _featured = asBool(c['is_featured']);
         _imageUrl = asStringOrNull(c['image']);
       }
     } catch (e) {
@@ -89,7 +87,6 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
         'description': _description.text.trim(),
         'level': _level,
         'is_free': _free,
-        'is_featured': _featured,
         'price': _free ? '0' : _price.text.trim(),
         if (_category != null) 'category': _category,
       }, id: widget.courseId, imagePath: _imagePath);
@@ -182,16 +179,8 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
                           label: 'Precio (Bs.)',
                           icon: FontAwesomeIcons.moneyBill,
                           keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (v) => (double.tryParse((v ?? '').replaceAll(',', '.')) ?? -1) < 0 ? 'Precio inválido' : null,
+                          validator: (v) => (double.tryParse((v ?? '').replaceAll(',', '.')) ?? 0) <= 0 ? 'El precio debe ser mayor que cero' : null,
                         ),
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Destacar en el catálogo', style: TextStyle(fontWeight: FontWeight.w700)),
-                        subtitle: Text('Aparece primero en la portada', style: TextStyle(color: p.inkMuted, fontSize: 12.5)),
-                        activeThumbColor: AppColors.primary,
-                        value: _featured,
-                        onChanged: (v) => setState(() => _featured = v),
-                      ),
                     ]),
                   ),
                   const SizedBox(height: 22),

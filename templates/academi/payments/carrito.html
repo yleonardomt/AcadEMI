@@ -28,7 +28,7 @@
             {% if emi_discount_eligible %}
             <div class="alert alert-info d-flex align-items-center gap-2 mb-3" role="alert">
                 <i class="fas fa-graduation-cap fa-lg"></i>
-                <span>Por ser estudiante de la EMI, tienes <strong>{{ emi_discount_percent|floatformat:0 }}% de descuento</strong> en tu primera compra. Se aplica automáticamente al pagar.</span>
+                <span>Para la primera compra paga con correo EMI está previsto un <strong>{{ emi_discount_percent|floatformat:0 }}% de descuento</strong>. Las compras pagas se habilitarán cuando exista un cobro verificable.</span>
             </div>
             {% endif %}
 
@@ -132,21 +132,9 @@
             <!-- ==========================================
             MÉTODOS DE PAGO
             ========================================== -->
-            <div class="payment-methods">
-                <label><i class="fas fa-credit-card"></i> Método de pago</label>
-                <div class="payment-options" id="paymentOptions">
-                    <div class="payment-option active" data-method="qr" onclick="selectPayment('qr')">
-                        <i class="fas fa-qrcode"></i>
-                        Pago QR
-                        <span class="badge-payment">Pago Efectivo</span>
-                    </div>
-                    <div class="payment-option" data-method="card" onclick="selectPayment('card')">
-                        <i class="fas fa-credit-card"></i>
-                        Tarjeta
-                        <span class="badge-payment">Stripe</span>
-                    </div>
-                </div>
-            </div>
+            {% if total > 0 and not demo_checkout %}
+            <div class="alert alert-warning" role="status">Las compras de cursos pagos estarán disponibles cuando se active un cobro verificable. Por ahora puedes inscribirte en cursos gratuitos.</div>
+            {% endif %}
 
             <!-- ==========================================
             FORMULARIO DE PAGO
@@ -169,48 +157,14 @@
                     <input type="text" id="address" placeholder="Ej: Av. Principal #123">
                 </div>
 
-                <!-- QR -->
-                <div id="qrContainer" class="qr-container" data-username="{{ user.username|default:'Invitado' }}">
-                    <img src="{% static 'images/qr-pago-efectivo.png' %}" alt="QR Pago Efectivo" onerror="this.style.display='none'">
-                    <div class="qr-info">
-                        <i class="fas fa-info-circle"></i> Escanea el QR con tu aplicación bancaria
-                    </div>
-                    <div class="qr-info">
-                        <i class="fas fa-university"></i> Banco: Banco Union &nbsp;|&nbsp; <i class="fas fa-hashtag"></i> Cuenta: 123-456-7890
-                    </div>
-                    <div class="qr-info warning">
-                        <i class="fas fa-exclamation-triangle"></i> El pago se verificará manualmente en 24-48 horas
-                    </div>
-                </div>
-
-                <!-- Tarjeta -->
-                <div id="cardContainer" style="display:none;">
-                    <div class="form-group">
-                        <label for="cardNumber"><i class="fas fa-credit-card"></i> Número de tarjeta</label>
-                        <input type="text" id="cardNumber" placeholder="4111 1111 1111 1111" maxlength="19">
-                    </div>
-                    <div class="row-2">
-                        <div class="form-group">
-                            <label for="cardExpiry"><i class="fas fa-calendar-alt"></i> Fecha exp.</label>
-                            <input type="text" id="cardExpiry" placeholder="MM/AA" maxlength="5">
-                        </div>
-                        <div class="form-group">
-                            <label for="cardCvc"><i class="fas fa-lock"></i> CVC</label>
-                            <input type="text" id="cardCvc" placeholder="123" maxlength="4">
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- ==========================================
             BOTÓN COMPRAR
             ========================================== -->
-            <button class="btn-checkout" id="checkoutBtn" onclick="processCheckout()" {% if not items %}disabled{% endif %}>
-                <i class="fas fa-lock"></i> Comprar ahora
+            <button class="btn-checkout" id="checkoutBtn" data-demo="{{ demo_checkout|yesno:'true,false' }}" onclick="processCheckout()" {% if not items or total > 0 and not demo_checkout %}disabled{% endif %}>
+                <i class="fas fa-book-open"></i> {% if total > 0 and demo_checkout %}Finalizar compra{% else %}Inscribirme gratis{% endif %}
             </button>
-            <p style="font-size:12px;color:var(--gray);text-align:center;margin-top:8px;">
-                <i class="fas fa-shield-alt"></i> Pago 100% seguro
-            </p>
         </div>
 
     </div>

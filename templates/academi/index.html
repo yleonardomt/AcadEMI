@@ -1,7 +1,7 @@
 {% extends 'partials/base.html' %}
 {% load static static_extras l10n %}
 
-{% block title %}AcadEMI - Educación Online en Bolivia{% endblock %}
+{% block title %}AcadEMI | Ingeniería que se aprende haciendo{% endblock %}
 
 {% block body_class %}landing-page{% endblock %}
 
@@ -13,21 +13,17 @@
 
 <!-- ========== HERO ========== -->
 <section class="hero" aria-label="Presentación principal">
-    <video class="hero-video-bg" autoplay muted loop playsinline aria-hidden="true" disablepictureinpicture>
-        <source src="/media/sitio/academia.mp4" type="video/mp4">
-    </video>
+    <img class="hero-photo" src="{% static 'images/hero-engineering.jpg' %}" alt="" fetchpriority="high" aria-hidden="true">
     <div class="hero-overlay" aria-hidden="true"></div>
 
     <div class="container">
         <div class="hero-content">
-            
-
             <h1 class="hero-title">
-                Aprende algo nuevo,<br>
-                <span>a tu ritmo</span>
+                Aprende a resolver<br>
+                <span>problemas reales.</span>
             </h1>
             <p class="hero-subtitle">
-                Cursos dictados por profesores reales, con certificado verificable al terminar y sin horarios fijos.
+                Cursos de ingeniería con casos aplicados, prácticas y exámenes. Avanza a tu ritmo y convierte la teoría en soluciones.
             </p>
             <div class="hero-buttons">
                 {% if user.is_authenticated %}
@@ -44,62 +40,21 @@
                 </a>
             </div>
 
-            <div class="hero-mini-stats" aria-label="Datos de la plataforma">
-                <div class="hero-mini-stat">
-                    <strong>{{ total_courses }}+</strong>
-                    <span>Cursos</span>
-                </div>
-                <div class="hero-mini-stat">
-                    <strong>{{ total_students }}+</strong>
-                    <span>Estudiantes</span>
-                </div>
-                <div class="hero-mini-stat">
-                    <strong>{{ avg_rating|default:"—" }} <i class="fas fa-star" aria-hidden="true"></i></strong>
-                    <span>Calificación</span>
-                </div>
-            </div>
         </div>
     </div>
 
-    
-
-    <button type="button" class="hero-video-toggle" aria-label="Pausar video de fondo" aria-pressed="false">
-        <i class="fas fa-pause" aria-hidden="true"></i>
-    </button>
-
-    <a href="#beneficios" class="scroll-cue" aria-label="Desplazarse hacia abajo">
+    <a href="#cursos" class="scroll-cue" aria-label="Desplazarse hacia abajo">
         <i class="fas fa-chevron-down" aria-hidden="true"></i>
     </a>
 </section>
-
-<!-- ========== BENEFICIOS (marquee) ========== -->
-<div id="beneficios" class="perks-bar">
-    <div class="marquee marquee--perks">
-        <div class="marquee-track">
-            {% for pass in "12" %}
-            <div class="marquee-group"{% if not forloop.first %} aria-hidden="true"{% endif %}>
-                <span class="perk-item"><i class="fas fa-certificate" aria-hidden="true"></i> Certificados verificables</span>
-                <span class="perk-item"><i class="fas fa-comments" aria-hidden="true"></i> Preguntas directas al docente</span>
-                <span class="perk-item"><i class="fas fa-ticket-alt" aria-hidden="true"></i> Cupones por tiempo limitado</span>
-                <span class="perk-item"><i class="fas fa-mobile-alt" aria-hidden="true"></i> Aprende desde el celular</span>
-                <span class="perk-item"><i class="fas fa-star" aria-hidden="true"></i> {{ avg_rating|default:"—" }}/5 de calificación</span>
-                <span class="perk-item"><i class="fas fa-user-graduate" aria-hidden="true"></i> {{ total_students }}+ estudiantes activos</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-</div>
 
 {% if categories %}
 <!-- ========== CATEGORÍAS ========== -->
 <section id="categorias" class="categories">
     <div class="container">
         <div class="section-header reveal">
-            <span class="badge-section">
-                <i class="fas fa-shapes" aria-hidden="true"></i> Explora
-            </span>
-            <h2>Encuentra tu <span>categoría</span></h2>
-            <p>Elige un área y descubre los cursos disponibles para ti</p>
+            <h2>Explora tu <span>especialidad</span></h2>
+            <p>Explora cursos organizados por especialidad</p>
         </div>
 
         <div class="category-scroll">
@@ -123,11 +78,8 @@
 <section id="cursos" class="courses">
     <div class="container">
         <div class="section-header reveal">
-            <span class="badge-section">
-                <i class="fas fa-rocket" aria-hidden="true"></i> Cursos destacados
-            </span>
-            <h2>Nuestros <span>cursos</span> más populares</h2>
-            <p>Los cursos más valorados por nuestra comunidad de estudiantes</p>
+            <h2>Ingeniería para <span>poner en práctica</span></h2>
+            <p>Empieza por una base sólida y resuelve casos cercanos a tu carrera</p>
         </div>
 
         <div class="row g-4" data-stagger>
@@ -150,17 +102,14 @@
                         <span class="course-badge">{{ course.category.name|default:"General" }}</span>
                         <h5>{{ course.title }}</h5>
                         <p>{{ course.description|truncatechars:70 }}</p>
-                        <div class="course-teacher">
-                            <i class="fas fa-chalkboard-teacher" aria-hidden="true"></i>
-                            {{ course.teacher.get_full_name|default:course.teacher.username }}
-                        </div>
+                        <div class="course-teacher"><i class="fas fa-compass-drafting" aria-hidden="true"></i> Lecciones, práctica y examen</div>
                         <div class="course-meta">
                             <span class="course-price">{{ course.get_price_display }}</span>
-                            <span class="course-rating">
+                            {% if course.total_reviews %}<span class="course-rating">
                                 <i class="fas fa-star" aria-hidden="true"></i>
                                 {{ course.average_rating|floatformat:1 }}
                                 <span class="rating-count">({{ course.total_reviews }})</span>
-                            </span>
+                            </span>{% endif %}
                         </div>
                         <a href="{% url 'course_detail' course.id %}" class="btn btn-primary btn-course">
                             Ver curso <i class="fas fa-arrow-right" aria-hidden="true"></i>
@@ -209,75 +158,16 @@
     </div>
 </section>
 
-<!-- ========== SOBRE NOSOTROS + MISIÓN / VISIÓN / VALORES ========== -->
-<section id="nosotros" class="about-mission">
-    <div class="container">
-        <div class="section-header reveal">
-            <span class="badge-section">
-                <i class="fas fa-heart" aria-hidden="true"></i> Quiénes somos
-            </span>
-            <h2>Más que una plataforma, <span>una comunidad</span></h2>
-            <p>AcadEMI nace para democratizar la educación de calidad en Bolivia y Latinoamérica</p>
+<!-- ========== APRENDIZAJE APLICADO ========== -->
+<section id="nosotros" class="about-editorial">
+    <div class="container about-editorial-grid">
+        <div class="about-editorial-photo reveal">
+            <img src="{% static 'images/about-engineering.jpg' %}" alt="Equipo y tecnología aplicados a proyectos de ingeniería" loading="lazy">
         </div>
-
-        <div class="about-intro reveal">
-            <p class="about-lead">
-                Creemos que el conocimiento debe ser accesible, flexible y de alto nivel.
-                Por eso conectamos a estudiantes con profesores reales que enseñan con pasión,
-                rigor y cercanía.
-            </p>
-        </div>
-
-        <div class="mission-vision-grid" data-stagger>
-            <article class="mv-card mission-card reveal">
-                <div class="mv-icon">
-                    <i class="fas fa-bullseye" aria-hidden="true"></i>
-                </div>
-                <h3>Nuestra Misión</h3>
-                <p>
-                    Ofrecer educación online de excelencia, accesible y flexible,
-                    que permita a cada persona desarrollar habilidades reales
-                    y transformar su futuro profesional y personal.
-                </p>
-            </article>
-
-            <article class="mv-card vision-card reveal">
-                <div class="mv-icon">
-                    <i class="fas fa-eye" aria-hidden="true"></i>
-                </div>
-                <h3>Nuestra Visión</h3>
-                <p>
-                    Ser la plataforma de aprendizaje de referencia en Bolivia y la región,
-                    reconocida por la calidad de sus docentes, la relevancia de sus cursos
-                    y el impacto real en la vida de nuestros estudiantes.
-                </p>
-            </article>
-        </div>
-
-        <div class="values-section">
-            <h3 class="values-title reveal">Nuestros valores</h3>
-            <div class="values-grid" data-stagger>
-                <div class="value-item reveal">
-                    <div class="value-icon"><i class="fas fa-gem" aria-hidden="true"></i></div>
-                    <h4>Excelencia</h4>
-                    <p>Contenido de alta calidad y docentes comprometidos con el aprendizaje real.</p>
-                </div>
-                <div class="value-item reveal">
-                    <div class="value-icon"><i class="fas fa-handshake" aria-hidden="true"></i></div>
-                    <h4>Cercanía</h4>
-                    <p>Respuestas directas de los profesores y acompañamiento humano en cada paso.</p>
-                </div>
-                <div class="value-item reveal">
-                    <div class="value-icon"><i class="fas fa-unlock" aria-hidden="true"></i></div>
-                    <h4>Accesibilidad</h4>
-                    <p>Educación flexible, a tu ritmo y disponible desde cualquier dispositivo.</p>
-                </div>
-                <div class="value-item reveal">
-                    <div class="value-icon"><i class="fas fa-lightbulb" aria-hidden="true"></i></div>
-                    <h4>Innovación</h4>
-                    <p>Metodologías actualizadas y herramientas modernas para un aprendizaje efectivo.</p>
-                </div>
-            </div>
+        <div class="about-editorial-copy reveal">
+            <h2>De la teoría al trabajo aplicado</h2>
+            <p>Los cursos están organizados por áreas de ingeniería. Cada tema combina explicaciones, ejemplos, prácticas y evaluaciones para que puedas comprobar tu avance.</p>
+            <a href="{% url 'catalog' %}" class="about-editorial-link">Conoce los cursos <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
         </div>
     </div>
 </section>
@@ -286,9 +176,6 @@
 <section id="como-funciona" class="how-it-works">
     <div class="container">
         <div class="section-header reveal">
-            <span class="badge-section">
-                <i class="fas fa-diagram-project" aria-hidden="true"></i> Proceso
-            </span>
             <h2>¿Cómo <span>funciona</span>?</h2>
             <p>Empieza a aprender en 4 simples pasos</p>
         </div>
@@ -298,7 +185,7 @@
                 <div class="step-number">1</div>
                 <div class="step-icon"><i class="fas fa-magnifying-glass" aria-hidden="true"></i></div>
                 <h5>Explora</h5>
-                <p>Busca entre decenas de cursos por categoría, nivel o precio</p>
+                <p>Busca cursos por área, nivel o precio</p>
             </div>
             <div class="step-connector" aria-hidden="true"></div>
             <div class="step-card reveal">
@@ -312,7 +199,7 @@
                 <div class="step-number">3</div>
                 <div class="step-icon"><i class="fas fa-laptop-code" aria-hidden="true"></i></div>
                 <h5>Aprende</h5>
-                <p>Avanza a tu ritmo y pregúntale directo al docente en cada lección</p>
+                <p>Avanza a tu ritmo con ejemplos y ejercicios aplicados</p>
             </div>
             <div class="step-connector" aria-hidden="true"></div>
             <div class="step-card reveal">
@@ -329,9 +216,6 @@
 <section id="caracteristicas" class="features">
     <div class="container">
         <div class="section-header reveal">
-            <span class="badge-section">
-                <i class="fas fa-gem" aria-hidden="true"></i> Características
-            </span>
             <h2>¿Por qué <span>elegirnos</span>?</h2>
             <p>Todo lo que necesitas para aprender de manera efectiva y con resultados reales</p>
         </div>
@@ -341,34 +225,18 @@
                 <div class="feature-icon"><i class="fas fa-certificate" aria-hidden="true"></i></div>
                 <h5>Certificados verificables</h5>
                 <p>Obtén un certificado con código único al finalizar cada curso, verificable públicamente por cualquiera.</p>
-                <div class="cert-mock" aria-hidden="true">
-                    <span class="cert-mock-seal"><i class="fas fa-award"></i></span>
-                    <span class="cert-mock-line cert-mock-line--title"></span>
-                    <span class="cert-mock-line"></span>
-                    <span class="cert-mock-line"></span>
-                    <span class="cert-mock-line cert-mock-line--short"></span>
-                    <span class="cert-mock-code"><i class="fas fa-qrcode"></i> Código único</span>
-                </div>
             </div>
 
             <div class="feature-card feature-card--chat reveal">
                 <div class="feature-icon"><i class="fas fa-comments" aria-hidden="true"></i></div>
-                <h5>Habla con el docente</h5>
-                <p>Pregunta en cada lección y recibe respuesta real del profesor.</p>
-                <div class="chat-mock" aria-hidden="true">
-                    <span class="chat-bubble chat-bubble--student"><i class="fas fa-circle-question"></i> ¿Puedo repasar esta lección?</span>
-                    <span class="chat-bubble chat-bubble--teacher"><i class="fas fa-chalkboard-user"></i> Claro, te dejo material extra.</span>
-                </div>
+                <h5>Casos resueltos</h5>
+                <p>Aprende el método, aplícalo en una práctica y comprueba tu respuesta.</p>
             </div>
 
             <div class="feature-card reveal">
                 <div class="feature-icon"><i class="fas fa-video" aria-hidden="true"></i></div>
-                <h5>Videos HD</h5>
-                <p>Contenido en alta definición, disponible cuando quieras.</p>
-                <div class="player-mock" aria-hidden="true">
-                    <span class="player-mock-play"><i class="fas fa-play"></i></span>
-                    <span class="player-mock-bar"><span></span></span>
-                </div>
+                <h5>Videos complementarios</h5>
+                <p>Recursos audiovisuales enlazados a su fuente original para profundizar cada tema.</p>
             </div>
 
             <div class="feature-card reveal">
@@ -406,31 +274,31 @@
                         <span class="counter" data-count="{{ total_courses }}">0</span>+
                     </div>
                     <p>Cursos disponibles</p>
-                    <span class="stat-sub">En crecimiento constante</span>
+                    <span class="stat-sub">En el catálogo actual</span>
                 </div>
                 <div class="stat-block">
-                    <div class="stat-icon"><i class="fas fa-user-graduate" aria-hidden="true"></i></div>
+                    <div class="stat-icon"><i class="fas fa-book" aria-hidden="true"></i></div>
                     <div class="stat-number">
-                        <span class="counter" data-count="{{ total_students }}">0</span>+
+                        <span class="counter" data-count="{{ total_lessons }}">0</span>
                     </div>
-                    <p>Estudiantes activos</p>
-                    <span class="stat-sub">Felices aprendiendo</span>
+                    <p>Lecciones disponibles</p>
+                    <span class="stat-sub">Teoría y práctica</span>
                 </div>
                 <div class="stat-block">
-                    <div class="stat-icon"><i class="fas fa-chalkboard-teacher" aria-hidden="true"></i></div>
+                    <div class="stat-icon"><i class="fas fa-clipboard-check" aria-hidden="true"></i></div>
                     <div class="stat-number">
-                        <span class="counter" data-count="{{ total_teachers }}">0</span>+
+                        <span class="counter" data-count="{{ total_exams }}">0</span>
                     </div>
-                    <p>Instructores expertos</p>
-                    <span class="stat-sub">Profesionales reales</span>
+                    <p>Exámenes de aplicación</p>
+                    <span class="stat-sub">Comprueba tu avance</span>
                 </div>
                 <div class="stat-block">
-                    <div class="stat-icon"><i class="fas fa-star" aria-hidden="true"></i></div>
+                    <div class="stat-icon"><i class="fas fa-gears" aria-hidden="true"></i></div>
                     <div class="stat-number">
-                        <span class="counter" data-count="{{ avg_rating|default:0|unlocalize }}" data-decimals="1">0</span>
+                        <span class="counter" data-count="{{ total_assignments }}">0</span>
                     </div>
-                    <p>Calificación promedio</p>
-                    <span class="stat-sub">Excelente valoración</span>
+                    <p>Prácticas aplicadas</p>
+                    <span class="stat-sub">Casos por especialidad</span>
                 </div>
             </div>
         </div>
@@ -442,9 +310,6 @@
 <section id="testimonios" class="testimonials" aria-label="Testimonios de estudiantes">
     <div class="container">
         <div class="section-header reveal">
-            <span class="badge-section">
-                <i class="fas fa-quote-left" aria-hidden="true"></i> Testimonios
-            </span>
             <h2>Lo que dicen <span>nuestros</span> estudiantes</h2>
             <p>Reseñas reales dejadas por estudiantes en sus cursos</p>
         </div>
@@ -480,9 +345,8 @@
         <div class="final-cta-card reveal">
             <div class="final-cta-mesh" aria-hidden="true"></div>
             <div class="final-cta-content">
-                <span class="final-cta-icon" aria-hidden="true"><i class="fas fa-graduation-cap"></i></span>
                 <h2>Tu próximo curso te está esperando</h2>
-                <p>Únete a {{ total_students }}+ estudiantes que ya están aprendiendo en AcadEMI</p>
+                <p>Explora cursos de ingeniería, practica y mide tu avance en cada área.</p>
                 <div class="final-cta-buttons">
                     {% if user.is_authenticated %}
                         <a href="{% url 'catalog' %}" class="btn btn-primary btn-hero">

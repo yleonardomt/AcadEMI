@@ -1,5 +1,7 @@
 """Módulo de administración para la app móvil (RF-43 a RF-49)."""
-from datetime import datetime
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 from django.db.models import Count, Q, Sum
 from django.shortcuts import get_object_or_404
@@ -12,21 +14,11 @@ from ..models import (
 from .auth import api_view, error, ok, parse_body
 from .serializers import display_name, media_url, money
 from .support import log_action
+from ..utils.coupons import save_coupon as save_coupon_record
+from ..utils.demo_sales import visible_sales
+from django.conf import settings
 
 ADMIN = ('admin',)
-
-
-def _dt(value):
-    """Acepta 'YYYY-MM-DD' o ISO completo y devuelve un datetime con zona horaria."""
-    if not value:
-        return None
-    try:
-        parsed = datetime.fromisoformat(str(value).replace('Z', '+00:00'))
-    except ValueError:
-        return None
-    if timezone.is_naive(parsed):
-        parsed = timezone.make_aware(parsed)
-    return parsed
 
 
 # ============================================
@@ -73,9 +65,12 @@ def user_create(request):
         return error('Usuario y correo son obligatorios.')
     if role not in ('student', 'teacher', 'admin'):
         return error('Rol inválido.')
-    if len(password) < 8:
-        return error('La contraseña debe tener al menos 8 caracteres.')
-    if User.objects.filter(username=username).exists():
+    try:
+        validate_email(email)
+        validate_password(password)
+    except ValidationError as exc:
+        return error('; '.join(exc.messages))
+    if User.objects.filter(username__iexact=username).exists():
         return error('El nombre de usuario ya existe.')
     if User.objects.filter(email__iexact=email).exists():
         return error('El email ya está registrado.')
@@ -96,8 +91,12 @@ def user_update(request, user_id):
     role = data.get('role') or user.role
     if role not in ('student', 'teacher', 'admin'):
         return error('Rol inválido.')
-    if User.objects.filter(username=username).exclude(pk=user.pk).exists():
+    if User.objects.filter(username__iexact=username).exclude(pk=user.pk).exists():
         return error('El nombre de usuario ya existe.')
+    try:
+        validate_email(email)
+    except ValidationError:
+        return error('Correo electrónico inválido.')
     if User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
         return error('El email ya está registrado.')
     if user == request.user and role != 'admin':
@@ -128,6 +127,8 @@ def user_delete(request, user_id):
     user = get_object_or_404(User, id=user_id)
     if user == request.user:
         return error('No puedes eliminar tu propia cuenta.')
+    if user.courses_taught.exists() or user.enrollments.exists() or user.payments.exists() or user.created_coupons.exists():
+        return error('Este usuario tiene cursos, inscripciones, pagos o cupones. Desactiva la cuenta para conservar los datos.')
     name = user.username
     user.delete()
     log_action(request, request.user, 'user_delete', f'Admin eliminó al usuario {name}')
@@ -138,8 +139,10 @@ def user_delete(request, user_id):
 def user_reset_password(request, user_id):
     user = get_object_or_404(User, id=user_id)
     password = parse_body(request).get('new_password') or ''
-    if len(password) < 8:
-        return error('La contraseña debe tener al menos 8 caracteres.')
+    try:
+        validate_password(password, user)
+    except ValidationError as exc:
+        return error('; '.join(exc.messages))
     user.set_password(password)
     user.save()
     log_action(request, request.user, 'password_change', f'Admin restableció la contraseña de {user.username}')
@@ -169,6 +172,11 @@ def courses(request):
 @api_view(('POST',), roles=ADMIN)
 def course_moderate(request, course_id, action):
     course = get_object_or_404(Course, id=course_id)
+    allowed_states = {'approve': ('pending',), 'reject': ('pending',), 'retire': ('published',)}
+    if action not in allowed_states or course.status not in allowed_states[action]:
+        return error('La acción no corresponde al estado actual del curso.')
+    if action == 'approve' and course.total_lessons == 0:
+        return error('El curso necesita al menos una lección para ser aprobado.')
     if action == 'approve':
         course.status = 'published'
         course.approved_at = timezone.now()
@@ -211,6 +219,8 @@ def category_save(request, category_id=None):
     name = (data.get('name') or '').strip()
     if not name:
         return error('El nombre de la categoría es obligatorio.')
+    if Category.objects.filter(name__iexact=name).exclude(pk=category_id).exists():
+        return error('Ya existe una categoría con ese nombre.')
     description = (data.get('description') or '').strip()
     if category_id:
         cat = get_object_or_404(Category, id=category_id)
@@ -289,7 +299,7 @@ def coupon_row(c):
     return {
         'id': c.id, 'code': c.code, 'type': c.discount_type, 'value': money(c.discount_value),
         'course_id': c.course_id, 'course': c.course.title if c.course_id else None,
-        'max_uses': c.max_uses, 'used_count': c.used_count, 'is_active': c.is_active,
+        'max_uses': c.max_uses, 'used_count': c.current_uses, 'is_active': c.is_active,
         'is_valid': c.is_valid(), 'expires_at': c.expires_at.isoformat(),
         'created_by': display_name(c.created_by),
     }
@@ -297,34 +307,8 @@ def coupon_row(c):
 
 def save_coupon(request, coupon=None, course=None):
     """Crea o modifica un cupón. Lo comparten administrador y docente."""
-    data = parse_body(request)
-    discount_type = data.get('discount_type') or (coupon.discount_type if coupon else 'percentage')
-    if discount_type not in ('percentage', 'fixed'):
-        return None, error('Tipo de descuento inválido.')
-    try:
-        value = float(data.get('discount_value')) if data.get('discount_value') not in (None, '') \
-            else (float(coupon.discount_value) if coupon else 0)
-        max_uses = int(data.get('max_uses')) if data.get('max_uses') not in (None, '') \
-            else (coupon.max_uses if coupon else 1)
-    except (TypeError, ValueError):
-        return None, error('Valor o usos máximos inválidos.')
-    if value <= 0 or (discount_type == 'percentage' and value > 100):
-        return None, error('El descuento debe ser mayor a 0 (y hasta 100% si es porcentaje).')
-    if max_uses < 1:
-        return None, error('Los usos máximos deben ser al menos 1.')
-    expires = _dt(data.get('expires_at'))
-    if coupon is None:
-        code = (data.get('code') or '').strip().upper()
-        if not code or not expires:
-            return None, error('Código y fecha de expiración son obligatorios.')
-        if Coupon.objects.filter(code=code).exists():
-            return None, error('Ya existe un cupón con ese código.')
-        coupon = Coupon(code=code, created_by=request.user, course=course)
-    coupon.discount_type, coupon.discount_value, coupon.max_uses = discount_type, value, max_uses
-    if expires:
-        coupon.expires_at = expires
-    coupon.save()
-    return coupon, None
+    saved, problem = save_coupon_record(request.user, parse_body(request), coupon, course)
+    return saved, error(problem) if problem else None
 
 
 @api_view(('GET',), roles=ADMIN)
@@ -361,9 +345,10 @@ def payments(request):
     qs = Payment.objects.select_related('student', 'coupon').prefetch_related('items__course').order_by('-created_at')
     if status:
         qs = qs.filter(status=status)
-    completed = Payment.objects.filter(status='completed')
+    completed = visible_sales(Payment.objects.filter(status='completed', amount__gt=0))
     month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     return ok(
+        demo_mode=settings.DEMO_CHECKOUT,
         total_revenue=money(completed.aggregate(t=Sum('final_amount'))['t']),
         monthly_revenue=money(completed.filter(created_at__gte=month_start).aggregate(t=Sum('final_amount'))['t']),
         completed_count=completed.count(),
@@ -416,7 +401,7 @@ def generate_report(request):
     date_from, date_to = data.get('date_from') or None, data.get('date_to') or None
 
     users_qs, courses_qs = User.objects.all(), Course.objects.all()
-    pay_qs = Payment.objects.filter(status='completed')
+    pay_qs = visible_sales(Payment.objects.filter(status='completed', amount__gt=0))
     enroll_qs = Enrollment.objects.all()
     eval_qs = EvaluationResult.objects.filter(completed_at__isnull=False)
     try:
@@ -439,6 +424,7 @@ def generate_report(request):
     top_courses = (pay_qs.values('items__course__title').annotate(n=Count('items'), total=Sum('items__final_price'))
                    .order_by('-n')[:5])
     return ok(report={
+        'demo_mode': settings.DEMO_CHECKOUT,
         'date_from': date_from, 'date_to': date_to,
         'users': users_qs.count(), 'students': users_qs.filter(role='student').count(),
         'teachers': users_qs.filter(role='teacher').count(),

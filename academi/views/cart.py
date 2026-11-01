@@ -1,6 +1,8 @@
 from django.shortcuts import get_object_or_404, render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.conf import settings
 
 from ..models import (
     Cart, CartItem, Course, Enrollment,
@@ -12,6 +14,7 @@ from ..models import (
 # MÓDULO 7: CARRITO
 # ============================================
 @login_required
+@require_POST
 def cart_add_view(request, course_id):
     """Agregar un curso al carrito"""
     try:
@@ -57,6 +60,7 @@ def cart_add_view(request, course_id):
 
 
 @login_required
+@require_POST
 def cart_remove_view(request, course_id):
     """Eliminar un curso del carrito"""
     try:
@@ -117,5 +121,6 @@ def cart_view(request):
         'total': total,
         'emi_discount_eligible': is_eligible_for_emi_first_purchase_discount(request.user),
         'emi_discount_percent': EMI_STUDENT_DISCOUNT_PERCENT,
+        'demo_checkout': settings.DEMO_CHECKOUT,
     }
     return render(request, 'academi/payments/carrito.html', context)

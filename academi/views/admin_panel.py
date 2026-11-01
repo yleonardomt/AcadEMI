@@ -3,10 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.contrib import messages
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.db.models import Q, Count, Sum
 from django.utils import timezone
 
-from ..models import Course, Category, Report, Coupon, Payment, Certificate
+from ..models import Course, Category, Report, Coupon, Payment, Certificate, Notification
+from ..utils.coupons import save_coupon as save_coupon_record
+from ..utils.demo_sales import visible_sales
 
 User = get_user_model()
 
@@ -20,7 +25,7 @@ def admin_payments_view(request):
         messages.error(request, 'No tienes permisos.')
         return redirect('dashboard')
     payments = Payment.objects.all().order_by('-created_at')
-    total_revenue = payments.filter(status='completed').aggregate(total=Sum('final_amount'))['total'] or 0
+    total_revenue = visible_sales(payments.filter(status='completed')).aggregate(total=Sum('final_amount'))['total'] or 0
     return render(request, 'academi/admin/admin_pagos.html', {
         'payments': payments,
         'total_revenue': total_revenue,
@@ -49,6 +54,14 @@ def admin_course_moderate(request, course_id, action):
 
     course = get_object_or_404(Course, id=course_id)
 
+    allowed_states = {'approve': ('pending',), 'reject': ('pending',), 'retire': ('published',)}
+    if action not in allowed_states or course.status not in allowed_states[action]:
+        messages.error(request, 'La acción no corresponde al estado actual del curso.')
+        return redirect('admin_courses')
+    if action == 'approve' and course.total_lessons == 0:
+        messages.error(request, 'El curso necesita al menos una lección para ser aprobado.')
+        return redirect('admin_courses')
+
     if action == 'approve':
         course.status = 'published'
         course.approved_at = timezone.now()
@@ -67,8 +80,10 @@ def admin_course_moderate(request, course_id, action):
         course.status = 'archived'
         course.save()
         messages.success(request, f'Curso "{course.title}" retirado del catálogo.')
-    else:
-        messages.error(request, 'Acción no válida.')
+    Notification.objects.create(
+        user=course.teacher, type='course', title='Revisión de tu curso',
+        message=f'El curso "{course.title}" ahora está {course.get_status_display().lower()}.'
+    )
 
     return redirect('admin_courses')
 
@@ -82,10 +97,14 @@ def admin_categories_view(request):
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         if name:
-            Category.objects.create(name=name, description=description)
-            messages.success(request, f'Categoría "{name}" creada correctamente.')
-            return redirect('admin_categories')
-        messages.error(request, 'El nombre de la categoría es obligatorio.')
+            if Category.objects.filter(name__iexact=name).exists():
+                messages.error(request, 'Ya existe una categoría con ese nombre.')
+            else:
+                Category.objects.create(name=name, description=description)
+                messages.success(request, f'Categoría "{name}" creada correctamente.')
+                return redirect('admin_categories')
+        else:
+            messages.error(request, 'El nombre de la categoría es obligatorio.')
 
     categories = Category.objects.all().annotate(course_count=Count('courses')).order_by('name')
     return render(request, 'academi/admin/admin_categorias.html', {'categories': categories})
@@ -102,10 +121,13 @@ def admin_category_edit(request, category_id):
         name = request.POST.get('name', '').strip()
         description = request.POST.get('description', '').strip()
         if name:
-            category.name = name
-            category.description = description
-            category.save()
-            messages.success(request, 'Categoría actualizada correctamente.')
+            if Category.objects.filter(name__iexact=name).exclude(pk=category.pk).exists():
+                messages.error(request, 'Ya existe una categoría con ese nombre.')
+            else:
+                category.name = name
+                category.description = description
+                category.save()
+                messages.success(request, 'Categoría actualizada correctamente.')
         else:
             messages.error(request, 'El nombre de la categoría es obligatorio.')
     return redirect('admin_categories')
@@ -167,26 +189,11 @@ def admin_coupons_view(request):
         messages.error(request, 'No tienes permisos.')
         return redirect('dashboard')
     if request.method == 'POST':
-        code = request.POST.get('code', '').strip().upper()
-        discount_type = request.POST.get('discount_type', 'percentage')
-        discount_value = request.POST.get('discount_value') or 0
-        max_uses = request.POST.get('max_uses') or 1
-        expires_at = request.POST.get('expires_at')
-        if code and expires_at:
-            expires_at_dt = timezone.datetime.fromisoformat(expires_at)
-            if timezone.is_naive(expires_at_dt):
-                expires_at_dt = timezone.make_aware(expires_at_dt)
-            Coupon.objects.create(
-                code=code,
-                discount_type=discount_type,
-                discount_value=discount_value,
-                max_uses=max_uses,
-                expires_at=expires_at_dt,
-                created_by=request.user,
-            )
-            messages.success(request, f'Cupón "{code}" creado correctamente.')
+        coupon, problem = save_coupon_record(request.user, request.POST)
+        if not problem:
+            messages.success(request, f'Cupón "{coupon.code}" creado correctamente.')
             return redirect('admin_coupons')
-        messages.error(request, 'Código y fecha de expiración son obligatorios.')
+        messages.error(request, problem)
 
     coupons = Coupon.objects.all().select_related('course', 'created_by').order_by('-created_at')
     return render(request, 'academi/admin/admin_cupones.html', {'coupons': coupons})
@@ -202,17 +209,8 @@ def admin_coupon_edit(request, coupon_id):
     coupon = get_object_or_404(Coupon, id=coupon_id)
 
     if request.method == 'POST':
-        coupon.discount_type = request.POST.get('discount_type', coupon.discount_type)
-        coupon.discount_value = request.POST.get('discount_value') or coupon.discount_value
-        coupon.max_uses = request.POST.get('max_uses') or coupon.max_uses
-        expires_at = request.POST.get('expires_at')
-        if expires_at:
-            expires_at_dt = timezone.datetime.fromisoformat(expires_at)
-            if timezone.is_naive(expires_at_dt):
-                expires_at_dt = timezone.make_aware(expires_at_dt)
-            coupon.expires_at = expires_at_dt
-        coupon.save()
-        messages.success(request, f'Cupón {coupon.code} actualizado.')
+        saved, problem = save_coupon_record(request.user, request.POST, coupon)
+        messages.error(request, problem) if problem else messages.success(request, f'Cupón {saved.code} actualizado.')
 
     return redirect('admin_coupons')
 
@@ -276,7 +274,7 @@ def admin_reports_generate_view(request):
         # rango elegido aunque el formulario lo pedía).
         users = User.objects.all()
         courses = Course.objects.all()
-        payments = Payment.objects.filter(status='completed')
+        payments = visible_sales(Payment.objects.filter(status='completed', amount__gt=0))
         if date_from:
             users = users.filter(created_at__date__gte=date_from)
             courses = courses.filter(created_at__date__gte=date_from)
@@ -337,18 +335,28 @@ def admin_user_create(request):
         return redirect('dashboard')
 
     if request.method == 'POST':
-        username = request.POST.get('username')
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        role = request.POST.get('role')
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip().lower()
+        password = request.POST.get('password') or ''
+        role = request.POST.get('role', 'student')
         first_name = request.POST.get('first_name', '')
         phone = request.POST.get('phone', '')
 
-        if User.objects.filter(username=username).exists():
+        if not username or role not in ('student', 'teacher', 'admin'):
+            messages.error(request, 'Nombre de usuario o rol inválido.')
+            return render(request, 'academi/users/admin_crear_usuario.html')
+        try:
+            validate_email(email)
+            validate_password(password)
+        except ValidationError as exc:
+            messages.error(request, '; '.join(exc.messages))
+            return render(request, 'academi/users/admin_crear_usuario.html')
+
+        if User.objects.filter(username__iexact=username).exists():
             messages.error(request, 'El nombre de usuario ya existe.')
             return render(request, 'academi/users/admin_crear_usuario.html')
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email__iexact=email).exists():
             messages.error(request, 'El email ya está registrado.')
             return render(request, 'academi/users/admin_crear_usuario.html')
 
@@ -359,7 +367,8 @@ def admin_user_create(request):
             first_name=first_name,
             role=role,
             phone=phone,
-            is_active=True
+            is_active=True,
+            email_verified=True,
         )
         messages.success(request, f'Usuario {username} creado correctamente.')
         return redirect('admin_users')
@@ -376,12 +385,30 @@ def admin_user_edit(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
-        user.username = request.POST.get('username')
-        user.email = request.POST.get('email')
-        user.role = request.POST.get('role')
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip().lower()
+        role = request.POST.get('role', '')
+        active = request.POST.get('is_active') == 'on'
+        if not username or role not in ('student', 'teacher', 'admin'):
+            messages.error(request, 'Nombre de usuario o rol inválido.')
+            return redirect('admin_users')
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, 'Correo electrónico inválido.')
+            return redirect('admin_users')
+        if User.objects.filter(username__iexact=username).exclude(pk=user.pk).exists() or User.objects.filter(email__iexact=email).exclude(pk=user.pk).exists():
+            messages.error(request, 'El usuario o correo ya está registrado.')
+            return redirect('admin_users')
+        if user == request.user and (role != 'admin' or not active):
+            messages.error(request, 'No puedes quitarte el rol de administrador ni desactivar tu cuenta.')
+            return redirect('admin_users')
+        user.username = username
+        user.email = email
+        user.role = role
         user.first_name = request.POST.get('first_name', '')
         user.phone = request.POST.get('phone', '')
-        user.is_active = request.POST.get('is_active') == 'on'
+        user.is_active = active
         user.save()
         messages.success(request, f'Usuario {user.username} actualizado correctamente.')
         return redirect('admin_users')
@@ -400,6 +427,10 @@ def admin_user_delete(request, user_id):
 
     if user == request.user:
         messages.error(request, 'No puedes eliminar tu propia cuenta.')
+        return redirect('admin_users')
+
+    if user.courses_taught.exists() or user.enrollments.exists() or user.payments.exists() or user.created_coupons.exists():
+        messages.error(request, 'Este usuario tiene cursos, inscripciones, pagos o cupones. Desactiva la cuenta para conservar los datos.')
         return redirect('admin_users')
 
     username = user.username
@@ -438,9 +469,11 @@ def admin_user_reset_password(request, user_id):
     user = get_object_or_404(User, id=user_id)
 
     if request.method == 'POST':
-        new_password = request.POST.get('new_password')
-        if len(new_password) < 8:
-            messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+        new_password = request.POST.get('new_password') or ''
+        try:
+            validate_password(new_password, user)
+        except ValidationError as exc:
+            messages.error(request, '; '.join(exc.messages))
             return render(request, 'academi/users/admin_reset_password.html', {'reset_user': user})
 
         user.set_password(new_password)

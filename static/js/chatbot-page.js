@@ -11,7 +11,7 @@ var chatInput = document.getElementById('chatInput');
 var sendBtn = document.getElementById('sendBtn');
 var isProcessing = false;
 
-function addMessage(text, sender, time) {
+function addMessage(text, sender, time, messageId) {
     chatEmpty.style.display = 'none';
 
     var messageDiv = document.createElement('div');
@@ -35,10 +35,37 @@ function addMessage(text, sender, time) {
     bubble.appendChild(timeSpan);
     messageDiv.appendChild(avatar);
     messageDiv.appendChild(bubble);
+    if (sender === 'bot' && messageId) messageDiv.dataset.messageId = messageId;
     messagesContainer.appendChild(messageDiv);
+    if (sender === 'bot' && messageId) addFeedback(messageDiv);
 
     var container = document.getElementById('chatMessages');
     container.scrollTop = container.scrollHeight;
+}
+
+function addFeedback(messageDiv) {
+    if (messagesContainer.dataset.authenticated !== 'true' || !messageDiv.dataset.messageId) return;
+    var controls = document.createElement('div');
+    controls.className = 'chat-feedback';
+    controls.setAttribute('aria-label', 'Valorar respuesta');
+    [[5, 'Útil', 'fa-thumbs-up'], [1, 'No útil', 'fa-thumbs-down']].forEach(function(item) {
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'btn btn-sm btn-outline-secondary';
+        button.setAttribute('aria-label', item[1]);
+        button.innerHTML = '<i class="fas ' + item[2] + '"></i> ' + item[1];
+        button.addEventListener('click', function() {
+            var body = new URLSearchParams({message_id: messageDiv.dataset.messageId, rating: item[0]});
+            fetch(messagesContainer.dataset.feedbackUrl, {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCsrfToken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                body: body.toString()
+            }).then(function(response) { if (!response.ok) throw new Error(); controls.textContent = 'Gracias por tu valoración.'; })
+            .catch(function() { controls.textContent = 'No se pudo guardar la valoración.'; });
+        });
+        controls.appendChild(button);
+    });
+    messageDiv.querySelector('.bubble').appendChild(controls);
 }
 
 function showTyping() {
@@ -65,9 +92,9 @@ function sendMessage() {
 
     showTyping();
 
-    chatbotSendMessage(text, function(response) {
+    chatbotSendMessage(text, function(response, data) {
         hideTyping();
-        addMessage(response, 'bot');
+        addMessage(response, 'bot', null, data.message_id);
         isProcessing = false;
         sendBtn.disabled = false;
         chatInput.disabled = false;
@@ -92,4 +119,7 @@ document.addEventListener('DOMContentLoaded', function() {
         chatEmpty.style.display = 'flex';
     }
     chatInput.focus();
+    messagesContainer.querySelectorAll('.chat-message.bot[data-message-id]').forEach(addFeedback);
+    var container = document.getElementById('chatMessages');
+    container.scrollTop = container.scrollHeight;
 });

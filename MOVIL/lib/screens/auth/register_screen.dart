@@ -118,7 +118,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final isStudent = _role == 'student';
     return AuthShell(
       showBack: true,
-      icon: FontAwesomeIcons.userPlus,
       title: 'Crea tu cuenta',
       subtitle: 'Únete a AcadEMI y empieza a aprender hoy.',
       child: Form(

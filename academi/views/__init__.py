@@ -44,7 +44,7 @@ from .admin_panel import (
     admin_category_edit, admin_category_delete, admin_coupon_toggle,
     admin_coupon_edit, admin_certificate_toggle,
 )
-from .chatbot import chatbot_view, chatbot_send_message
+from .chatbot import chatbot_view, chatbot_send_message, chatbot_feedback
 from .engagement import (
     add_comment_view, edit_comment_view, delete_comment_view,
     add_question_view, answer_question_view, teacher_questions_view,

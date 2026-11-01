@@ -1,7 +1,7 @@
 // ============================================
 // MODO NOCHE / DÍA
 // El tema real ya se aplica antes de este archivo
-// (script inline en partials/base.html, para evitar
+// (partials/theme_init.html, para evitar
 // el parpadeo del tema equivocado al cargar). Este
 // archivo solo conecta el botón del navbar/menú
 // lateral para cambiarlo y recordarlo.
@@ -21,6 +21,11 @@ function setTheme(theme) {
     document.querySelectorAll('.theme-toggle-label').forEach(function(label) {
         label.textContent = theme === 'dark' ? 'Modo día' : 'Modo noche';
     });
+    document.querySelectorAll('.theme-toggle-btn').forEach(function(button) {
+        var label = theme === 'dark' ? 'Activar modo día' : 'Activar modo noche';
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
+    });
 }
 
 function toggleTheme() {
@@ -35,6 +40,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.querySelectorAll('.theme-toggle-label').forEach(function(label) {
         label.textContent = current === 'dark' ? 'Modo día' : 'Modo noche';
+    });
+    document.querySelectorAll('.theme-toggle-btn').forEach(function(button) {
+        var label = current === 'dark' ? 'Activar modo día' : 'Activar modo noche';
+        button.setAttribute('aria-label', label);
+        button.setAttribute('title', label);
     });
 
     document.querySelectorAll('.theme-toggle-btn').forEach(function(btn) {

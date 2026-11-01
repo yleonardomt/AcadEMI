@@ -57,27 +57,6 @@ document.addEventListener('DOMContentLoaded', function() {
         revealEls.forEach(function(el) { revealObserver.observe(el); });
     }
 
-    // ===== Video del hero: botón de pausa (accesibilidad) =====
-    // Un video que se mueve solo más de 5 segundos debe poder pausarse.
-    // También arranca pausado si el usuario pidió menos movimiento.
-    var heroVideo = document.querySelector('.hero-video-bg');
-    var videoToggle = document.querySelector('.hero-video-toggle');
-    if (heroVideo && videoToggle) {
-        var toggleIcon = videoToggle.querySelector('i');
-
-        function setVideoPaused(paused) {
-            if (paused) { heroVideo.pause(); } else { heroVideo.play().catch(function() {}); }
-            videoToggle.setAttribute('aria-pressed', paused ? 'true' : 'false');
-            videoToggle.setAttribute('aria-label', paused ? 'Reanudar video de fondo' : 'Pausar video de fondo');
-            toggleIcon.className = paused ? 'fas fa-play' : 'fas fa-pause';
-        }
-
-        videoToggle.addEventListener('click', function() {
-            setVideoPaused(!heroVideo.paused);
-        });
-        if (prefersReducedMotion) setVideoPaused(true);
-    }
-
     // ===== Brillo que sigue al cursor en las tarjetas del bento =====
     // Solo con mouse. Actualiza --mx/--my en la propia tarjeta (no en el
     // contenedor) para no recalcular estilos de toda la cuadrícula.

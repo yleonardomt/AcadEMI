@@ -26,6 +26,7 @@
 
     /* COLORES PRINCIPALES (marca: primario #02167f) */
     --primary: #02167f;
+    --primary-rgb: 2, 22, 127;
     --primary-dark: #010e53;
     --primary-light: #2f3fae;
     --primary-lighter: #e8eaf6;
@@ -37,6 +38,7 @@
 
     /* COLOR TERCIARIO / ACENTO (marca: #ffd014) */
     --secondary: #ffd014;
+    --secondary-rgb: 255, 208, 20;
     --secondary-dark: #e0ac00;
     --secondary-light: #ffe985;
     --secondary-gradient: linear-gradient(135deg, #ffd014, #f5a800);
@@ -188,7 +190,7 @@
        "primary" de Bootstrap y "primary" de AcadEMI sean siempre el mismo
        color, en todo el sitio. */
     --bs-primary: var(--primary);
-    --bs-primary-rgb: 2, 22, 127;
+    --bs-primary-rgb: var(--primary-rgb);
 }
 
 /* ============================================

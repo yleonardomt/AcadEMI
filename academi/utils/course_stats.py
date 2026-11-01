@@ -3,6 +3,7 @@ from django.db.models import Avg, Count, Sum
 from ..models import (
     Enrollment, EvaluationResult, EvaluationIncident, PaymentItem, Review,
 )
+from .demo_sales import visible_sales
 
 ACTIVE = ['enrolled', 'in_progress', 'completed']
 
@@ -27,7 +28,7 @@ def compute_course_stats(course):
     review_agg = reviews.aggregate(a=Avg('rating'), n=Count('id'))
     distribution = {i: reviews.filter(rating=i).count() for i in range(1, 6)}
 
-    sales = PaymentItem.objects.filter(course=course, payment__status='completed')
+    sales = visible_sales(PaymentItem.objects.filter(course=course, payment__status='completed', payment__amount__gt=0), 'payment__payment_method')
     revenue = sales.aggregate(t=Sum('final_price'))['t'] or 0
 
     return {

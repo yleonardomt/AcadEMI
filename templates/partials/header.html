@@ -1,3 +1,4 @@
+{% load static static_extras %}
 <!-- ============================================
      HEADER / NAVBAR CON SLIDER LATERAL
      ============================================ -->
@@ -9,8 +10,8 @@
         </button>
 
         <a class="navbar-brand" href="{% url 'dashboard' %}">
-            <i class="fas fa-graduation-cap"></i> 
-            <span>AcadEMI</span>
+            <img src="{% static_v 'images/logo-mark.svg' %}" alt="" class="brand-logo" width="36" height="36">
+            <span class="brand-wordmark">Acad<strong>EMI</strong></span>
         </a>
         
         {% if not user.is_authenticated %}
@@ -165,7 +166,7 @@
 <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
     <div class="offcanvas-header">
         <h5 class="offcanvas-title" id="sidebarMenuLabel">
-            <i class="fas fa-graduation-cap" style="color: var(--secondary);"></i> AcadEMI
+            <img src="{% static_v 'images/logo-mark.svg' %}" alt="" class="brand-logo" width="34" height="34"> <span class="brand-wordmark">Acad<strong>EMI</strong></span>
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>

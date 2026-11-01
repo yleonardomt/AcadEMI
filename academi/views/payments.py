@@ -11,6 +11,7 @@ from django.db import transaction
 from django.db.models import Sum
 from django.utils import timezone
 from django.http import JsonResponse
+from django.conf import settings
 
 from ..models import (
     Cart, Coupon, Payment, PaymentItem, Enrollment, Notification,
@@ -18,6 +19,9 @@ from ..models import (
     EMI_STUDENT_DISCOUNT_PERCENT,
 )
 from ..utils import get_client_ip, send_purchase_confirmation_email, render_invoice_pdf
+from ..utils.coupons import save_coupon as save_coupon_record
+from ..utils.demo_sales import visible_sales
+from ..api.views_commerce import _find_coupon, _pricing, _line_amounts
 from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
@@ -56,58 +60,41 @@ def checkout_view(request):
             'message': 'No tienes cursos en el carrito'
         })
 
-    items = cart.items.select_related('course').all()
-    if not items.exists():
+    items = list(cart.items.select_related('course'))
+    if not items:
         return JsonResponse({
             'success': False,
             'message': 'El carrito está vacío'
         })
 
-    # CALCULAR TOTALES
-    subtotal = Decimal('0.00')
-    for item in items:
-        if not item.course.is_free:
-            subtotal += Decimal(str(item.course.price))
+    if any(item.course.status != 'published' for item in items):
+        return JsonResponse({'success': False, 'message': 'Hay un curso que ya no está publicado. Quítalo del carrito.'}, status=400)
 
-    # APLICAR CUPÓN
-    discount = Decimal('0.00')
-    coupon_code = data.get('coupon_code')
     coupon = None
-    discount_label = None
+    if data.get('coupon_code'):
+        coupon, problem = _find_coupon(data['coupon_code'], items)
+        if problem:
+            return JsonResponse({'success': False, 'message': problem}, status=400)
+    pricing = _pricing(request.user, items, coupon)
+    lines = _line_amounts(items, pricing)
+    subtotal, discount, total = pricing['subtotal'], pricing['discount'], pricing['total']
+    coupon, discount_label = pricing['coupon'], pricing['label']
 
-    if coupon_code:
-        try:
-            coupon = Coupon.objects.get(code=coupon_code.upper(), is_active=True)
-            if coupon.is_valid():
-                if coupon.discount_type == 'percentage':
-                    discount = subtotal * (Decimal(str(coupon.discount_value)) / Decimal('100'))
-                else:
-                    discount = Decimal(str(coupon.discount_value))
-                if discount > subtotal:
-                    discount = subtotal
-                discount_label = f'Cupón {coupon.code}'
-        except Coupon.DoesNotExist:
-            pass
-
-    # DESCUENTO AUTOMÁTICO POR PRIMERA COMPRA DE ESTUDIANTE EMI: no se
-    # acumula con un cupón manual, se queda el que dé mayor descuento.
-    if is_eligible_for_emi_first_purchase_discount(request.user):
-        emi_discount = subtotal * (EMI_STUDENT_DISCOUNT_PERCENT / Decimal('100'))
-        if emi_discount > subtotal:
-            emi_discount = subtotal
-        if emi_discount > discount:
-            discount = emi_discount
-            coupon = None  # el descuento EMI no está ligado a un Coupon
-            discount_label = 'Descuento estudiante EMI (primera compra)'
-
-    total = subtotal - discount
+    # No existe integración con un proveedor que confirme el cobro.
+    # Nunca conceder acceso a un curso de pago basándose en datos del navegador.
+    demo = subtotal > 0 and settings.DEMO_CHECKOUT
+    if subtotal > 0 and not demo:
+        return JsonResponse({
+            'success': False,
+            'message': 'Las compras de cursos pagos aún no están habilitadas. Estamos integrando un cobro verificable.'
+        }, status=503)
 
     # VALIDAR DATOS DE PAGO
     full_name = data.get('full_name', '').strip()
     email = data.get('email', '').strip()
     phone = data.get('phone', '').strip()
     address = data.get('address', '').strip()
-    payment_method = data.get('payment_method', 'qr')
+    payment_method = 'demo' if demo else 'free'
 
     if not full_name:
         return JsonResponse({
@@ -120,17 +107,8 @@ def checkout_view(request):
             'success': False,
             'message': 'El correo electrónico es obligatorio'
         })
-
-    # RNF-20: el navegador/app valida la tarjeta y solo envía los últimos
-    # 4 dígitos; el servidor nunca recibe ni guarda el número completo.
-    card_last_four = ''
-    if payment_method == 'card':
-        card_last_four = ''.join(ch for ch in str(data.get('card_last_four') or '') if ch.isdigit())[-4:]
-        if len(card_last_four) != 4:
-            return JsonResponse({
-                'success': False,
-                'message': 'Número de tarjeta inválido'
-            })
+    if any(Enrollment.objects.filter(student=request.user, course=item.course).exists() for item in items):
+        return JsonResponse({'success': False, 'message': 'Ya estás inscrito en uno de estos cursos. Quítalo del carrito.'}, status=400)
 
     # CREAR PAGO CON TRANSACCIÓN
     try:
@@ -148,10 +126,7 @@ def checkout_view(request):
                 billing_email=email,
                 billing_phone=phone,
                 billing_address=address,
-                payment_details={
-                    'card_last_four': card_last_four or None,
-                    'card_brand': 'Visa/Mastercard' if payment_method == 'card' else None,
-                },
+                payment_details={'mode': 'demo'} if demo else {},
                 confirmed_at=timezone.now(),
                 ip_address=get_client_ip(request),
                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
@@ -167,9 +142,9 @@ def checkout_view(request):
                 PaymentItem.objects.create(
                     payment=payment,
                     course=course,
-                    price=Decimal(str(course.price)) if not course.is_free else Decimal('0.00'),
-                    discount_applied=discount if items.count() == 1 else Decimal('0.00'),
-                    final_price=Decimal(str(course.price)) if not course.is_free else Decimal('0.00')
+                    price=lines[course.id][0],
+                    discount_applied=lines[course.id][1],
+                    final_price=lines[course.id][2]
                 )
 
                 enrollment, created = Enrollment.objects.get_or_create(
@@ -177,8 +152,8 @@ def checkout_view(request):
                     course=course,
                     defaults={
                         'status': 'enrolled',
-                        'payment_amount': Decimal(str(course.price)) if not course.is_free else Decimal('0.00'),
-                        'payment_status': 'paid',
+                        'payment_amount': Decimal('0.00') if demo else (Decimal(str(course.price)) if not course.is_free else Decimal('0.00')),
+                        'payment_status': 'demo' if demo else 'paid',
                         'payment_method': payment_method,
                         'transaction_id': payment.transaction_id,
                         'payment_date': timezone.now(),
@@ -186,8 +161,8 @@ def checkout_view(request):
                 )
 
                 if not created:
-                    enrollment.payment_status = 'paid'
-                    enrollment.payment_amount = Decimal(str(course.price)) if not course.is_free else Decimal('0.00')
+                    enrollment.payment_status = 'demo' if demo else 'paid'
+                    enrollment.payment_amount = Decimal('0.00') if demo else (Decimal(str(course.price)) if not course.is_free else Decimal('0.00'))
                     enrollment.payment_method = payment_method
                     enrollment.transaction_id = payment.transaction_id
                     enrollment.payment_date = timezone.now()
@@ -201,7 +176,7 @@ def checkout_view(request):
                     user=request.user,
                     type='purchase',
                     title=f'Curso adquirido: {course.title}',
-                    message=f'Has comprado el curso "{course.title}" exitosamente. Factura: {payment.invoice_number}',
+                    message=f'Ya tienes acceso al curso "{course.title}". Pedido: {payment.invoice_number}' if demo else f'Has comprado el curso "{course.title}" exitosamente. Factura: {payment.invoice_number}',
                     link=f'/course/{course.id}/'
                 )
 
@@ -217,10 +192,14 @@ def checkout_view(request):
 
             # ACTUALIZAR CUPÓN
             if coupon:
-                coupon.used_count += 1
-                if coupon.used_count >= coupon.max_uses:
-                    coupon.is_active = False
-                coupon.save()
+                if demo:
+                    coupon.demo_used_count += 1
+                    coupon.save(update_fields=['demo_used_count'])
+                else:
+                    coupon.used_count += 1
+                    if coupon.used_count >= coupon.max_uses:
+                        coupon.is_active = False
+                    coupon.save()
 
             # LIMPIAR CARRITO
             cart.items.all().delete()
@@ -243,14 +222,16 @@ def checkout_view(request):
         # RF-58, RF-62: correo de confirmación con el comprobante, enviado
         # después de confirmar la transacción (si falla el envío, la compra
         # ya quedó registrada de todos modos: fail_silently=True).
-        try:
-            send_purchase_confirmation_email(payment, payment.items.select_related('course'), request)
-        except Exception:
-            logger.exception('No se pudo enviar el correo de confirmación de compra')
+        if not demo:
+            try:
+                send_purchase_confirmation_email(payment, payment.items.select_related('course'), request)
+            except Exception:
+                logger.exception('No se pudo enviar el correo de confirmación de compra')
 
         return JsonResponse({
             'success': True,
-            'message': f'Compra realizada con éxito. {len(created_courses)} curso(s) adquirido(s).',
+            'message': f'Compra registrada. {len(created_courses)} curso(s) disponibles.' if demo else f'Inscripción realizada. {len(created_courses)} curso(s) disponibles.',
+            'demo': demo,
             'invoice_number': payment.invoice_number,
             'total': str(total),
             'discount_label': discount_label,
@@ -259,10 +240,8 @@ def checkout_view(request):
 
     except Exception as e:
         logger.error(f"Error en checkout: {str(e)}")
-        return JsonResponse({
-            'success': False,
-            'message': f'Error al procesar la compra: {str(e)}'
-        }, status=500)
+        logger.exception('Error en checkout web')
+        return JsonResponse({'success': False, 'message': 'No se pudo procesar la inscripción. Intenta nuevamente.'}, status=500)
 
 
 # ============================================
@@ -278,68 +257,23 @@ def validate_coupon_api(request):
 
     try:
         data = json.loads(request.body)
-        code = data.get('code', '').upper().strip()
-        subtotal = Decimal(str(data.get('subtotal', 0)))
-
-        if not code:
-            return JsonResponse({
-                'success': False,
-                'message': 'Ingresa un código de cupón'
-            })
-
-        try:
-            coupon = Coupon.objects.get(code=code, is_active=True)
-        except Coupon.DoesNotExist:
-            return JsonResponse({
-                'success': False,
-                'message': 'Cupón inválido'
-            })
-
-        if not coupon.is_valid():
-            return JsonResponse({
-                'success': False,
-                'message': 'Cupón expirado o sin usos disponibles'
-            })
-
-        if coupon.course:
-            cart = Cart.objects.filter(student=request.user).first()
-            if not cart:
-                return JsonResponse({
-                    'success': False,
-                    'message': 'El cupón es para un curso específico'
-                })
-
-            has_course = cart.items.filter(course=coupon.course).exists()
-            if not has_course:
-                return JsonResponse({
-                    'success': False,
-                    'message': f'Este cupón es solo para el curso "{coupon.course.title}"'
-                })
-
-        if coupon.discount_type == 'percentage':
-            discount_amount = subtotal * (Decimal(str(coupon.discount_value)) / Decimal('100'))
-        else:
-            discount_amount = Decimal(str(coupon.discount_value))
-
-        if discount_amount > subtotal:
-            discount_amount = subtotal
-
-        return JsonResponse({
-            'success': True,
-            'message': f'Descuento aplicado: {coupon.discount_value}%' if coupon.discount_type == 'percentage' else f'Descuento aplicado: Bs.{coupon.discount_value}',
-            'discount_amount': float(discount_amount),
-            'coupon': {
-                'code': coupon.code,
-                'discount_type': coupon.discount_type,
-                'discount_value': float(coupon.discount_value)
-            }
-        })
-
-    except Exception as e:
-        return JsonResponse({
-            'success': False,
-            'message': str(e)
-        }, status=500)
+    except (json.JSONDecodeError, UnicodeDecodeError):
+        return JsonResponse({'success': False, 'message': 'Datos inválidos.'}, status=400)
+    cart = Cart.objects.filter(student=request.user).first()
+    items = list(cart.items.select_related('course')) if cart else []
+    if not items:
+        return JsonResponse({'success': False, 'message': 'El carrito está vacío.'}, status=400)
+    coupon, problem = _find_coupon(data.get('code') if isinstance(data, dict) else '', items)
+    if problem:
+        return JsonResponse({'success': False, 'message': problem}, status=400)
+    pricing = _pricing(request.user, items, coupon)
+    applied = pricing['coupon'] is not None
+    return JsonResponse({
+        'success': True, 'applied': applied, 'message': pricing['label'] or 'Descuento calculado.',
+        'code': coupon.code, 'discount_amount': float(pricing['discount']),
+        'coupon': {'code': coupon.code, 'discount_type': coupon.discount_type,
+                   'discount_value': float(coupon.discount_value)},
+    })
 
 
 # ============================================
@@ -349,32 +283,19 @@ def validate_coupon_api(request):
 def get_active_coupon_api(request):
     coupon_code = request.session.get('active_coupon')
     if coupon_code:
-        try:
-            coupon = Coupon.objects.get(code=coupon_code, is_active=True)
-            if not coupon.is_valid():
-                request.session.pop('active_coupon', None)
-                return JsonResponse({'success': False})
-
-            subtotal = Decimal(str(request.GET.get('subtotal', 0) or 0))
-            if coupon.discount_type == 'percentage':
-                discount_amount = subtotal * (Decimal(str(coupon.discount_value)) / Decimal('100'))
-            else:
-                discount_amount = Decimal(str(coupon.discount_value))
-            if discount_amount > subtotal:
-                discount_amount = subtotal
-
-            return JsonResponse({
-                'success': True,
-                'code': coupon.code,
-                'discount_amount': float(discount_amount),
-                'coupon': {
-                    'code': coupon.code,
-                    'discount_type': coupon.discount_type,
-                    'discount_value': float(coupon.discount_value)
-                }
-            })
-        except (Coupon.DoesNotExist, ValueError, TypeError):
-            pass
+        cart = Cart.objects.filter(student=request.user).first()
+        items = list(cart.items.select_related('course')) if cart else []
+        coupon, problem = _find_coupon(coupon_code, items)
+        if not problem:
+            pricing = _pricing(request.user, items, coupon)
+            if pricing['coupon']:
+                return JsonResponse({
+                    'success': True, 'code': coupon.code,
+                    'discount_amount': float(pricing['discount']),
+                    'coupon': {'code': coupon.code, 'discount_type': coupon.discount_type,
+                               'discount_value': float(coupon.discount_value)},
+                })
+        request.session.pop('active_coupon', None)
     return JsonResponse({'success': False})
 
 
@@ -387,7 +308,7 @@ def purchase_history_view(request):
         student=request.user
     ).select_related('coupon').prefetch_related('items__course').order_by('-created_at')
 
-    total_spent = payments.aggregate(total=Sum('final_amount'))['total'] or 0
+    total_spent = visible_sales(payments.filter(status='completed')).aggregate(total=Sum('final_amount'))['total'] or 0
 
     return render(request, 'academi/payments/historial_compras.html', {
         'payments': payments,
@@ -432,37 +353,23 @@ def teacher_coupons_view(request):
         messages.error(request, 'No tienes permisos.')
         return redirect('dashboard')
 
-    teacher_courses = Course.objects.filter(teacher=request.user)
+    owned_courses = Course.objects.filter(teacher=request.user)
+    teacher_courses = owned_courses.filter(status='published', is_free=False)
 
     if request.method == 'POST':
         course_id = request.POST.get('course')
-        code = request.POST.get('code', '').strip().upper()
-        discount_type = request.POST.get('discount_type', 'percentage')
-        discount_value = request.POST.get('discount_value') or 0
-        max_uses = request.POST.get('max_uses') or 1
-        expires_at = request.POST.get('expires_at')
-
         course = teacher_courses.filter(id=course_id).first()
-
-        if not course or not code or not expires_at:
-            messages.error(request, 'Completa el curso, código y fecha de expiración.')
+        if not course:
+            messages.error(request, 'Selecciona un curso pago publicado.')
         else:
-            expires_at_dt = timezone.datetime.fromisoformat(expires_at)
-            if timezone.is_naive(expires_at_dt):
-                expires_at_dt = timezone.make_aware(expires_at_dt)
-            Coupon.objects.create(
-                code=code,
-                course=course,
-                discount_type=discount_type,
-                discount_value=discount_value,
-                max_uses=max_uses,
-                expires_at=expires_at_dt,
-                created_by=request.user,
-            )
-            messages.success(request, f'Cupón {code} creado correctamente.')
-            return redirect('teacher_coupons')
+            coupon, problem = save_coupon_record(request.user, request.POST, course=course)
+            if problem:
+                messages.error(request, problem)
+            else:
+                messages.success(request, f'Cupón {coupon.code} creado correctamente.')
+                return redirect('teacher_coupons')
 
-    coupons = Coupon.objects.filter(course__in=teacher_courses).select_related('course').order_by('-created_at')
+    coupons = Coupon.objects.filter(course__in=owned_courses).select_related('course').order_by('-created_at')
     return render(request, 'academi/payments/mis_cupones.html', {
         'coupons': coupons,
         'teacher_courses': teacher_courses,
@@ -475,21 +382,8 @@ def teacher_coupon_edit(request, coupon_id):
     coupon = get_object_or_404(Coupon, id=coupon_id, course__teacher=request.user)
 
     if request.method == 'POST':
-        discount_type = request.POST.get('discount_type', coupon.discount_type)
-        discount_value = request.POST.get('discount_value') or coupon.discount_value
-        max_uses = request.POST.get('max_uses') or coupon.max_uses
-        expires_at = request.POST.get('expires_at')
-
-        coupon.discount_type = discount_type
-        coupon.discount_value = discount_value
-        coupon.max_uses = max_uses
-        if expires_at:
-            expires_at_dt = timezone.datetime.fromisoformat(expires_at)
-            if timezone.is_naive(expires_at_dt):
-                expires_at_dt = timezone.make_aware(expires_at_dt)
-            coupon.expires_at = expires_at_dt
-        coupon.save()
-        messages.success(request, f'Cupón {coupon.code} actualizado.')
+        saved, problem = save_coupon_record(request.user, request.POST, coupon)
+        messages.error(request, problem) if problem else messages.success(request, f'Cupón {saved.code} actualizado.')
 
     return redirect('teacher_coupons')
 

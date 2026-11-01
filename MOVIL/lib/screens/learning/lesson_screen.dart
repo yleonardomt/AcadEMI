@@ -223,7 +223,7 @@ class _LessonScreenState extends State<LessonScreen> {
           if (lesson.isEnrolled && !lesson.isQuiz && lesson.type != 'assignment' && !lesson.completed) ...[
             const SizedBox(height: 22),
             LoadingButton(label: 'Marcar como completada', icon: FontAwesomeIcons.circleCheck, accent: true, loading: _completing, onPressed: _complete),
-          ] else if (lesson.isEnrolled && lesson.type == 'assignment' && !lesson.completed) ...[
+          ] else if (lesson.isEnrolled && lesson.type == 'assignment' && lesson.submission != null && !lesson.completed) ...[
             const SizedBox(height: 22),
             LoadingButton(label: 'Marcar como completada', icon: FontAwesomeIcons.circleCheck, accent: true, loading: _completing, onPressed: _complete),
           ],
