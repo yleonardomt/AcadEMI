@@ -8,7 +8,7 @@ from io import StringIO
 from django.utils import timezone
 from django.test import override_settings
 
-from .models import User, Category, Course, Module, Lesson, Evaluation, LessonProgress, Certificate, Coupon, Cart, CartItem, ChatSession, ChatMessage, ChatFeedback, Payment, Enrollment
+from .models import User, Category, Course, Module, Lesson, Evaluation, LessonProgress, Certificate, Coupon, Cart, CartItem, ChatSession, ChatMessage, ChatFeedback, Payment, Enrollment, AssignmentSubmission
 from .api.auth import make_token
 from .utils.coupons import coupon_discount, find_coupon, save_coupon
 from .forms import RegisterForm
@@ -71,6 +71,24 @@ class CertificateDownloadTests(TestCase):
         self.assertTrue(response.content.startswith(b'%PDF'))
         self.client.force_login(other)
         self.assertEqual(self.client.get(reverse('certificate_download', args=[certificate.pk])).status_code, 404)
+
+    def test_assignment_file_is_available_only_to_student_and_teacher(self):
+        teacher = User.objects.create_user(username='teacher_file', password='unused', role='teacher', email_verified=True)
+        student = User.objects.create_user(username='student_file', password='unused', email_verified=True)
+        stranger = User.objects.create_user(username='stranger_file', password='unused', email_verified=True)
+        course = Course.objects.create(title='Curso de archivos', description='Prueba', teacher=teacher,
+                                       status='published', is_free=True)
+        module = Module.objects.create(course=course, title='Módulo')
+        lesson = Lesson.objects.create(module=module, title='Práctica', lesson_type='assignment')
+        submission = AssignmentSubmission.objects.create(lesson=lesson, student=student,
+            file='assignments/revision-calculo-diferencial-para-ingenieria.pdf')
+        for viewer in (student, teacher):
+            self.client.force_login(viewer)
+            response = self.client.get(reverse('assignment_download', args=[submission.pk]))
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.client.force_login(stranger)
+        self.assertEqual(self.client.get(reverse('assignment_download', args=[submission.pk])).status_code, 404)
 
 
 @override_settings(DEMO_CHECKOUT=False)

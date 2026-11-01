@@ -21,8 +21,9 @@ django.setup()
 
 from django.db import transaction  # noqa: E402
 from django.utils import timezone  # noqa: E402
+from django.utils.text import slugify  # noqa: E402
 from academi.models import (  # noqa: E402
-    Answer, Certificate, Comment, Coupon, Course, Enrollment, Evaluation,
+    Answer, AssignmentSubmission, Certificate, Comment, Coupon, Course, Enrollment, Evaluation,
     EvaluationResult, Favorite, Lesson, LessonProgress, Notification, Payment,
     PaymentItem, Question, QuestionOption, Review, User, UserAnswer,
 )
@@ -115,6 +116,16 @@ def enroll(student, course, fraction, completed=False):
 
 
 def grade_and_certificate(enrollment):
+    assignment = Lesson.objects.filter(module__course=enrollment.course, lesson_type='assignment').first()
+    if assignment:
+        filename = f'assignments/revision-{slugify(enrollment.course.title)}.pdf'
+        if not (ROOT / 'media' / filename).is_file():
+            raise RuntimeError(f'Falta el archivo de práctica {filename} en el proyecto.')
+        AssignmentSubmission.objects.get_or_create(lesson=assignment, student=enrollment.student, defaults={
+            'file': filename, 'comment': 'Caso práctico desarrollado y verificado.',
+            'grade': 100, 'feedback': 'Procedimiento, resultado y comprobación correctos.',
+            'graded_at': timezone.now(),
+        })
     evaluation = Evaluation.objects.filter(lesson__module__course=enrollment.course, is_active=True).first()
     if evaluation:
         questions = list(evaluation.questions.all().order_by('order'))

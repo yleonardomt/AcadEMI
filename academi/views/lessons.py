@@ -5,7 +5,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from django.http import JsonResponse, Http404
+from django.http import FileResponse, JsonResponse, Http404
 
 from ..models import (
     Module, Lesson, LessonResource, Evaluation, QuestionEvaluation,
@@ -1108,6 +1108,21 @@ def assignment_submissions_view(request, lesson_id):
         'course': course,
         'submissions': submissions,
     })
+
+
+@login_required
+def assignment_download_view(request, submission_id):
+    submission = get_object_or_404(
+        AssignmentSubmission.objects.select_related('lesson__module__course'), pk=submission_id,
+    )
+    course = submission.lesson.module.course
+    if request.user.pk not in (submission.student_id, course.teacher_id) and request.user.role != 'admin':
+        raise Http404
+    try:
+        return FileResponse(submission.file.open('rb'), as_attachment=True,
+                            filename=submission.file.name.rsplit('/', 1)[-1])
+    except (FileNotFoundError, OSError):
+        raise Http404('El archivo de la entrega no está disponible.')
 
 
 @login_required

@@ -26,7 +26,7 @@ from .lessons import (
     render_lesson_form, create_lesson_text_view, create_lesson_video_view,
     create_lesson_document_view, create_lesson_quiz_view,
     create_lesson_assignment_view,
-    submit_assignment_view, assignment_submissions_view, grade_assignment_view,
+    submit_assignment_view, assignment_submissions_view, assignment_download_view, grade_assignment_view,
 )
 from .quizzes import quiz_view, quiz_result_view, quiz_tab_switch_alert
 from .cart import cart_add_view, cart_remove_view, cart_items_view, cart_view

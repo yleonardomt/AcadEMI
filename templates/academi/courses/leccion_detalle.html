@@ -154,7 +154,7 @@
                             {% if my_submission %}
                             <div class="p-4" style="background: var(--white-smoke); border-radius: 12px;">
                                 <p class="mb-1"><i class="fas fa-check-circle" style="color: var(--success);"></i> Ya entregaste esta tarea el {{ my_submission.submitted_at|date:"d/m/Y H:i" }}.</p>
-                                <p class="mb-2"><a href="{{ my_submission.file.url }}" target="_blank"><i class="fas fa-paperclip"></i> {{ my_submission.file.name|cut:"assignments/" }}</a></p>
+                                <p class="mb-2"><a href="{% url 'assignment_download' my_submission.id %}"><i class="fas fa-paperclip"></i> {{ my_submission.file.name|cut:"assignments/" }}</a></p>
                                 {% if my_submission.grade is not None %}
                                 <div class="alert alert-success mb-3">
                                     <strong>Calificación: {{ my_submission.grade }}/100</strong>

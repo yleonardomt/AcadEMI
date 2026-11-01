@@ -34,7 +34,7 @@
                         {% for submission in submissions %}
                         <tr>
                             <td>{{ submission.student.get_full_name|default:submission.student.username }}</td>
-                            <td><a href="{{ submission.file.url }}" target="_blank"><i class="fas fa-paperclip"></i> Ver archivo</a></td>
+                            <td><a href="{% url 'assignment_download' submission.id %}"><i class="fas fa-paperclip"></i> Ver archivo</a></td>
                             <td class="text-muted small">{{ submission.comment|default:"—"|truncatechars:60 }}</td>
                             <td>{{ submission.submitted_at|date:"d/m/Y H:i" }}</td>
                             <td>
