@@ -1,9 +1,12 @@
 """Crea una cuenta administradora inicial solo cuando aún no existe."""
 
 import os
+import sys
+from pathlib import Path
 
 import django
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'core.settings')
 django.setup()
 
