@@ -14,5 +14,8 @@ db.sqlite3
 .idea/
 .DS_Store
 .env
+.env.local
 
 backups/
+.neon
+node_modules/

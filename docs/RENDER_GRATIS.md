@@ -80,8 +80,8 @@ Sin ella responde con la base de conocimiento interna.
 ## 4. Publicar y comprobar
 
 Pulsa **Deploy web service** cuando el código actualizado esté en `main`.
-El build aplica migraciones, crea el administrador si aún no existe y carga
-el catálogo de ingeniería únicamente si la base está vacía. Si falla,
+El build aplica migraciones, crea el administrador si aún no existe y completa
+los cursos iniciales de ingeniería que falten. Si falla,
 consulta los logs de **Build** y **Events** en Render.
 
 Cuando Render muestre **Live**, abre la URL `https://...onrender.com` y prueba:

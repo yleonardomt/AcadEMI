@@ -42,6 +42,10 @@ class CatalogBootstrapTests(TestCase):
         with redirect_stdout(StringIO()):
             run(no_images=True, only_if_empty=True)
         self.assertEqual(Course.objects.count(), len(COURSES))
+        Course.objects.filter(title=COURSES[-1]['title']).delete()
+        with redirect_stdout(StringIO()):
+            run(no_images=True, only_if_empty=True)
+        self.assertEqual(Course.objects.count(), len(COURSES))
         self.assertEqual(Course.objects.exclude(image='').count(), len(COURSES))
         with redirect_stdout(StringIO()):
             run(no_images=True, only_if_empty=True)

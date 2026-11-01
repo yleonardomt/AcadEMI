@@ -154,9 +154,14 @@ def upsert_lesson(module, order, title, kind, content='', video='', is_free=Fals
 
 
 def run(archive_legacy=False, no_images=False, only_if_empty=False):
-    if only_if_empty and Course.objects.exists():
-        print('La base ya contiene cursos; no se modifica el catálogo.')
-        return
+    existing_titles = set()
+    if only_if_empty:
+        existing_titles = set(Course.objects.filter(
+            title__in=[item['title'] for item in COURSES],
+        ).values_list('title', flat=True))
+        if len(existing_titles) == len(COURSES):
+            print('El catálogo inicial ya está completo; no se modifica.')
+            return
     teacher, _ = User.objects.get_or_create(username='equipo_academi', defaults={
         'email': 'equipo@academi.local', 'first_name': 'Equipo', 'last_name': 'AcadEMI',
         'role': 'teacher', 'is_active': True, 'email_verified': True,
@@ -174,6 +179,8 @@ def run(archive_legacy=False, no_images=False, only_if_empty=False):
         print(f'Cursos anteriores archivados: {changed}')
     attribution = []
     for index, item in enumerate(COURSES):
+        if item['title'] in existing_titles:
+            continue
         area, _ = Category.objects.get_or_create(name=item['area'], defaults={
             'description': f'Cursos aplicados a {item["area"].lower()} para estudiantes de ingeniería.'})
         slug = re.sub(r'[^a-z0-9]+', '-', item['title'].lower().translate(str.maketrans('áéíóúñ', 'aeioun'))).strip('-')
