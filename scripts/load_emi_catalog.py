@@ -153,7 +153,19 @@ def upsert_lesson(module, order, title, kind, content='', video='', is_free=Fals
     return lesson
 
 
+def sync_bundled_images():
+    """Conserva las fotos del catálogo si se activa S3 después del primer deploy."""
+    if settings.STORAGES['default']['BACKEND'] == 'django.core.files.storage.FileSystemStorage':
+        return
+    for image_file in (ROOT / 'media' / 'courses').glob('emi-*.jpg'):
+        image_path = f'courses/{image_file.name}'
+        if not default_storage.exists(image_path):
+            with image_file.open('rb') as source:
+                default_storage.save(image_path, File(source))
+
+
 def run(archive_legacy=False, no_images=False, only_if_empty=False):
+    sync_bundled_images()
     existing_titles = set()
     if only_if_empty:
         existing_titles = set(Course.objects.filter(
@@ -188,10 +200,6 @@ def run(archive_legacy=False, no_images=False, only_if_empty=False):
         bundled_image = ROOT / 'media' / 'courses' / f'emi-{slug}.jpg'
         if bundled_image.is_file():
             image_path = f'courses/{bundled_image.name}'
-            if settings.STORAGES['default']['BACKEND'] != 'django.core.files.storage.FileSystemStorage':
-                if not default_storage.exists(image_path):
-                    with bundled_image.open('rb') as source:
-                        default_storage.save(image_path, File(source))
         elif not no_images:
             try:
                 image_path, credit = download_image(item['image'], slug)

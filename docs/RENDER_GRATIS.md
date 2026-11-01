@@ -10,8 +10,11 @@ servidor: crea usuarios de prueba con contraseñas conocidas.
 2. Copia la URL PostgreSQL **directa** (incluye `sslmode=require`). Guárdala
    como `DATABASE_URL` en Render. No la publiques en Git ni en capturas.
 3. Para conservar imágenes, entregas y certificados tras los reinicios, crea
-   un bucket **privado** en Neon Object Storage. Copia sus datos S3 a las
-   variables `AWS_*` de abajo. Puedes añadirlo después, pero los archivos
+   un bucket **privado** en un almacenamiento compatible con S3. Si Neon no
+   ofrece Object Storage en tu región, puedes usar [Supabase Storage Free](https://supabase.com/pricing):
+   crea un proyecto, abre **Storage > Configuration > S3**, activa el protocolo
+   S3 y genera las claves. Copia el endpoint y la región que muestra Supabase
+   a las variables `AWS_*` de abajo. Puedes añadirlo después, pero los archivos
    subidos antes de configurarlo no se trasladan automáticamente.
 
 ## 2. Correo para registro y recuperación
@@ -64,7 +67,7 @@ Para correo, añade además:
 | `EMAIL_HOST_PASSWORD` | Clave SMTP de Brevo |
 | `DEFAULT_FROM_EMAIL` | Remitente verificado en Brevo, por ejemplo `AcadEMI <correo-verificado@ejemplo.com>` |
 
-Para Neon Object Storage, añade las cinco variables que muestra Neon:
+Para el almacenamiento S3 de Neon o Supabase, añade estas variables:
 
 | Clave | Valor |
 | --- | --- |
