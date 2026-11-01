@@ -55,6 +55,24 @@ class CatalogBootstrapTests(TestCase):
         self.assertEqual(Course.objects.count(), len(COURSES))
 
 
+class CertificateDownloadTests(TestCase):
+    def test_download_is_generated_for_owner_and_denied_to_other_student(self):
+        teacher = User.objects.create_user(username='teacher_cert', password='unused', role='teacher')
+        owner = User.objects.create_user(username='owner_cert', password='unused', email_verified=True)
+        other = User.objects.create_user(username='other_cert', password='unused', email_verified=True)
+        course = Course.objects.create(title='Curso de prueba', description='Prueba', teacher=teacher,
+                                       status='published', is_free=True)
+        enrollment = Enrollment.objects.create(student=owner, course=course, status='completed', progress_percentage=100)
+        certificate = Certificate.objects.create(enrollment=enrollment, certificate_code='CERTTEST001')
+        self.client.force_login(owner)
+        response = self.client.get(reverse('certificate_download', args=[certificate.pk]))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response['Content-Type'], 'application/pdf')
+        self.assertTrue(response.content.startswith(b'%PDF'))
+        self.client.force_login(other)
+        self.assertEqual(self.client.get(reverse('certificate_download', args=[certificate.pk])).status_code, 404)
+
+
 @override_settings(DEMO_CHECKOUT=False)
 class ChatbotAndCheckoutTests(TestCase):
     def setUp(self):

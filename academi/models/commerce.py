@@ -292,7 +292,10 @@ class PaymentItem(models.Model):
         if self.final_price == 0:
             self.final_price = self.price - self.discount_applied
 
-        if self.final_price > 0:
+        if self.payment.payment_method == 'demo':
+            self.platform_commission = Decimal('0')
+            self.teacher_commission = Decimal('0')
+        elif self.final_price > 0:
             self.platform_commission = self.final_price * PLATFORM_COMMISSION_RATE
             self.teacher_commission = self.final_price - self.platform_commission
 

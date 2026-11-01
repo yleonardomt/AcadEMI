@@ -8,7 +8,7 @@ from .dashboard import (
     dashboard_view, notifications_view, mark_all_notifications_read_view,
     my_courses_view, my_progress_view,
     my_grades_view, my_certificates_view, my_favorites_view,
-    mis_estudiantes_view, mis_resenas_view, certificate_detail_view,
+    mis_estudiantes_view, mis_resenas_view, certificate_detail_view, certificate_download_view,
     verify_certificate_view, certificate_send_email_view,
 )
 from .courses import (

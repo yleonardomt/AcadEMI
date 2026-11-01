@@ -3,10 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.db.models import Sum, Avg
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.utils import timezone
 
 from ..utils import send_certificate_email
+from ..utils.certificate_pdf import render_certificate_pdf
 from ..utils.demo_sales import visible_sales
 from ..models import (
     Notification, Enrollment, Certificate, Course, Review, Payment,
@@ -308,6 +309,17 @@ def certificate_detail_view(request, certificate_id):
         Certificate, id=certificate_id, enrollment__student=request.user
     )
     return render(request, 'academi/dashboard/certificado_detalle.html', {'certificate': certificate})
+
+
+@login_required
+def certificate_download_view(request, certificate_id):
+    certificate = get_object_or_404(
+        Certificate.objects.select_related('enrollment__student', 'enrollment__course'),
+        id=certificate_id, enrollment__student=request.user, is_revoked=False,
+    )
+    response = HttpResponse(render_certificate_pdf(certificate).getvalue(), content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="certificado-{certificate.certificate_code}.pdf"'
+    return response
 
 
 def verify_certificate_view(request, code):

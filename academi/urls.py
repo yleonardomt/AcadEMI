@@ -56,6 +56,7 @@ urlpatterns = [
     path('my-grades/', views.my_grades_view, name='my_grades'),
     path('my-certificates/', views.my_certificates_view, name='my_certificates'),
     path('my-certificates/<int:certificate_id>/', views.certificate_detail_view, name='certificate_detail'),
+    path('my-certificates/<int:certificate_id>/download/', views.certificate_download_view, name='certificate_download'),
     path('verify-certificate/<str:code>/', views.verify_certificate_view, name='verify_certificate'),
     path('my-favorites/', views.my_favorites_view, name='my_favorites'),
     path('purchase-history/', views.purchase_history_view, name='purchase_history'),
