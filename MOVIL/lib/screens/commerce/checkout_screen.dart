@@ -10,7 +10,7 @@ import '../../providers/shell_nav.dart';
 import '../../widgets/app_text_field.dart';
 import '../../widgets/common.dart';
 
-/// Inscripción gratuita y compras de demostración cuando el servidor lo permite.
+/// Inscripción gratuita y registro de pedidos cuando el servidor lo permite.
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key});
 
