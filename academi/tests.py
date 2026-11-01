@@ -16,6 +16,9 @@ from .forms import RegisterForm
 
 @override_settings(DEBUG=False, ALLOWED_HOSTS=['testserver', '192.0.2.10'], SITE_URL='http://192.0.2.10')
 class ReviewDeploymentTests(SimpleTestCase):
+    def test_health_check_responde_sin_base_de_datos(self):
+        self.assertContains(self.client.get('/healthz/'), 'ok')
+
     def test_404_web_y_api_tienen_respuesta_correcta(self):
         web = self.client.get('/pagina-inexistente/')
         api = self.client.get('/api/v1/ruta-inexistente/')
