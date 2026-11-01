@@ -8,7 +8,7 @@ que el sitio web.
 
 **Estudiante:** registro/login, verificación de correo, recuperar contraseña, portada con progreso,
 catálogo con búsqueda/filtros/categorías, detalle del curso (contenido, docente, reseñas),
-favoritos, carrito, cupones, descuento EMI, pago (QR o tarjeta), historial y factura,
+favoritos, carrito, cupones, descuento EMI, compra académica, historial y comprobante,
 mis cursos, lecciones (video YouTube/archivo, lectura, documento, tareas, cuestionarios con
 cronómetro), comentarios y preguntas, progreso, certificados (PDF y verificación por código),
 calificaciones, notificaciones, asistente virtual (chatbot) y perfil.
@@ -21,20 +21,12 @@ El cumplimiento requisito por requisito (RF-01 a RF-51 y RNF-01 a RNF-20, web y 
 
 ## Requisitos
 
-- Flutter estable (probado con 3.47), JDK 17 y Android SDK (`flutter doctor`).
-- El backend Django de AcadEMI corriendo con la API `/api/v1/` (carpeta `academi/api/`).
+- Flutter estable, JDK 17 y Android SDK (`flutter doctor`) para crear el APK.
+- Internet en el teléfono. La API ya está publicada en `https://academi-efte.onrender.com`.
 
 ## Cómo ejecutarla
 
-1. Levanta el backend permitiendo conexiones de la red:
-
-   ```bash
-   # en ~/Academi/.env:  ALLOWED_HOSTS=*   (solo desarrollo)
-   source venv/bin/activate
-   python manage.py runserver 0.0.0.0:80
-   ```
-
-2. Ejecuta la app:
+1. Ejecuta la app:
 
    ```bash
    cd MOVIL
@@ -42,10 +34,10 @@ El cumplimiento requisito por requisito (RF-01 a RF-51 y RNF-01 a RNF-20, web y 
    flutter run
    ```
 
-3. Dirección del servidor (ícono de engranaje en el login, o Perfil → Servidor):
-   - Emulador Android: `http://10.0.2.2` (por defecto).
-   - Celular real: `http://IP-DE-TU-PC` (misma red Wi-Fi). En WSL2 necesitas reenviar el
-     puerto o usar el modo de red *mirrored*.
+La app se conecta sola al sitio público. Una instalación anterior también usa esa URL
+sin modificar ajustes. Para desarrollo local, compila con
+`--dart-define=ACADEMI_API_BASE_URL=http://10.0.2.2:8000`; esta opción no aparece
+en la interfaz de revisión.
 
 ## Estructura (`lib/`)
 
@@ -68,6 +60,6 @@ flutter build apk --release
 
 ```bash
 flutter test                                              # pruebas rápidas
-dart run tool/api_check.dart http://localhost        # contrato app <-> API real
+dart run tool/api_check.dart                            # contrato app <-> API publicada
 flutter test --run-skipped --tags golden --update-goldens # capturas en test/screenshots/
 ```

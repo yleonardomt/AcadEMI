@@ -34,12 +34,30 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
 
   Future<void> _form({Map<String, dynamic>? cat}) async {
     final api = context.read<AuthProvider>().api;
-    final v = await showFormSheet(context, title: cat == null ? 'Nueva categoría' : 'Editar categoría', fields: [
-      FieldSpec('name', 'Nombre', initial: cat?['name'], required: true, icon: FontAwesomeIcons.tag),
-      FieldSpec('description', 'Descripción', type: FieldType.multiline, initial: cat?['description']),
-    ]);
+    final v = await showFormSheet(
+      context,
+      title: cat == null ? 'Nueva categoría' : 'Editar categoría',
+      fields: [
+        FieldSpec(
+          'name',
+          'Nombre',
+          initial: cat?['name'],
+          required: true,
+          icon: FontAwesomeIcons.tag,
+        ),
+        FieldSpec(
+          'description',
+          'Descripción',
+          type: FieldType.multiline,
+          initial: cat?['description'],
+        ),
+      ],
+    );
     if (v == null) return;
-    await _run(() => api.adminSaveCategory(v, id: cat == null ? null : asInt(cat['id'])), 'Categoría guardada');
+    await _run(
+      () => api.adminSaveCategory(v, id: cat == null ? null : asInt(cat['id'])),
+      'Categoría guardada',
+    );
   }
 
   @override
@@ -53,7 +71,10 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
         foregroundColor: AppColors.primaryDark,
         onPressed: () => _form(),
         icon: const FaIcon(FontAwesomeIcons.plus, size: 15),
-        label: const Text('Nueva', style: TextStyle(fontWeight: FontWeight.w800)),
+        label: const Text(
+          'Nueva',
+          style: TextStyle(fontWeight: FontWeight.w800),
+        ),
       ),
       body: AsyncBody<Map<String, dynamic>>(
         key: _key,
@@ -72,22 +93,58 @@ class _AdminCategoriesScreenState extends State<AdminCategoriesScreen> {
                   leading: Container(
                     width: 42,
                     height: 42,
-                    decoration: BoxDecoration(color: AppColors.primaryLight.withValues(alpha: 0.14), borderRadius: BorderRadius.circular(12)),
-                    child: Center(child: FaIcon(categoryIcon(asString(c['name'])), size: 17, color: p.primaryText)),
+                    decoration: BoxDecoration(
+                      color: AppColors.primaryLight.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Center(
+                      child: FaIcon(
+                        categoryIcon(asString(c['name'])),
+                        size: 17,
+                        color: p.primaryText,
+                      ),
+                    ),
                   ),
-                  title: Text(asString(c['name']), style: const TextStyle(fontWeight: FontWeight.w800)),
-                  subtitle: Text('${asInt(c['courses_count'])} cursos${asString(c['description']).isNotEmpty ? ' · ${asString(c['description'])}' : ''}', maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: p.inkMuted, fontSize: 12.5)),
+                  title: Text(
+                    asString(c['name']),
+                    style: const TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                  subtitle: Text(
+                    '${asInt(c['courses_count'])} cursos${asString(c['description']).isNotEmpty ? ' · ${asString(c['description'])}' : ''}',
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: p.inkMuted, fontSize: 12.5),
+                  ),
                   trailing: PopupMenuButton<String>(
                     onSelected: (a) async {
                       if (a == 'edit') await _form(cat: c);
                       if (a == 'delete') {
-                        final ok = await confirmDialog(context, title: 'Eliminar categoría', message: '¿Eliminar "${asString(c['name'])}"? Solo se puede si no tiene cursos.', confirmLabel: 'Eliminar', danger: true);
-                        if (ok) await _run(() => api.adminDeleteCategory(asInt(c['id'])), 'Categoría eliminada');
+                        if (!context.mounted) return;
+                        final ok = await confirmDialog(
+                          context,
+                          title: 'Eliminar categoría',
+                          message:
+                              '¿Eliminar "${asString(c['name'])}"? Solo se puede si no tiene cursos.',
+                          confirmLabel: 'Eliminar',
+                          danger: true,
+                        );
+                        if (ok) {
+                          await _run(
+                            () => api.adminDeleteCategory(asInt(c['id'])),
+                            'Categoría eliminada',
+                          );
+                        }
                       }
                     },
                     itemBuilder: (_) => const [
                       PopupMenuItem(value: 'edit', child: Text('Editar')),
-                      PopupMenuItem(value: 'delete', child: Text('Eliminar', style: TextStyle(color: AppColors.danger))),
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(
+                          'Eliminar',
+                          style: TextStyle(color: AppColors.danger),
+                        ),
+                      ),
                     ],
                   ),
                 ),

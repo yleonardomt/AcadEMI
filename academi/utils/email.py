@@ -9,6 +9,8 @@ from django.contrib.auth import get_user_model
 from django.urls import reverse
 from urllib.parse import urlparse
 
+from .certificate_pdf import render_certificate_pdf
+
 User = get_user_model()
 
 
@@ -91,12 +93,11 @@ def send_certificate_email(certificate, request):
         to=[user.email],
     )
     email.attach_alternative(html_message, 'text/html')
-    if certificate.pdf_file:
-        email.attach(
-            f'certificado-{certificate.certificate_code}.pdf',
-            certificate.pdf_file.read(),
-            'application/pdf',
-        )
+    email.attach(
+        f'certificado-{certificate.certificate_code}.pdf',
+        render_certificate_pdf(certificate).getvalue(),
+        'application/pdf',
+    )
     email.send(fail_silently=False)
 
 

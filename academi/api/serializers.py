@@ -1,6 +1,7 @@
 """Conversión de modelos a dicts JSON para la API móvil."""
 import re
 
+from django.core import signing
 from django.db.models import Avg, Count
 
 from ..models import (
@@ -15,6 +16,14 @@ YOUTUBE_PATTERNS = [
 ]
 
 ACTIVE_STATUSES = ['enrolled', 'in_progress', 'completed']
+DOWNLOAD_SALT = 'academi.api.download'
+
+
+def signed_download_url(request, kind, object_id):
+    """Enlace temporal para abrir un PDF desde el navegador del teléfono."""
+    token = signing.dumps({'kind': kind, 'id': object_id, 'user': request.user.pk,
+                           'pw': request.user.password[-12:]}, salt=DOWNLOAD_SALT)
+    return request.build_absolute_uri(f'/api/v1/downloads/{kind}/{object_id}/?t={token}')
 
 
 def media_url(request, f):
@@ -230,5 +239,7 @@ def certificate_json(request, certificate):
         'student': display_name(enrollment.student),
         'issued_at': certificate.issued_at.isoformat(),
         'is_revoked': certificate.is_revoked,
-        'pdf': media_url(request, certificate.pdf_file),
+        'pdf': (signed_download_url(request, 'certificate', certificate.id)
+                if request.user.is_authenticated and request.user.pk == enrollment.student_id
+                and not certificate.is_revoked else None),
     }

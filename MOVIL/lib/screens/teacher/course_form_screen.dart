@@ -74,7 +74,11 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
   }
 
   Future<void> _pickImage() async {
-    final f = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 1600, imageQuality: 85);
+    final f = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+      maxWidth: 1600,
+      imageQuality: 85,
+    );
     if (f != null && mounted) setState(() => _imagePath = f.path);
   }
 
@@ -82,14 +86,18 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
     if (!_form.currentState!.validate()) return;
     setState(() => _saving = true);
     try {
-      final r = await context.read<AuthProvider>().api.saveCourse({
-        'title': _title.text.trim(),
-        'description': _description.text.trim(),
-        'level': _level,
-        'is_free': _free,
-        'price': _free ? '0' : _price.text.trim(),
-        if (_category != null) 'category': _category,
-      }, id: widget.courseId, imagePath: _imagePath);
+      final r = await context.read<AuthProvider>().api.saveCourse(
+        {
+          'title': _title.text.trim(),
+          'description': _description.text.trim(),
+          'level': _level,
+          'is_free': _free,
+          'price': _free ? '0' : _price.text.trim(),
+          if (_category != null) 'category': _category,
+        },
+        id: widget.courseId,
+        imagePath: _imagePath,
+      );
       if (mounted) {
         showToast(context, asString(r['message']), success: true);
         Navigator.pop(context, asInt((r['course'] as Map)['id']));
@@ -102,91 +110,162 @@ class _CourseFormScreenState extends State<CourseFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final p = context.palette;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.courseId == null ? 'Nuevo curso' : 'Editar curso')),
+      appBar: AppBar(
+        title: Text(widget.courseId == null ? 'Nuevo curso' : 'Editar curso'),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: Form(
                 key: _form,
-                child: ListView(padding: const EdgeInsets.all(16), children: [
-                  InkWell(
-                    onTap: _pickImage,
-                    borderRadius: BorderRadius.circular(18),
-                    child: ClipRRect(
+                child: ListView(
+                  padding: const EdgeInsets.all(16),
+                  children: [
+                    InkWell(
+                      onTap: _pickImage,
                       borderRadius: BorderRadius.circular(18),
-                      child: SizedBox(
-                        height: 170,
-                        child: Stack(fit: StackFit.expand, children: [
-                          _imagePath != null
-                              ? Image.file(File(_imagePath!), fit: BoxFit.cover)
-                              : CourseImage(url: _imageUrl, category: _title.text),
-                          Container(color: Colors.black26),
-                          const Center(
-                            child: Column(mainAxisSize: MainAxisSize.min, children: [
-                              FaIcon(FontAwesomeIcons.camera, color: Colors.white, size: 26),
-                              SizedBox(height: 8),
-                              Text('Cambiar imagen del curso', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
-                            ]),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(18),
+                        child: SizedBox(
+                          height: 170,
+                          child: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              _imagePath != null
+                                  ? Image.file(
+                                      File(_imagePath!),
+                                      fit: BoxFit.cover,
+                                    )
+                                  : CourseImage(
+                                      url: _imageUrl,
+                                      category: _title.text,
+                                    ),
+                              Container(color: Colors.black26),
+                              const Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    FaIcon(
+                                      FontAwesomeIcons.camera,
+                                      color: Colors.white,
+                                      size: 26,
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'Cambiar imagen del curso',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
-                        ]),
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  FormCard(
-                    title: 'Información',
-                    icon: FontAwesomeIcons.circleInfo,
-                    child: Column(children: [
-                      AppTextField(controller: _title, label: 'Título', icon: FontAwesomeIcons.heading, validator: (v) => (v ?? '').trim().length < 3 ? 'Mínimo 3 caracteres' : null),
-                      const SizedBox(height: 14),
-                      AppTextField(controller: _description, label: 'Descripción', icon: FontAwesomeIcons.alignLeft, maxLines: 5, validator: (v) => (v ?? '').trim().isEmpty ? 'La descripción es obligatoria' : null),
-                      const SizedBox(height: 14),
-                      AppDropdown<int>(
-                        label: 'Categoría',
-                        icon: FontAwesomeIcons.layerGroup,
-                        value: _category,
-                        items: {for (final c in _categories) c.id: c.name},
-                        onChanged: (v) => setState(() => _category = v),
+                    const SizedBox(height: 16),
+                    FormCard(
+                      title: 'Información',
+                      icon: FontAwesomeIcons.circleInfo,
+                      child: Column(
+                        children: [
+                          AppTextField(
+                            controller: _title,
+                            label: 'Título',
+                            icon: FontAwesomeIcons.heading,
+                            validator: (v) => (v ?? '').trim().length < 3
+                                ? 'Mínimo 3 caracteres'
+                                : null,
+                          ),
+                          const SizedBox(height: 14),
+                          AppTextField(
+                            controller: _description,
+                            label: 'Descripción',
+                            icon: FontAwesomeIcons.alignLeft,
+                            maxLines: 5,
+                            validator: (v) => (v ?? '').trim().isEmpty
+                                ? 'La descripción es obligatoria'
+                                : null,
+                          ),
+                          const SizedBox(height: 14),
+                          AppDropdown<int>(
+                            label: 'Categoría',
+                            icon: FontAwesomeIcons.layerGroup,
+                            value: _category,
+                            items: {for (final c in _categories) c.id: c.name},
+                            onChanged: (v) => setState(() => _category = v),
+                          ),
+                          const SizedBox(height: 14),
+                          AppDropdown<String>(
+                            label: 'Nivel',
+                            icon: FontAwesomeIcons.stairs,
+                            value: _level,
+                            items: const {
+                              'beginner': 'Principiante',
+                              'intermediate': 'Intermedio',
+                              'advanced': 'Avanzado',
+                              'expert': 'Experto',
+                            },
+                            onChanged: (v) =>
+                                setState(() => _level = v ?? 'beginner'),
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 14),
-                      AppDropdown<String>(
-                        label: 'Nivel',
-                        icon: FontAwesomeIcons.stairs,
-                        value: _level,
-                        items: const {'beginner': 'Principiante', 'intermediate': 'Intermedio', 'advanced': 'Avanzado', 'expert': 'Experto'},
-                        onChanged: (v) => setState(() => _level = v ?? 'beginner'),
+                    ),
+                    const SizedBox(height: 14),
+                    FormCard(
+                      title: 'Precio',
+                      icon: FontAwesomeIcons.coins,
+                      child: Column(
+                        children: [
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text(
+                              'Curso gratuito',
+                              style: TextStyle(fontWeight: FontWeight.w700),
+                            ),
+                            activeThumbColor: AppColors.primary,
+                            value: _free,
+                            onChanged: (v) => setState(() => _free = v),
+                          ),
+                          if (!_free)
+                            AppTextField(
+                              controller: _price,
+                              label: 'Precio (Bs.)',
+                              icon: FontAwesomeIcons.moneyBill,
+                              keyboardType:
+                                  const TextInputType.numberWithOptions(
+                                    decimal: true,
+                                  ),
+                              validator: (v) =>
+                                  (double.tryParse(
+                                            (v ?? '').replaceAll(',', '.'),
+                                          ) ??
+                                          0) <=
+                                      0
+                                  ? 'El precio debe ser mayor que cero'
+                                  : null,
+                            ),
+                        ],
                       ),
-                    ]),
-                  ),
-                  const SizedBox(height: 14),
-                  FormCard(
-                    title: 'Precio',
-                    icon: FontAwesomeIcons.coins,
-                    child: Column(children: [
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
-                        title: const Text('Curso gratuito', style: TextStyle(fontWeight: FontWeight.w700)),
-                        activeThumbColor: AppColors.primary,
-                        value: _free,
-                        onChanged: (v) => setState(() => _free = v),
-                      ),
-                      if (!_free)
-                        AppTextField(
-                          controller: _price,
-                          label: 'Precio (Bs.)',
-                          icon: FontAwesomeIcons.moneyBill,
-                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                          validator: (v) => (double.tryParse((v ?? '').replaceAll(',', '.')) ?? 0) <= 0 ? 'El precio debe ser mayor que cero' : null,
-                        ),
-                    ]),
-                  ),
-                  const SizedBox(height: 22),
-                  LoadingButton(label: widget.courseId == null ? 'Crear curso' : 'Guardar cambios', icon: FontAwesomeIcons.floppyDisk, loading: _saving, onPressed: _save),
-                  const SizedBox(height: 24),
-                ]),
+                    ),
+                    const SizedBox(height: 22),
+                    LoadingButton(
+                      label: widget.courseId == null
+                          ? 'Crear curso'
+                          : 'Guardar cambios',
+                      icon: FontAwesomeIcons.floppyDisk,
+                      loading: _saving,
+                      onPressed: _save,
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
     );

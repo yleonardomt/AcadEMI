@@ -15,7 +15,8 @@ class AdminCertificatesScreen extends StatefulWidget {
   const AdminCertificatesScreen({super.key});
 
   @override
-  State<AdminCertificatesScreen> createState() => _AdminCertificatesScreenState();
+  State<AdminCertificatesScreen> createState() =>
+      _AdminCertificatesScreenState();
 }
 
 class _AdminCertificatesScreenState extends State<AdminCertificatesScreen> {
@@ -32,7 +33,13 @@ class _AdminCertificatesScreenState extends State<AdminCertificatesScreen> {
         load: api.adminCertificates,
         builder: (context, data, reload) {
           final list = asList(data['certificates']);
-          if (list.isEmpty) return const EmptyState(icon: FontAwesomeIcons.certificate, title: 'Sin certificados', message: 'Aún no se emitió ningún certificado.');
+          if (list.isEmpty) {
+            return const EmptyState(
+              icon: FontAwesomeIcons.certificate,
+              title: 'Sin certificados',
+              message: 'Aún no se emitió ningún certificado.',
+            );
+          }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: list.length,
@@ -43,37 +50,97 @@ class _AdminCertificatesScreenState extends State<AdminCertificatesScreen> {
               return Card(
                 child: Padding(
                   padding: const EdgeInsets.all(14),
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Row(children: [
-                      Expanded(child: Text(asString(c['student']), style: const TextStyle(fontWeight: FontWeight.w800))),
-                      SoftTag(label: revoked ? 'Revocado' : 'Válido', color: revoked ? AppColors.danger : AppColors.success),
-                    ]),
-                    const SizedBox(height: 4),
-                    Text(asString(c['course']), maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(color: p.inkMuted)),
-                    const SizedBox(height: 6),
-                    Text('${asString(c['code'])} · ${Fmt.date(asDate(c['issued_at']))} · verificado ${asInt(c['verification_count'])} veces', style: TextStyle(color: p.inkMuted, fontSize: 12)),
-                    const SizedBox(height: 6),
-                    Row(children: [
-                      if (asStringOrNull(c['pdf']) != null)
-                        TextButton.icon(onPressed: () => launchUrl(Uri.parse(asString(c['pdf'])), mode: LaunchMode.externalApplication), icon: const FaIcon(FontAwesomeIcons.filePdf, size: 13), label: const Text('PDF')),
-                      const Spacer(),
-                      TextButton.icon(
-                        style: TextButton.styleFrom(foregroundColor: revoked ? AppColors.success : AppColors.danger),
-                        onPressed: () async {
-                          final ok = await confirmDialog(context, title: revoked ? 'Reactivar certificado' : 'Revocar certificado', message: revoked ? '¿Reactivar este certificado?' : 'El certificado dejará de ser válido al verificarlo.', confirmLabel: revoked ? 'Reactivar' : 'Revocar', danger: !revoked);
-                          if (!ok) return;
-                          try {
-                            await api.adminToggleCertificate(asInt(c['id']));
-                            if (mounted) setState(() => _key = UniqueKey());
-                          } catch (e) {
-                            if (mounted) showToast(context, errorText(e), error: true);
-                          }
-                        },
-                        icon: FaIcon(revoked ? FontAwesomeIcons.rotateLeft : FontAwesomeIcons.ban, size: 13),
-                        label: Text(revoked ? 'Reactivar' : 'Revocar'),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              asString(c['student']),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                          ),
+                          SoftTag(
+                            label: revoked ? 'Revocado' : 'Válido',
+                            color: revoked
+                                ? AppColors.danger
+                                : AppColors.success,
+                          ),
+                        ],
                       ),
-                    ]),
-                  ]),
+                      const SizedBox(height: 4),
+                      Text(
+                        asString(c['course']),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(color: p.inkMuted),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '${asString(c['code'])} · ${Fmt.date(asDate(c['issued_at']))} · verificado ${asInt(c['verification_count'])} veces',
+                        style: TextStyle(color: p.inkMuted, fontSize: 12),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          if (asStringOrNull(c['pdf']) != null)
+                            TextButton.icon(
+                              onPressed: () => launchUrl(
+                                Uri.parse(asString(c['pdf'])),
+                                mode: LaunchMode.externalApplication,
+                              ),
+                              icon: const FaIcon(
+                                FontAwesomeIcons.filePdf,
+                                size: 13,
+                              ),
+                              label: const Text('PDF'),
+                            ),
+                          const Spacer(),
+                          TextButton.icon(
+                            style: TextButton.styleFrom(
+                              foregroundColor: revoked
+                                  ? AppColors.success
+                                  : AppColors.danger,
+                            ),
+                            onPressed: () async {
+                              final ok = await confirmDialog(
+                                context,
+                                title: revoked
+                                    ? 'Reactivar certificado'
+                                    : 'Revocar certificado',
+                                message: revoked
+                                    ? '¿Reactivar este certificado?'
+                                    : 'El certificado dejará de ser válido al verificarlo.',
+                                confirmLabel: revoked ? 'Reactivar' : 'Revocar',
+                                danger: !revoked,
+                              );
+                              if (!ok) return;
+                              try {
+                                await api.adminToggleCertificate(
+                                  asInt(c['id']),
+                                );
+                                if (mounted) setState(() => _key = UniqueKey());
+                              } catch (e) {
+                                if (context.mounted) {
+                                  showToast(context, errorText(e), error: true);
+                                }
+                              }
+                            },
+                            icon: FaIcon(
+                              revoked
+                                  ? FontAwesomeIcons.rotateLeft
+                                  : FontAwesomeIcons.ban,
+                              size: 13,
+                            ),
+                            label: Text(revoked ? 'Reactivar' : 'Revocar'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

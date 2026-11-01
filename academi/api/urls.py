@@ -2,7 +2,7 @@ from django.urls import path
 
 from . import (
     views_account, views_catalog, views_learning, views_commerce, views_social, views_teacher,
-    views_admin, views_manage,
+    views_admin, views_manage, views_download,
 )
 
 urlpatterns = [
@@ -60,6 +60,7 @@ urlpatterns = [
     path('certificates/<int:certificate_id>/', views_social.certificate_detail),
     path('certificates/<int:certificate_id>/email/', views_social.certificate_email),
     path('certificates/verify/<str:code>/', views_social.certificate_verify),
+    path('downloads/<str:kind>/<int:object_id>/', views_download.download),
     path('grades/', views_social.grades),
     path('chatbot/history/', views_social.chatbot_history),
     path('chatbot/send/', views_social.chatbot_send),

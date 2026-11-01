@@ -12,7 +12,7 @@ from ..models import (
     Notification,
 )
 from .auth import api_view, error, ok, parse_body
-from .serializers import display_name, media_url, money
+from .serializers import display_name, media_url, money, signed_download_url
 from .support import log_action
 from ..utils.coupons import save_coupon as save_coupon_record
 from ..utils.demo_sales import visible_sales
@@ -373,7 +373,7 @@ def certificates(request):
         'id': c.id, 'code': c.certificate_code, 'student': display_name(c.enrollment.student),
         'course': c.enrollment.course.title, 'issued_at': c.issued_at.isoformat(),
         'is_revoked': c.is_revoked, 'verification_count': c.verification_count,
-        'pdf': media_url(request, c.pdf_file),
+        'pdf': signed_download_url(request, 'certificate', c.id) if not c.is_revoked else None,
     } for c in rows])
 
 

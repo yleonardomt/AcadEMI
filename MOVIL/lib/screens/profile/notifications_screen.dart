@@ -19,15 +19,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Key _key = UniqueKey();
 
   (FaIconData, Color) _style(String type) => switch (type) {
-        'course' => (FontAwesomeIcons.bookOpen, AppColors.primaryLight),
-        'evaluation' => (FontAwesomeIcons.listCheck, AppColors.purple),
-        'purchase' => (FontAwesomeIcons.bagShopping, AppColors.success),
-        'certificate' => (FontAwesomeIcons.award, AppColors.secondaryDark),
-        'comment' => (FontAwesomeIcons.comment, AppColors.teal),
-        'question' => (FontAwesomeIcons.circleQuestion, AppColors.orange),
-        'answer' => (FontAwesomeIcons.commentDots, AppColors.info),
-        _ => (FontAwesomeIcons.bell, AppColors.primaryLight),
-      };
+    'course' => (FontAwesomeIcons.bookOpen, AppColors.primaryLight),
+    'evaluation' => (FontAwesomeIcons.listCheck, AppColors.purple),
+    'purchase' => (FontAwesomeIcons.bagShopping, AppColors.success),
+    'certificate' => (FontAwesomeIcons.award, AppColors.secondaryDark),
+    'comment' => (FontAwesomeIcons.comment, AppColors.teal),
+    'question' => (FontAwesomeIcons.circleQuestion, AppColors.orange),
+    'answer' => (FontAwesomeIcons.commentDots, AppColors.info),
+    _ => (FontAwesomeIcons.bell, AppColors.primaryLight),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +44,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 auth.setUnread(0);
                 setState(() => _key = UniqueKey());
               } catch (e) {
-                if (mounted) showToast(context, errorText(e), error: true);
+                if (context.mounted) {
+                  showToast(context, errorText(e), error: true);
+                }
               }
             },
             icon: const FaIcon(FontAwesomeIcons.checkDouble, size: 14),
@@ -61,12 +63,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             if (auth.unreadNotifications != unread) auth.setUnread(unread);
           });
           if (list.isEmpty) {
-            return ListView(children: [
-              SizedBox(
-                height: MediaQuery.of(context).size.height * 0.6,
-                child: const EmptyState(icon: FontAwesomeIcons.bellSlash, title: 'Sin notificaciones', message: 'Aquí verás avisos de tus cursos, compras y respuestas.'),
-              ),
-            ]);
+            return ListView(
+              children: [
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: const EmptyState(
+                    icon: FontAwesomeIcons.bellSlash,
+                    title: 'Sin notificaciones',
+                    message: 'Aquí verás avisos de tus cursos, compras y respuestas.',
+                  ),
+                ),
+              ],
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -88,31 +96,75 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: n.isRead ? p.surface : color.withValues(alpha: p.isDark ? 0.16 : 0.07),
+                    color: n.isRead
+                        ? p.surface
+                        : color.withValues(alpha: p.isDark ? 0.16 : 0.07),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: n.isRead ? p.border : color.withValues(alpha: 0.4)),
+                    border: Border.all(
+                      color: n.isRead ? p.border : color.withValues(alpha: 0.4),
+                    ),
                   ),
-                  child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Container(
-                      width: 42,
-                      height: 42,
-                      decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(13)),
-                      child: Center(child: FaIcon(icon, size: 17, color: color)),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Row(children: [
-                          Expanded(child: Text(n.title, style: TextStyle(fontWeight: n.isRead ? FontWeight.w700 : FontWeight.w800))),
-                          if (!n.isRead) Container(width: 9, height: 9, decoration: const BoxDecoration(color: AppColors.danger, shape: BoxShape.circle)),
-                        ]),
-                        const SizedBox(height: 3),
-                        Text(n.message, style: TextStyle(color: p.inkMuted, height: 1.4, fontSize: 13.5)),
-                        const SizedBox(height: 6),
-                        Text(Fmt.ago(n.createdAt), style: TextStyle(color: p.inkMuted, fontSize: 12)),
-                      ]),
-                    ),
-                  ]),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 42,
+                        height: 42,
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(13),
+                        ),
+                        child: Center(
+                          child: FaIcon(icon, size: 17, color: color),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    n.title,
+                                    style: TextStyle(
+                                      fontWeight: n.isRead
+                                          ? FontWeight.w700
+                                          : FontWeight.w800,
+                                    ),
+                                  ),
+                                ),
+                                if (!n.isRead)
+                                  Container(
+                                    width: 9,
+                                    height: 9,
+                                    decoration: const BoxDecoration(
+                                      color: AppColors.danger,
+                                      shape: BoxShape.circle,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              n.message,
+                              style: TextStyle(
+                                color: p.inkMuted,
+                                height: 1.4,
+                                fontSize: 13.5,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              Fmt.ago(n.createdAt),
+                              style: TextStyle(color: p.inkMuted, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               );
             },

@@ -10,16 +10,37 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 Course sample() => Course.fromJson({
-      'id': 1, 'title': 'Curso de prueba con un título bastante largo para revisar el recorte',
-      'description': 'd', 'level': 'beginner', 'level_label': 'Principiante', 'price': 39.99,
-      'is_free': false, 'price_label': 'Bs. 39.99', 'is_featured': true, 'teacher': 'Docente Demo',
-      'rating': 4.5, 'reviews_count': 3, 'students_count': 10, 'lessons_count': 12,
-      'duration_minutes': 120, 'is_enrolled': false, 'is_favorite': false, 'category': 'Programación',
-      'coupon': {'code': 'X', 'type': 'percentage', 'value': 15},
-    });
+  'id': 1,
+  'title':
+      'Curso de prueba con un título bastante largo para revisar el recorte',
+  'description': 'd',
+  'level': 'beginner',
+  'level_label': 'Principiante',
+  'price': 39.99,
+  'is_free': false,
+  'price_label': 'Bs. 39.99',
+  'is_featured': true,
+  'teacher': 'Docente Demo',
+  'rating': 4.5,
+  'reviews_count': 3,
+  'students_count': 10,
+  'lessons_count': 12,
+  'duration_minutes': 120,
+  'is_enrolled': false,
+  'is_favorite': false,
+  'category': 'Programación',
+  'coupon': {'code': 'X', 'type': 'percentage', 'value': 15},
+});
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  test('la app usa la API pública aunque una instalación previa guardara localhost', () async {
+    SharedPreferences.setMockInitialValues({'server_url': 'http://10.0.2.2'});
+    final settings = SettingsProvider();
+    await settings.load();
+    expect(settings.serverUrl, 'https://academi-efte.onrender.com');
+  });
 
   for (final theme in [AppTheme.light(), AppTheme.dark()]) {
     testWidgets('login se dibuja (${theme.brightness.name})', (tester) async {
@@ -27,13 +48,15 @@ void main() {
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
       final settings = SettingsProvider();
-      await tester.pumpWidget(MultiProvider(
-        providers: [
-          ChangeNotifierProvider.value(value: settings),
-          ChangeNotifierProvider(create: (c) => AuthProvider(settings)),
-        ],
-        child: MaterialApp(theme: theme, home: const LoginScreen()),
-      ));
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: settings),
+            ChangeNotifierProvider(create: (c) => AuthProvider(settings)),
+          ],
+          child: MaterialApp(theme: theme, home: const LoginScreen()),
+        ),
+      );
       await tester.pump();
       expect(find.text('Iniciar sesión'), findsWidgets);
       expect(tester.takeException(), isNull);
@@ -43,20 +66,35 @@ void main() {
       tester.view.physicalSize = const Size(1080, 2200);
       tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
-      await tester.pumpWidget(MaterialApp(
-        theme: theme,
-        home: Scaffold(
-          body: ListView(children: [
-            CourseCard(course: sample(), onTap: () {}),
-            SizedBox(height: 132, child: CourseListTile(course: sample(), onTap: () {}, onFavorite: () {})),
-          ]),
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          home: Scaffold(
+            body: ListView(
+              children: [
+                CourseCard(course: sample(), onTap: () {}),
+                SizedBox(
+                  height: 132,
+                  child: CourseListTile(
+                    course: sample(),
+                    onTap: () {},
+                    onFavorite: () {},
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-      ));
+      );
       await tester.pump();
       // La fuente de prueba (Ahem) es mucho más ancha que Inter: se ignoran los
       // desbordes de texto y solo se falla ante cualquier otro error de dibujo.
       final e = tester.takeException();
-      expect(e == null || e.toString().contains('overflowed'), isTrue, reason: '$e');
+      expect(
+        e == null || e.toString().contains('overflowed'),
+        isTrue,
+        reason: '$e',
+      );
     });
   }
 }

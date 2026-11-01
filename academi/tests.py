@@ -4,6 +4,7 @@ from unittest.mock import patch
 from datetime import timedelta
 from contextlib import redirect_stdout
 from io import StringIO
+from urllib.parse import urlsplit
 
 from django.utils import timezone
 from django.test import override_settings
@@ -89,6 +90,30 @@ class CertificateDownloadTests(TestCase):
             self.assertEqual(response['Content-Type'], 'application/pdf')
         self.client.force_login(stranger)
         self.assertEqual(self.client.get(reverse('assignment_download', args=[submission.pk])).status_code, 404)
+        lesson.is_published = True
+        lesson.save(update_fields=['is_published'])
+        Enrollment.objects.create(student=student, course=course, status='in_progress')
+        response = self.client.get(f'/api/v1/lessons/{lesson.pk}/',
+                                   HTTP_AUTHORIZATION='Bearer ' + make_token(student))
+        self.assertEqual(response.status_code, 200)
+        parsed = urlsplit(response.json()['lesson']['submission']['file'])
+        self.assertEqual(self.client.get(parsed.path + '?' + parsed.query).status_code, 200)
+
+    def test_mobile_certificate_link_opens_a_pdf_and_expires_for_invalid_token(self):
+        teacher = User.objects.create_user(username='teacher_mobile_pdf', password='unused', role='teacher')
+        student = User.objects.create_user(username='student_mobile_pdf', password='unused', email_verified=True)
+        course = Course.objects.create(title='Curso PDF móvil', description='Prueba', teacher=teacher,
+                                       status='published', is_free=True)
+        enrollment = Enrollment.objects.create(student=student, course=course, status='completed')
+        certificate = Certificate.objects.create(enrollment=enrollment, certificate_code='MOBILEPDF001')
+        response = self.client.get('/api/v1/certificates/', HTTP_AUTHORIZATION='Bearer ' + make_token(student))
+        self.assertEqual(response.status_code, 200)
+        url = response.json()['certificates'][0]['pdf']
+        parsed = urlsplit(url)
+        pdf = self.client.get(parsed.path + '?' + parsed.query)
+        self.assertEqual(pdf.status_code, 200)
+        self.assertTrue(pdf.content.startswith(b'%PDF'))
+        self.assertEqual(self.client.get(f'/api/v1/downloads/certificate/{certificate.pk}/?t=invalid').status_code, 403)
 
 
 @override_settings(DEMO_CHECKOUT=False)

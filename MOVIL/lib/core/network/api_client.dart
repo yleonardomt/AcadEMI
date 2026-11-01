@@ -34,27 +34,37 @@ class ApiClient {
   void Function()? onUnauthenticated;
 
   Uri _uri(String path, [Map<String, dynamic>? query]) {
-    final clean = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final clean = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
     final q = <String, String>{};
     query?.forEach((k, v) {
       if (v != null && '$v'.isNotEmpty) q[k] = '$v';
     });
-    return Uri.parse('$clean/api/v1/$path').replace(queryParameters: q.isEmpty ? null : q);
+    return Uri.parse('$clean/api/v1/$path')
+        .replace(queryParameters: q.isEmpty ? null : q);
   }
 
   Map<String, String> get _headers => {
-        'Accept': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      };
+    'Accept': 'application/json',
+    if (token != null) 'Authorization': 'Bearer $token',
+  };
 
-  Future<Map<String, dynamic>> get(String path, {Map<String, dynamic>? query}) =>
-      _send(() => http.get(_uri(path, query), headers: _headers));
+  Future<Map<String, dynamic>> get(
+    String path, {
+    Map<String, dynamic>? query,
+  }) => _send(() => http.get(_uri(path, query), headers: _headers));
 
-  Future<Map<String, dynamic>> post(String path, {Map<String, dynamic>? body}) => _send(() => http.post(
-        _uri(path),
-        headers: {..._headers, 'Content-Type': 'application/json'},
-        body: jsonEncode(body ?? {}),
-      ));
+  Future<Map<String, dynamic>> post(
+    String path, {
+    Map<String, dynamic>? body,
+  }) => _send(
+    () => http.post(
+      _uri(path),
+      headers: {..._headers, 'Content-Type': 'application/json'},
+      body: jsonEncode(body ?? {}),
+    ),
+  );
 
   /// POST multipart para subir archivos (foto de perfil, entrega de tarea).
   Future<Map<String, dynamic>> upload(
@@ -62,27 +72,37 @@ class ApiClient {
     Map<String, String> fields = const {},
     required String fileField,
     required String filePath,
-  }) =>
-      _send(() async {
-        final request = http.MultipartRequest('POST', _uri(path))
-          ..headers.addAll(_headers)
-          ..fields.addAll(fields)
-          ..files.add(await http.MultipartFile.fromPath(fileField, filePath));
-        return http.Response.fromStream(await request.send());
-      });
+  }) => _send(() async {
+    final request = http.MultipartRequest('POST', _uri(path))
+      ..headers.addAll(_headers)
+      ..fields.addAll(fields)
+      ..files.add(await http.MultipartFile.fromPath(fileField, filePath));
+    return http.Response.fromStream(await request.send());
+  });
 
-  Future<Map<String, dynamic>> _send(Future<http.Response> Function() request) async {
+  Future<Map<String, dynamic>> _send(
+    Future<http.Response> Function() request,
+  ) async {
     http.Response response;
     try {
-      response = await request().timeout(const Duration(seconds: 60));
+      // Render Free puede tardar unos 50 segundos en reactivar una instancia.
+      response = await request().timeout(const Duration(seconds: 90));
     } on TimeoutException {
-      throw ApiException('El servidor tardó demasiado en responder. Intenta nuevamente.');
+      throw ApiException(
+        'AcadEMI tardó en responder. Espera unos segundos e intenta nuevamente.',
+      );
     } on SocketException {
-      throw ApiException('No se pudo conectar con el servidor. Revisa tu conexión o la dirección del servidor.');
+      throw ApiException(
+        'No se pudo conectar con AcadEMI. Comprueba tu conexión a Internet.',
+      );
     } on http.ClientException {
-      throw ApiException('No se pudo conectar con el servidor. Revisa tu conexión o la dirección del servidor.');
+      throw ApiException(
+        'No se pudo conectar con AcadEMI. Comprueba tu conexión a Internet.',
+      );
     } on HandshakeException {
-      throw ApiException('No se pudo establecer una conexión segura con el servidor.');
+      throw ApiException(
+        'No se pudo establecer una conexión segura con el servidor.',
+      );
     }
 
     Map<String, dynamic> data;

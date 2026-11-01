@@ -17,7 +17,7 @@ from ..models import (
 from ..utils import compute_course_stats
 from ..utils.course_review import require_course_review
 from .auth import api_view, error, ok, parse_body
-from .serializers import display_name, media_url, money
+from .serializers import display_name, media_url, money, signed_download_url
 from .support import log_action, validate_upload
 from .views_admin import coupon_row, save_coupon
 
@@ -491,7 +491,7 @@ def assignment_submissions(request, lesson_id):
         return problem
     rows = AssignmentSubmission.objects.filter(lesson=lesson).select_related('student').order_by('-submitted_at')
     return ok(lesson={'id': lesson.id, 'title': lesson.title}, submissions=[{
-        'id': s.id, 'student': display_name(s.student), 'file': media_url(request, s.file),
+        'id': s.id, 'student': display_name(s.student), 'file': signed_download_url(request, 'assignment', s.id),
         'comment': s.comment or '', 'submitted_at': s.submitted_at.isoformat(), 'grade': s.grade,
         'feedback': s.feedback or '',
     } for s in rows])

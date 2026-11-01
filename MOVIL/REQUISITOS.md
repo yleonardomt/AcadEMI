@@ -39,13 +39,13 @@ Leyenda: **Web** = sitio Django · **App** = app Flutter (`MOVIL/`) · **Sí** =
 | RF-31 | Resultados e historial | Sí | Sí | |
 | RF-32 | Resultados e incidencias (docente) | Sí | Sí | **El web registraba las incidencias pero el docente no podía verlas; se agregó.** App: Resultados e incidencias. |
 | RF-33 | Carrito | Sí | Sí | |
-| RF-34 | Método de pago | Sí | Sí | QR o tarjeta. |
+| RF-34 | Método de pago | Parcial | Parcial | El flujo académico registra pedidos e inscripciones; falta conectar una pasarela para cobros reales por QR o tarjeta. |
 | RF-35 | Aplicar cupones | Sí | Sí | Más descuento EMI automático. |
 | RF-36 | Cupones del docente | Sí | Sí | App: Perfil → Mis cupones. |
 | RF-37 | Estado e historial de compras | Sí | Sí | |
 | RF-38 | Descargar comprobantes | Sí | Sí | **PDF real** en web y app (antes solo se imprimía). |
 | RF-39 | Generar certificado | Sí | Sí | Automático al completar el curso. |
-| RF-40 | Consultar y descargar certificados | Sí | Sí | PDF. |
+| RF-40 | Consultar y descargar certificados | Sí | Sí | PDF generado bajo demanda; la app abre un enlace temporal protegido. |
 | RF-41 | Certificado por correo | Sí | Sí | **A solicitud** del estudiante (antes solo automático). |
 | RF-42 | Verificar certificados | Sí | Sí | Por código; pública. |
 | RF-43 | Gestionar usuarios | Sí | Sí | App: Gestión → Usuarios (crear, editar, roles, activar, eliminar, restablecer contraseña). |
@@ -66,7 +66,7 @@ Leyenda: **Web** = sitio Django · **App** = app Flutter (`MOVIL/`) · **Sí** =
 | RNF-02 Disponibilidad 99 % | Infra | Depende del hosting y monitoreo; no es algo del código. |
 | RNF-03 Escalabilidad | Parcial | Código modular (paquetes por dominio) y API sin estado (token firmado), lista para varias instancias. |
 | RNF-04 Hash de contraseñas | Sí | Hasher de Django (nunca texto plano). |
-| RNF-05 HTTPS/TLS | Parcial | Se activa solo con `DEBUG=False` (redirección, HSTS, cookies seguras). Falta el certificado y el proxy del servidor; con proxy usar `BEHIND_PROXY=True`. |
+| RNF-05 HTTPS/TLS | Sí en Render | La app usa `https://academi-efte.onrender.com` y Render termina TLS. |
 | RNF-06 Control por roles | Sí | Web y API validan rol y propiedad (probado: estudiante/docente no acceden a funciones ajenas). |
 | RNF-07 Sesiones | Sí | Web: sesión de 24 h con cookie protegida. App: token firmado que caduca a los 7 días y se invalida al cambiar la contraseña. |
 | RNF-08 Privacidad | Sí | Acceso solo a datos propios (por rol); la API no expone datos de otros usuarios. |
@@ -80,5 +80,5 @@ Leyenda: **Web** = sitio Django · **App** = app Flutter (`MOVIL/`) · **Sí** =
 | RNF-16 Mantenibilidad | Sí | Código modular y documentado (`README`, `app.txt`, este archivo). |
 | RNF-17 Registro de eventos | Sí | `ActivityLog`: inicios/cierres de sesión y fallos, registro, cambios de contraseña, pagos, acciones de administrador y de cursos (web y app). |
 | RNF-18 Integridad | Sí | Compras dentro de transacciones atómicas; el progreso y las notas se calculan en el servidor. |
-| RNF-19 Carga de contenido | Sí | Formatos y tamaños limitados (imagen 5 MB, documento 50 MB, entrega 25 MB, video 500 MB) en web (middleware) y API. |
+| RNF-19 Carga de contenido | Parcial en Render Free | Formatos y tamaños limitados (imagen 5 MB, documento 50 MB, entrega 25 MB, video 500 MB). Los archivos nuevos en disco local se pierden cuando Render reinicia la instancia; para conservar videos, documentos y entregas hace falta configurar almacenamiento S3 compatible. Los videos externos y los recursos incluidos en Git sí permanecen. |
 | RNF-20 Seguridad de pagos | Sí | Ni el web ni la app envían el número completo, el vencimiento ni el CVC: solo los últimos 4 dígitos. **El web enviaba la tarjeta completa; se corrigió.** El pago sigue siendo simulado (sin pasarela real). |

@@ -14,7 +14,7 @@ from .progress import mark_lesson_done
 from .support import validate_upload
 from .serializers import (
     ACTIVE_STATUSES, completed_lesson_ids, display_name, enrollment_json, media_url,
-    modules_outline, youtube_id, certificate_json,
+    modules_outline, youtube_id, certificate_json, signed_download_url,
 )
 
 QUIZ_SALT = 'academi.api.quiz'
@@ -176,7 +176,7 @@ def lesson_detail(request, lesson_id):
         s = AssignmentSubmission.objects.filter(lesson=lesson, student=user).first()
         if s:
             submission = {
-                'file': media_url(request, s.file), 'comment': s.comment or '',
+                'file': signed_download_url(request, 'assignment', s.id), 'comment': s.comment or '',
                 'submitted_at': s.submitted_at.isoformat(), 'grade': s.grade,
                 'feedback': s.feedback or '', 'graded_at': s.graded_at.isoformat() if s.graded_at else None,
             }
