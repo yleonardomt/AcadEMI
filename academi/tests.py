@@ -65,8 +65,11 @@ class CatalogBootstrapTests(TestCase):
             run(no_images=True, only_if_empty=True)
             run(no_images=True, only_if_empty=True)
         course = Course.objects.get(title='Bases de datos MySQL: consultas y modelado')
+        self.assertFalse(course.is_free)
+        self.assertEqual(course.price, 59)
         lessons = Lesson.objects.filter(module__course=course, lesson_type='video', is_published=True).order_by('module__order', 'order')
         self.assertEqual(lessons.count(), 80)
+        self.assertEqual(lessons.filter(is_free=True).count(), 1)
         self.assertEqual(list(lessons.values_list('video_url', flat=True)), [f'https://www.youtube.com/watch?v={v["id"]}' for v in videos])
         self.assertEqual(list(lessons.values_list('title', flat=True)), [v['title'] for v in videos])
 

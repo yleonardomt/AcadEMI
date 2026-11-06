@@ -94,7 +94,7 @@ COURSES = [
          topic='segmentación, costos y punto de equilibrio', example='Con costo fijo Bs 1.000, precio Bs 20 y costo variable Bs 10 por unidad, calcula el punto de equilibrio.',
          answer='100 unidades.', video='https://www.youtube.com/watch?v=ShzPtU7IOXs', image='File:Business breakfast meeting. (54641476579).jpg',
          questions=[('CF=1000, P=20 y CV=10: equilibrio en unidades', '100', ['50', '200', '1000']), ('El margen de contribución unitario es', 'precio menos costo variable', ['precio más costo fijo', 'ingreso total', 'costo fijo / precio']), ('Segmentar mercado consiste en', 'agrupar clientes con características comunes', ['fijar un precio único', 'eliminar competencia', 'aumentar inventario'])]),
-    dict(title='Bases de datos MySQL: consultas y modelado', area='Ingeniería de Sistemas', level='intermediate', price=0,
+    dict(title='Bases de datos MySQL: consultas y modelado', area='Ingeniería de Sistemas', level='intermediate', price=59,
          topic='consultas SQL, relaciones, filtros y agregaciones en MySQL', example='Consulta las ventas por mes y ordena los meses por ingreso total.',
          answer='Agrupa con YEAR(fecha), MONTH(fecha) y SUM(total), y ordena por periodo.', video='https://www.youtube.com/playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc', image='database server computer code',
          questions=[('¿Qué cláusula filtra grupos agregados?', 'HAVING', ['WHERE', 'ORDER BY', 'LIMIT']), ('¿Qué garantiza una clave primaria?', 'identifica de forma única cada fila', ['ordena todas las filas', 'cifra la tabla', 'permite valores repetidos']), ('¿Qué operación combina filas relacionadas?', 'JOIN', ['DROP', 'ALTER', 'TRUNCATE'])]),
@@ -252,6 +252,9 @@ def sync_mysql_playlist():
               'Subconsultas y vistas', 'Vistas y procedimientos almacenados',
               'Funciones y ALTER TABLE', 'Actualización, administración y complementos']
     with transaction.atomic():
+        if course.is_free:
+            price = next(item['price'] for item in COURSES if item['title'] == course.title)
+            Course.objects.filter(pk=course.pk).update(is_free=False, price=price)
         course.modules.filter(title='Fundamentos').update(order=0)
         course.modules.filter(title='Aplicación y evaluación').update(order=9)
         Lesson.objects.filter(module__course=course, video_url__contains='playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc').update(
@@ -270,7 +273,7 @@ def sync_mysql_playlist():
                 video_url=f'https://www.youtube.com/watch?v={video["id"]}', defaults={
                     'title': video['title'][:200], 'description': f'Clase {index + 1} de {len(data["videos"])} · {author}',
                     'content': note, 'lesson_type': 'video', 'order': index % 10 + 1,
-                    'is_free': True, 'is_published': True, 'duration_minutes': video['duration_minutes']})
+                    'is_free': index == 0, 'is_published': True, 'duration_minutes': video['duration_minutes']})
     print(f'MySQL: {len(data["videos"])} videos cargados como lecciones individuales.')
 
 
