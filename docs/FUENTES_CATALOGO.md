@@ -7,7 +7,9 @@ Playlist: https://www.youtube.com/playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTB
 Canal mostrado por YouTube: **Osamu Yokosaki**, https://www.youtube.com/@oyokosaki.
 El usuario comunicó autorización del docente para enlazar el contenido. Se
 conservan títulos y orden de los 80 videos públicos disponibles al importar;
-cada video se reproduce desde YouTube en una lección independiente. El listado
+cada video se reproduce desde YouTube en una lección independiente. De los 80,
+78 figuran en el canal Osamu Yokosaki; dos complementarios pertenecen a Sin Rueda
+Tecnológica y sanketik live classes. Se conserva la autoría individual. El listado
 con duraciones está en `scripts/data/mysql_playlist.json`. No se descargan ni
 se redistribuyen los videos. Se incluye una nota de actualización en la clase
 sobre hashes de contraseñas que presenta MD5/SHA.

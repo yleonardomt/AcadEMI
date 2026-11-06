@@ -254,18 +254,21 @@ def sync_mysql_playlist():
     with transaction.atomic():
         course.modules.filter(title='Fundamentos').update(order=0)
         course.modules.filter(title='Aplicación y evaluación').update(order=9)
-        Lesson.objects.filter(module__course=course, video_url__contains='playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc').update(is_published=False)
+        Lesson.objects.filter(module__course=course, video_url__contains='playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc').update(
+            lesson_type='text', video_url=None, is_published=True, title='Fuentes del curso MySQL',
+            content=f'Videos de {data["author"]}: {data["channel"]}. Cada clase del playlist MYSQL está disponible como una lección individual en los módulos siguientes.')
         for index, video in enumerate(data['videos']):
             block = index // 10
             module, _ = Module.objects.update_or_create(course=course,
                 order=block + 1, defaults={
                     'title': f'{block + 1:02d}. {labels[block]}', 'description': f'Videos {block * 10 + 1} a {min((block + 1) * 10, len(data["videos"]))} del playlist MYSQL de {data["author"]}.'})
-            note = f'Clase de {data["author"]}. Fuente: {data["channel"]}. Reproduce el video y practica sus consultas en tu propia base de datos.'
+            author = video.get('author', data['author'])
+            note = f'Clase de {author}. Fuente: https://www.youtube.com/watch?v={video["id"]}. Reproduce el video y practica sus consultas en tu propia base de datos.'
             if 'MD5' in video['title']:
                 note += ' Nota de actualización: MD5 y SHA sin un esquema especializado no son adecuados para almacenar contraseñas; utiliza algoritmos modernos como Argon2id.'
             Lesson.objects.update_or_create(module=module,
                 video_url=f'https://www.youtube.com/watch?v={video["id"]}', defaults={
-                    'title': video['title'][:200], 'description': f'Clase {index + 1} de {len(data["videos"])} · {data["author"]}',
+                    'title': video['title'][:200], 'description': f'Clase {index + 1} de {len(data["videos"])} · {author}',
                     'content': note, 'lesson_type': 'video', 'order': index % 10 + 1,
                     'is_free': True, 'is_published': True, 'duration_minutes': video['duration_minutes']})
     print(f'MySQL: {len(data["videos"])} videos cargados como lecciones individuales.')
@@ -349,7 +352,7 @@ def run(archive_legacy=False, no_images=False, only_if_empty=False):
                 f'Objetivo: comprender {item["topic"]}.\n\nAntes de comenzar, identifica las unidades de cada variable y anota los supuestos de tu modelo. '
                 'Después de cada ejercicio, verifica el resultado sustituyéndolo en el planteamiento original.\n\n'
                 f'Caso de referencia: {item["example"]}\nResultado esperado: {item["answer"]}', is_free=True, duration=20)
-            if item['video']:
+            if item['video'] and 'playlist?list=' not in item['video']:
                 upsert_lesson(intro, 2, 'Video complementario: fundamentos', 'video',
                     'Material audiovisual de fuente abierta. Revisa la fuente original enlazada y toma notas de los conceptos aplicables al caso del curso.',
                     video=item['video'], is_free=True, duration=40)
