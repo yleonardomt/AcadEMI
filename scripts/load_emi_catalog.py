@@ -258,8 +258,8 @@ def sync_mysql_playlist():
         for index, video in enumerate(data['videos']):
             block = index // 10
             module, _ = Module.objects.update_or_create(course=course,
-                title=f'{block + 1:02d}. {labels[block]}', defaults={
-                    'order': block + 1, 'description': f'Videos {block * 10 + 1} a {min((block + 1) * 10, len(data["videos"]))} del playlist MYSQL de {data["author"]}.'})
+                order=block + 1, defaults={
+                    'title': f'{block + 1:02d}. {labels[block]}', 'description': f'Videos {block * 10 + 1} a {min((block + 1) * 10, len(data["videos"]))} del playlist MYSQL de {data["author"]}.'})
             note = f'Clase de {data["author"]}. Fuente: {data["channel"]}. Reproduce el video y practica sus consultas en tu propia base de datos.'
             if 'MD5' in video['title']:
                 note += ' Nota de actualización: MD5 y SHA sin un esquema especializado no son adecuados para almacenar contraseñas; utiliza algoritmos modernos como Argon2id.'
