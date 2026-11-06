@@ -37,7 +37,7 @@ def send_verification_email(user, request):
     }
 
     html_message = render_to_string('academi/emails/verification_email.html', context)
-    plain_message = strip_tags(html_message)
+    plain_message = f'Hola {user.get_full_name() or user.username}. Confirma tu correo de AcadEMI abriendo este enlace:\n\n{verify_link}\n\nSi no creaste esta cuenta, ignora este mensaje.'
 
     send_mail(
         subject='Confirma tu correo - AcadEMI',
@@ -58,7 +58,7 @@ def send_password_reset_email(user, request, reset_link):
     }
 
     html_message = render_to_string('academi/emails/password_reset_email.html', context)
-    plain_message = strip_tags(html_message)
+    plain_message = f'Para cambiar tu contraseña de AcadEMI, abre este enlace:\n\n{reset_link}\n\nSi no solicitaste este cambio, ignora este mensaje.'
 
     send_mail(
         subject='Recuperación de contraseña - AcadEMI',

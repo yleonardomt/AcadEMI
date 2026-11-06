@@ -259,7 +259,10 @@ RECAPTCHA_PRIVATE_KEY = '6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe'
 # CONFIGURACIÓN DE EMAIL (GMAIL)
 # ============================================
 # BACKEND DE EMAIL
-EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+BREVO_API_KEY = os.environ.get('BREVO_API_KEY', '').strip()
+EMAIL_BACKEND = os.environ.get('EMAIL_BACKEND',
+    'academi.email_backends.BrevoBackend' if BREVO_API_KEY else 'academi.email_backends.SafeSMTPBackend')
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
 
 # CONFIGURACIÓN SMTP DE GMAIL
 EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')

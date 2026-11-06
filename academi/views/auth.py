@@ -110,7 +110,7 @@ def register_view(request):
         form = RegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
-            login(request, user)
+            login(request, user, backend='academi.auth_backends.UsernameOrEmailBackend')
 
             if is_emi_student_email(user.email):
                 Notification.objects.create(
@@ -123,8 +123,10 @@ def register_view(request):
 
             try:
                 send_verification_email(user, request)
+                request.session['verification_email_sent'] = True
                 messages.success(request, 'Registro exitoso. Te hemos enviado un correo de verificación.')
             except Exception:
+                request.session['verification_email_sent'] = False
                 logger.exception('Fallo el envío del correo de verificación para %s', user.email)
                 messages.warning(request, 'Registro exitoso, pero no pudimos enviar el correo de verificación. Puedes reenviarlo desde esta página.')
 
@@ -155,8 +157,10 @@ def resend_verification_email_view(request):
     if request.method == 'POST':
         try:
             send_verification_email(request.user, request)
+            request.session['verification_email_sent'] = True
             messages.success(request, 'Te reenviamos el correo de verificación. Revisa tu bandeja de entrada (y spam).')
         except Exception:
+            request.session['verification_email_sent'] = False
             logger.exception('Fallo el reenvío del correo de verificación para %s', request.user.email)
             messages.error(request, 'No pudimos reenviar el correo. Intenta de nuevo en unos minutos.')
 

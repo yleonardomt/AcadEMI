@@ -1,0 +1,408 @@
+{
+  "playlist_id": "PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc",
+  "title": "MYSQL",
+  "author": "Osamu Yokosaki",
+  "channel": "https://www.youtube.com/@oyokosaki",
+  "videos": [
+    {
+      "id": "2PXoaP83Rms",
+      "title": "01 INTRODUCCIÓN A LAS BASES DE DATOS 1/2",
+      "duration_minutes": 21
+    },
+    {
+      "id": "XgYvOFat6fs",
+      "title": "02 INTRODUCCIÓN A LAS BASES DE DATOS 2/2",
+      "duration_minutes": 31
+    },
+    {
+      "id": "Y2xO2dpnzuw",
+      "title": "03 DISEÑO DE BASES DE DATOS MEDIANTE EL MODELO ENTIDAD-RELACIÓN",
+      "duration_minutes": 24
+    },
+    {
+      "id": "nwtDDNSm4RM",
+      "title": "04 INSTALACIÓN DE XAMPP 7.1.6",
+      "duration_minutes": 12
+    },
+    {
+      "id": "2x8w2de1I3k",
+      "title": "05 LDD CREACIÓN DE LA BASE DE DATOS DB_PAIS",
+      "duration_minutes": 7
+    },
+    {
+      "id": "dckaNLvH7Gg",
+      "title": "06 CREACIÓN DE LAS TABLAS DE LA BASE DE DATOS",
+      "duration_minutes": 30
+    },
+    {
+      "id": "FUqIKcwlrJs",
+      "title": "07 CREACIÓN DE RELACIONES MEDIANTE ALTER TABLE",
+      "duration_minutes": 22
+    },
+    {
+      "id": "ErnS2JkGT2o",
+      "title": "08 INSERCIÓN SIMPLE DE DATOS EN MYSQL",
+      "duration_minutes": 6
+    },
+    {
+      "id": "remLbPRnT3s",
+      "title": "09 INSERCIÓN MULTIPLE DE DATOS EN MYSQL 1/2",
+      "duration_minutes": 32
+    },
+    {
+      "id": "EPrKgfu9gw4",
+      "title": "10 INSERCIÓN MULTIPLE DE DATOS EN MYSQL 2/2",
+      "duration_minutes": 27
+    },
+    {
+      "id": "pmb6NQV2f5A",
+      "title": "11 INSTRUCCIONES SELECT 01",
+      "duration_minutes": 19
+    },
+    {
+      "id": "zwc4Dl198zs",
+      "title": "12 INSTRUCCIONES SELECT 02",
+      "duration_minutes": 11
+    },
+    {
+      "id": "mx54zFn-7Lo",
+      "title": "13 INSTRUCCIONES SELECT 03",
+      "duration_minutes": 14
+    },
+    {
+      "id": "stLDPNjNtkc",
+      "title": "14 INSTRUCCIONES SELECT Y WHERE",
+      "duration_minutes": 17
+    },
+    {
+      "id": "sSD-tfMBUJU",
+      "title": "15 FUNCIONES DE AGREGADO",
+      "duration_minutes": 10
+    },
+    {
+      "id": "0A1_bphqFSk",
+      "title": "16 ORDENAMIENTO",
+      "duration_minutes": 6
+    },
+    {
+      "id": "wOn0yDD_Y3o",
+      "title": "18 OPERADORES LÓGICOS 2",
+      "duration_minutes": 11
+    },
+    {
+      "id": "G3uoKX4zxKI",
+      "title": "19 LIKE / NOT LIKE",
+      "duration_minutes": 10
+    },
+    {
+      "id": "n5OFwRCvcek",
+      "title": "20 AGRUPAMIENTO (GROUP BY)",
+      "duration_minutes": 14
+    },
+    {
+      "id": "qLg5u8pM7ew",
+      "title": "21 HAVING",
+      "duration_minutes": 8
+    },
+    {
+      "id": "TlkblPtXeiQ",
+      "title": "22 ROLL UP",
+      "duration_minutes": 4
+    },
+    {
+      "id": "QYUfxQ2DAI8",
+      "title": "23 CUBE",
+      "duration_minutes": 6
+    },
+    {
+      "id": "POz8YMGB6HU",
+      "title": "24 DISTINCT",
+      "duration_minutes": 4
+    },
+    {
+      "id": "kO6D1Oy75SA",
+      "title": "25 TOP",
+      "duration_minutes": 4
+    },
+    {
+      "id": "voA3SB2uBz4",
+      "title": "26 INDICES",
+      "duration_minutes": 6
+    },
+    {
+      "id": "B_yXji2ud5c",
+      "title": "27 JOIN 01",
+      "duration_minutes": 9
+    },
+    {
+      "id": "yoxttM6TCQY",
+      "title": "28 JOIN 02",
+      "duration_minutes": 10
+    },
+    {
+      "id": "5sYfV6sk8XI",
+      "title": "29 JOIN 03",
+      "duration_minutes": 11
+    },
+    {
+      "id": "sb6C_GC60zw",
+      "title": "30 LEFT Y RIGHT JOIN",
+      "duration_minutes": 8
+    },
+    {
+      "id": "M_0fUqQ1WZk",
+      "title": "31 CROSS JOIN",
+      "duration_minutes": 5
+    },
+    {
+      "id": "k6an3Y7Z6yA",
+      "title": "32 UNION",
+      "duration_minutes": 5
+    },
+    {
+      "id": "CtP0DBerOjU",
+      "title": "33 CAMPOS O COLUMNAS CALCULADAS",
+      "duration_minutes": 5
+    },
+    {
+      "id": "PZO173EomYE",
+      "title": "34 SUB-CONSULTAS 01",
+      "duration_minutes": 10
+    },
+    {
+      "id": "hd9GXiewPNY",
+      "title": "35 SUB-CONSULTAS 02",
+      "duration_minutes": 13
+    },
+    {
+      "id": "30x2tivhVnQ",
+      "title": "36 SUB-CONSULTAS 03",
+      "duration_minutes": 11
+    },
+    {
+      "id": "N_4_VUTTOC8",
+      "title": "37 SUB-CONSULTAS 04",
+      "duration_minutes": 6
+    },
+    {
+      "id": "l8M1wep1c1I",
+      "title": "38 SUB-CONSULTAS 05",
+      "duration_minutes": 5
+    },
+    {
+      "id": "yuqwWqTpcgc",
+      "title": "39 SUB-CONSULTAS 06",
+      "duration_minutes": 5
+    },
+    {
+      "id": "CnKqBWxQLIY",
+      "title": "40 SUB-CONSULTAS 07",
+      "duration_minutes": 9
+    },
+    {
+      "id": "wjsJnai8FkY",
+      "title": "41 SUB-CONSULTAS 08",
+      "duration_minutes": 7
+    },
+    {
+      "id": "xy-LLyFo6X4",
+      "title": "42 SUB-CONSULTAS 09",
+      "duration_minutes": 13
+    },
+    {
+      "id": "_o1IxkHfQWM",
+      "title": "43 SUB-CONSULTAS 10",
+      "duration_minutes": 8
+    },
+    {
+      "id": "hWI8Qty0zxY",
+      "title": "44 SUB-CONSULTAS 11",
+      "duration_minutes": 7
+    },
+    {
+      "id": "qZeODPbmY5k",
+      "title": "45 SUB-CONSULTAS 12",
+      "duration_minutes": 11
+    },
+    {
+      "id": "Tv5XEU4FWtI",
+      "title": "46 SUB-CONSULTAS 13",
+      "duration_minutes": 6
+    },
+    {
+      "id": "Fd9lMoLSYRg",
+      "title": "47 SUB-CONSULTAS 14",
+      "duration_minutes": 10
+    },
+    {
+      "id": "kmqNPyvduIw",
+      "title": "48 VISTAS 1",
+      "duration_minutes": 10
+    },
+    {
+      "id": "co5XPDJU3QU",
+      "title": "49 VISTAS 2",
+      "duration_minutes": 7
+    },
+    {
+      "id": "k-j0P_pEAiY",
+      "title": "50 LISTAR TABLAS Y VISTAS",
+      "duration_minutes": 7
+    },
+    {
+      "id": "X1mzGTlaRlU",
+      "title": "51 VER CÓDIGO DE UNA VISTA",
+      "duration_minutes": 7
+    },
+    {
+      "id": "BAgrieDlPps",
+      "title": "52 MODIFICAR UNA VISTA",
+      "duration_minutes": 6
+    },
+    {
+      "id": "Y0r3HdjQJU8",
+      "title": "53 CREAR Y ELIMINAR UNA VISTA",
+      "duration_minutes": 5
+    },
+    {
+      "id": "BBJFEEq4uTM",
+      "title": "54 SELECT UTILIZANDO IF",
+      "duration_minutes": 7
+    },
+    {
+      "id": "3L_qH3T7j9Q",
+      "title": "55 PROCEDIMIENTO ALMACENADO SIMPLE",
+      "duration_minutes": 7
+    },
+    {
+      "id": "YRdFckVCQIg",
+      "title": "56 PROCEDIMIENTO ALMACENADO CON 1 PARAMETRO",
+      "duration_minutes": 9
+    },
+    {
+      "id": "tStybOaEfSA",
+      "title": "57 PROCEDIMIENTO ALMACENADO CON 2 PARÁMETROS",
+      "duration_minutes": 7
+    },
+    {
+      "id": "m_MVY5FiQac",
+      "title": "58 CREACIÓN Y ELIMINACIÓN DE PROCEDIMIENTOS ALMACENADOS",
+      "duration_minutes": 8
+    },
+    {
+      "id": "unQczO2MVYw",
+      "title": "59 PROCEDIMIENTO ALMACENADO CON PARAMETRO DE SALIDA",
+      "duration_minutes": 14
+    },
+    {
+      "id": "L2Bi9Ow2r3I",
+      "title": "60 PROCEDIMIENTO ALMACENADO CON PARAMETRO DE SALIDA 2",
+      "duration_minutes": 17
+    },
+    {
+      "id": "P_yQjbFu_GU",
+      "title": "61 PROCEDIMIENTO ALMACENADO UTILIZANDO CASE",
+      "duration_minutes": 8
+    },
+    {
+      "id": "5JxkxgbMnoE",
+      "title": "62 FUNCIÓN HOLA MUNDO",
+      "duration_minutes": 6
+    },
+    {
+      "id": "3ts9r0Aq11w",
+      "title": "63 FUNCIÓN IMPUESTOS (IVA)",
+      "duration_minutes": 6
+    },
+    {
+      "id": "ay8fHQ0kxRU",
+      "title": "64 FUNCIÓN CON 2 PARÁMETROS",
+      "duration_minutes": 12
+    },
+    {
+      "id": "hCmO4EV53OQ",
+      "title": "65 FUNCIÓN 2 PARAMETROS (PIB)",
+      "duration_minutes": 9
+    },
+    {
+      "id": "7tvW_gKZk0k",
+      "title": "66 FUNCIONES ANIDADAS",
+      "duration_minutes": 22
+    },
+    {
+      "id": "6ekMO1YsDMA",
+      "title": "67 FUNCIONES PARA OBTENER PORCENTAJES",
+      "duration_minutes": 11
+    },
+    {
+      "id": "VqwuXBwXEiw",
+      "title": "68 FUNCIÓN PARA CONTAR REGISTROS",
+      "duration_minutes": 11
+    },
+    {
+      "id": "IO5YbvlPNak",
+      "title": "69 FUNCIÓN CON DESVIACIÓN ESTÁNDAR",
+      "duration_minutes": 16
+    },
+    {
+      "id": "JIEtckdsoZw",
+      "title": "70 FUNCIÓN CON PROMEDIOS",
+      "duration_minutes": 16
+    },
+    {
+      "id": "BiFGEwIM7C4",
+      "title": "71 ALTER TABLE - ADD COLUMN",
+      "duration_minutes": 7
+    },
+    {
+      "id": "1DATfma9oO4",
+      "title": "72 UPDATE TABLE - MODIFICAR PRECIO",
+      "duration_minutes": 5
+    },
+    {
+      "id": "b-sgaSAEbc4",
+      "title": "73 UPDATE TABLE - MODIFICAR PRECIO 2",
+      "duration_minutes": 6
+    },
+    {
+      "id": "iDKuj0P9L24",
+      "title": "74 CREA TABLA, RELACIONES Y ACTUALIZA",
+      "duration_minutes": 13
+    },
+    {
+      "id": "-w7A9QHsVn0",
+      "title": "75 ACTUALIZA TABLA CON JOIN",
+      "duration_minutes": 7
+    },
+    {
+      "id": "DJChGm9K1Ns",
+      "title": "76 UPDATE CON FUNCIONES",
+      "duration_minutes": 11
+    },
+    {
+      "id": "hKHfQ4aH3j4",
+      "title": "77 ADMINISTRACIÓN 01",
+      "duration_minutes": 11
+    },
+    {
+      "id": "vOK-yqMh7WU",
+      "title": "78 ADMINISTRACION 02 (LOG FILE)",
+      "duration_minutes": 9
+    },
+    {
+      "id": "s5PKM1wNmuw",
+      "title": "79 ADMINISTRACION 03",
+      "duration_minutes": 8
+    },
+    {
+      "id": "JQnrO1eDR-0",
+      "title": "¿Cómo manejar contraseñas en MYSQL usando MD5, SHA y AES?",
+      "duration_minutes": 17
+    },
+    {
+      "id": "66EPKGguNgg",
+      "title": "🐘 SQL & PL/SQL Introduction | Beginner Friendly Tutorial",
+      "duration_minutes": 34
+    }
+  ]
+}

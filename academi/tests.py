@@ -46,6 +46,7 @@ class CatalogBootstrapTests(TestCase):
         with redirect_stdout(StringIO()):
             run(no_images=True, only_if_empty=True)
         self.assertEqual(Course.objects.count(), len(COURSES))
+
         Course.objects.filter(title=COURSES[-1]['title']).delete()
         with redirect_stdout(StringIO()):
             run(no_images=True, only_if_empty=True)
@@ -54,6 +55,21 @@ class CatalogBootstrapTests(TestCase):
         with redirect_stdout(StringIO()):
             run(no_images=True, only_if_empty=True)
         self.assertEqual(Course.objects.count(), len(COURSES))
+
+    def test_mysql_playlist_has_individual_videos_and_survives_repeated_bootstrap(self):
+        import json
+        from pathlib import Path
+        from scripts.load_emi_catalog import run
+        videos = json.loads((Path(__file__).resolve().parent.parent / 'scripts/data/mysql_playlist.json').read_text())['videos']
+        with redirect_stdout(StringIO()):
+            run(no_images=True, only_if_empty=True)
+            run(no_images=True, only_if_empty=True)
+        course = Course.objects.get(title='Bases de datos MySQL: consultas y modelado')
+        lessons = Lesson.objects.filter(module__course=course, lesson_type='video', is_published=True).order_by('module__order', 'order')
+        self.assertEqual(lessons.count(), 80)
+        self.assertEqual(list(lessons.values_list('video_url', flat=True)), [f'https://www.youtube.com/watch?v={v["id"]}' for v in videos])
+        self.assertEqual(list(lessons.values_list('title', flat=True)), [v['title'] for v in videos])
+
 
 
 class CertificateDownloadTests(TestCase):
@@ -452,3 +468,88 @@ class LearningCompletionTests(TestCase):
         self.assertEqual((web.status_code, api.status_code), (403, 403))
         self.assertFalse(LessonProgress.objects.filter(lesson=self.assignment, completed=True).exists())
         self.assertFalse(Certificate.objects.exists())
+
+
+@override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend')
+class RegistrationRegressionTests(TestCase):
+    def registration_data(self):
+        return {'role': 'student', 'email': 'registro@example.com', 'full_name': 'Ana Pérez',
+                'password1': 'ClaveSegura1!', 'password2': 'ClaveSegura1!', 'accept_terms': 'on'}
+
+    def test_registration_redirects_and_verification_link_activates_account(self):
+        from django.core import mail
+        import re
+        response = self.client.post(reverse('register'), self.registration_data())
+        self.assertRedirects(response, reverse('verify_pending'))
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertTrue(self.client.session['verification_email_sent'])
+        link = re.search(r'https?://[^\s"<>]+/verify-email/[^\s"<>]+', mail.outbox[0].body).group()
+        self.client.get(urlsplit(link).path)
+        self.assertTrue(User.objects.get(email='registro@example.com').email_verified)
+
+    @patch('academi.views.auth.send_verification_email', side_effect=TimeoutError('Proveedor no disponible'))
+    def test_failed_delivery_does_not_break_registration_or_claim_delivery(self, send):
+        response = self.client.post(reverse('register'), self.registration_data())
+        self.assertRedirects(response, reverse('verify_pending'))
+        self.assertFalse(self.client.session['verification_email_sent'])
+        page = self.client.get(reverse('verify_pending'))
+        self.assertContains(page, 'Reenviar correo de verificación')
+        self.assertNotContains(page, 'El servicio de correo aceptó el envío')
+
+    def test_terms_back_link_works_without_history(self):
+        self.assertContains(self.client.get(reverse('terms')), 'href="/"')
+        self.assertNotContains(self.client.get(reverse('terms')), 'javascript:history')
+
+
+class EmailTransportTests(SimpleTestCase):
+    @override_settings(BREVO_API_KEY='test-only', EMAIL_TIMEOUT=10)
+    @patch('academi.email_backends.requests.post')
+    def test_https_delivery_carries_html_and_pdf_and_checks_provider(self, post):
+        from django.core.mail import EmailMultiAlternatives
+        from academi.email_backends import BrevoBackend
+        post.return_value.status_code = 201
+        message = EmailMultiAlternatives('Prueba', 'Texto', 'AcadEMI <emisor@example.com>', ['destino@example.com'])
+        message.attach_alternative('<p>Hola</p>', 'text/html')
+        message.attach('certificado.pdf', b'%PDF-test', 'application/pdf')
+        self.assertEqual(BrevoBackend().send_messages([message]), 1)
+        payload = post.call_args.kwargs['json']
+        self.assertEqual(payload['htmlContent'], '<p>Hola</p>')
+        self.assertEqual(payload['attachment'][0]['name'], 'certificado.pdf')
+        self.assertEqual(post.call_args.kwargs['timeout'], (3, 10))
+        post.return_value.status_code = 401
+        with self.assertRaises(RuntimeError):
+            BrevoBackend().send_messages([message])
+        self.assertEqual(BrevoBackend(fail_silently=True).send_messages([message]), 0)
+
+    @override_settings(ON_RENDER=True)
+    @patch('django.core.mail.backends.smtp.EmailBackend.open')
+    def test_blocked_render_smtp_port_fails_without_waiting_for_network(self, smtp_open):
+        from academi.email_backends import SafeSMTPBackend
+        from django.core.exceptions import ImproperlyConfigured
+        with self.assertRaises(ImproperlyConfigured):
+            SafeSMTPBackend(port=587).open()
+        smtp_open.assert_not_called()
+
+
+class NavigationRegressionTests(TestCase):
+    def test_public_student_teacher_and_admin_pages_render(self):
+        from scripts.load_emi_catalog import run
+        with redirect_stdout(StringIO()):
+            run(no_images=True, only_if_empty=True)
+        for name in ['home', 'catalog', 'categories', 'search_courses', 'login', 'register', 'terms', 'password_reset_request']:
+            with self.subTest(page=name):
+                self.assertEqual(self.client.get(reverse(name)).status_code, 200)
+        for role in ['student', 'teacher', 'admin']:
+            user = User.objects.create_user(username=f'navigation_{role}', role=role, email_verified=True)
+            self.client.force_login(user)
+            pages = ['dashboard', 'profile', 'notifications', 'change_password', 'chatbot']
+            if role == 'student':
+                pages += ['my_courses', 'my_progress', 'my_grades', 'my_certificates', 'my_favorites', 'purchase_history', 'cart']
+            elif role == 'teacher':
+                pages += ['my_courses', 'create_course', 'mis_estudiantes', 'mis_resenas', 'teacher_coupons']
+            else:
+                pages += ['admin_users', 'admin_courses', 'admin_categories', 'admin_reports', 'admin_coupons', 'admin_payments', 'admin_certificates', 'admin_reports_generate']
+            for name in pages:
+                with self.subTest(role=role, page=name):
+                    self.assertEqual(self.client.get(reverse(name)).status_code, 200)
+            self.client.logout()

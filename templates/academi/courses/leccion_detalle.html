@@ -288,7 +288,7 @@
                                     <button type="submit"><i class="fas fa-trash"></i> Eliminar</button>
                                 </form>
                                 {% else %}
-                                <a href="javascript:void(0)" class="report-link" onclick="openReportModal('comment', {{ comment.id }})"><i class="fas fa-flag"></i> Reportar</a>
+                                <button type="button" class="report-link btn btn-link p-0 border-0" onclick="openReportModal('comment', {{ comment.id }})"><i class="fas fa-flag"></i> Reportar</button>
                                 {% endif %}
                             </div>
                         </div>
@@ -321,7 +321,7 @@
                         <p class="engagement-item-body mb-0">{{ question.content }}</p>
                         {% if question.student != request.user %}
                         <div class="engagement-item-actions">
-                            <a href="javascript:void(0)" class="report-link" onclick="openReportModal('question', {{ question.id }})"><i class="fas fa-flag"></i> Reportar</a>
+                            <button type="button" class="report-link btn btn-link p-0 border-0" onclick="openReportModal('question', {{ question.id }})"><i class="fas fa-flag"></i> Reportar</button>
                         </div>
                         {% endif %}
 

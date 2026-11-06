@@ -7,6 +7,7 @@ No elimina cursos, matrículas, pagos ni respuestas existentes.
 
 import argparse
 import html
+import json
 import os
 import re
 import sys
@@ -93,6 +94,82 @@ COURSES = [
          topic='segmentación, costos y punto de equilibrio', example='Con costo fijo Bs 1.000, precio Bs 20 y costo variable Bs 10 por unidad, calcula el punto de equilibrio.',
          answer='100 unidades.', video='https://www.youtube.com/watch?v=ShzPtU7IOXs', image='File:Business breakfast meeting. (54641476579).jpg',
          questions=[('CF=1000, P=20 y CV=10: equilibrio en unidades', '100', ['50', '200', '1000']), ('El margen de contribución unitario es', 'precio menos costo variable', ['precio más costo fijo', 'ingreso total', 'costo fijo / precio']), ('Segmentar mercado consiste en', 'agrupar clientes con características comunes', ['fijar un precio único', 'eliminar competencia', 'aumentar inventario'])]),
+    dict(title='Bases de datos MySQL: consultas y modelado', area='Ingeniería de Sistemas', level='intermediate', price=0,
+         topic='consultas SQL, relaciones, filtros y agregaciones en MySQL', example='Consulta las ventas por mes y ordena los meses por ingreso total.',
+         answer='Agrupa con YEAR(fecha), MONTH(fecha) y SUM(total), y ordena por periodo.', video='https://www.youtube.com/playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc', image='database server computer code',
+         questions=[('¿Qué cláusula filtra grupos agregados?', 'HAVING', ['WHERE', 'ORDER BY', 'LIMIT']), ('¿Qué garantiza una clave primaria?', 'identifica de forma única cada fila', ['ordena todas las filas', 'cifra la tabla', 'permite valores repetidos']), ('¿Qué operación combina filas relacionadas?', 'JOIN', ['DROP', 'ALTER', 'TRUNCATE'])]),
+    dict(title='Programación orientada a objetos con Java', area='Ingeniería de Sistemas', level='intermediate', price=59,
+         topic='clases, encapsulamiento, herencia e interfaces', example='Modela un sistema de préstamos con las clases Libro, Usuario y Prestamo.',
+         answer='Separa entidades, encapsula estado y define operaciones explícitas para prestar y devolver.', video='https://dev.java/learn/', image='java programming laptop',
+         questions=[('Una clase describe', 'estado y comportamiento de objetos', ['solo una variable', 'un archivo ejecutable', 'una consulta SQL']), ('Encapsular significa', 'controlar el acceso al estado interno', ['duplicar clases', 'evitar métodos', 'convertir todo en público']), ('Una interfaz define', 'un contrato de operaciones', ['una base de datos', 'un constructor obligatorio siempre', 'un paquete de imágenes'])]),
+    dict(title='Redes de computadores y direccionamiento IP', area='Ingeniería de Sistemas', level='beginner', price=49,
+         topic='modelo TCP/IP, subredes, DNS y diagnóstico de conectividad', example='Divide 192.168.10.0/24 en cuatro subredes del mismo tamaño.',
+         answer='Se necesitan /26; cada subred tiene 64 direcciones (62 hosts utilizables).', video='https://www.cloudflare.com/learning/network-layer/what-is-a-computer-network/', image='network cables server rack',
+         questions=[('DNS traduce principalmente', 'nombres de dominio a direcciones IP', ['MAC a voltaje', 'puertos a contraseñas', 'archivos a paquetes']), ('Una máscara /24 contiene', '24 bits de red', ['24 hosts', '24 routers', '24 bytes']), ('TCP ofrece', 'entrega ordenada y control de retransmisión', ['solo difusión local', 'direccionamiento físico', 'cifrado siempre'])]),
+    dict(title='Análisis de datos con Python y pandas', area='Ingeniería de Sistemas', level='intermediate', price=59,
+         topic='limpieza, transformación, agrupación y visualización de datos', example='Calcula el promedio mensual de mediciones y detecta valores faltantes.',
+         answer='Convierte la fecha, agrupa por mes, aplica mean y revisa isna antes del análisis.', video='https://pandas.pydata.org/docs/getting_started/intro_tutorials/', image='data analysis python charts',
+         questions=[('pandas representa datos tabulares con', 'DataFrame', ['Socket', 'Thread', 'Canvas']), ('Para agrupar filas por categoría se usa', 'groupby', ['merge_asof solamente', 'astype', 'rename']), ('Un valor faltante se identifica con', 'isna', ['isunique', 'isnumeric', 'isalpha'])]),
+    dict(title='Evaluación financiera de proyectos de inversión', area='Ingeniería Financiera', level='intermediate', price=69,
+         topic='flujo de caja, VAN, TIR y análisis de sensibilidad', example='Evalúa un proyecto con inversión inicial y flujos anuales descontados a una tasa dada.',
+         answer='Calcula VAN con los flujos netos y la tasa de descuento; acepta bajo los supuestos si VAN es positivo.', video='https://www.khanacademy.org/economics-finance-domain/core-finance/interest-tutorial', image='financial analysis investment calculator',
+         questions=[('El VAN descuenta', 'flujos futuros a valor presente', ['solo la inversión inicial', 'unidades producidas', 'impuestos a cero']), ('Una TIR es una tasa que hace', 'VAN igual a cero', ['ingresos iguales a unidades', 'costo fijo nulo', 'inflación negativa']), ('El análisis de sensibilidad evalúa', 'cómo cambian resultados al variar supuestos', ['el color del informe', 'solo el costo hundido', 'el número de páginas'])]),
+    dict(title='Estadística aplicada a decisiones financieras', area='Ingeniería Financiera', level='intermediate', price=59,
+         topic='distribuciones, intervalos, correlación y riesgo', example='Compara el rendimiento promedio y la desviación estándar de dos alternativas.',
+         answer='Considera retorno esperado junto con dispersión; una media mayor no implica menor riesgo.', video='https://www.openintro.org/book/os/', image='statistics finance charts',
+         questions=[('La desviación estándar mide', 'dispersión respecto a la media', ['tamaño de muestra únicamente', 'sesgo siempre', 'causalidad']), ('Correlación alta demuestra', 'asociación, no causalidad por sí sola', ['causalidad segura', 'igualdad de variables', 'ausencia de datos']), ('Un intervalo de confianza expresa', 'incertidumbre de una estimación', ['un valor exacto garantizado', 'el tamaño del universo siempre', 'una tasa bancaria'])]),
+    dict(title='Contabilidad de costos para ingeniería', area='Ingeniería Financiera', level='beginner', price=49,
+         topic='costos fijos y variables, costeo unitario y margen de contribución', example='Calcula el costo unitario para una producción dada y separa costos fijos de variables.',
+         answer='Suma costos del periodo según el método elegido y divide por unidades equivalentes producidas.', video='https://www.accountingcoach.com/managerial-accounting/explanation', image='accounting cost calculation',
+         questions=[('Un costo fijo total', 'no cambia con el volumen en el rango relevante', ['siempre es cero', 'es idéntico al costo variable', 'depende solo del precio']), ('Costo variable unitario suele', 'mantenerse aproximadamente constante en el rango relevante', ['duplicarse cada día', 'ser igual al costo fijo total', 'no existir']), ('Margen de contribución es', 'ventas menos costos variables', ['ventas menos activos', 'inventario más deuda', 'costo fijo por periodo'])]),
+    dict(title='Mecánica clásica: cinemática y dinámica', area='Ingeniería Mecánica', level='beginner', price=49,
+         topic='movimiento, leyes de Newton, trabajo y energía', example='Determina aceleración de un cuerpo de 10 kg bajo una fuerza neta de 30 N.',
+         answer='a=F/m=3 m/s².', video='https://www.khanacademy.org/science/physics/forces-newtons-laws', image='mechanics physics engineering motion',
+         questions=[('La segunda ley de Newton relaciona', 'fuerza neta, masa y aceleración', ['presión y temperatura solamente', 'carga y voltaje', 'caudal y área']), ('La unidad SI de energía es', 'joule', ['newton', 'pascal', 'ampere']), ('Si la fuerza neta es cero, la aceleración es', 'cero', ['máxima', 'igual a la masa', 'siempre negativa'])]),
+    dict(title='Termodinámica aplicada a sistemas energéticos', area='Ingeniería Mecánica', level='intermediate', price=69,
+         topic='primera ley, propiedades, ciclos y balances de energía', example='Formula un balance de energía para un volumen de control en régimen estacionario.',
+         answer='Iguala calor y trabajo netos con los cambios de entalpía, energía cinética y potencial.', video='https://www.nptel.ac.in/courses/112/105/112105123/', image='thermodynamics power plant turbine',
+         questions=[('La primera ley expresa conservación de', 'energía', ['masa molar', 'temperatura absoluta', 'entropía solamente']), ('En régimen estacionario, la masa dentro del volumen de control', 'no cambia con el tiempo', ['siempre es cero', 'crece sin límite', 'se vuelve energía']), ('La entalpía específica se define como', 'u + Pv', ['u − Pv', 'P/v', 'mgh'])]),
+    dict(title='Resistencia de materiales y diseño mecánico', area='Ingeniería Mecánica', level='intermediate', price=69,
+         topic='esfuerzo, deformación, flexión y factor de seguridad', example='Calcula el esfuerzo normal promedio de una barra sometida a carga axial.',
+         answer='σ=P/A, verificando unidades y comparando con el esfuerzo admisible.', video='https://mechref.engr.illinois.edu/sol/index.html', image='mechanical engineering steel stress testing',
+         questions=[('El esfuerzo normal promedio es', 'fuerza axial dividida entre área', ['área por longitud', 'masa por volumen', 'deformación por tiempo']), ('La deformación unitaria es', 'cambio de longitud dividido entre longitud inicial', ['fuerza por área', 'masa por aceleración', 'longitud por fuerza']), ('Un factor de seguridad mayor que uno indica', 'resistencia admisible superior a la solicitación calculada', ['falla inevitable', 'carga nula', 'ausencia de incertidumbre'])]),
+    dict(title='Mecánica de fluidos y pérdidas de carga', area='Ingeniería Civil', level='intermediate', price=69,
+         topic='continuidad, Bernoulli, régimen de flujo y pérdidas', example='Estima cómo cambia la velocidad al reducir el área de una tubería con caudal constante.',
+         answer='Por continuidad, la velocidad aumenta en proporción inversa al área.', video='https://www.nptel.ac.in/courses/112/105/112105171/', image='fluid mechanics water pipe flow',
+         questions=[('La ecuación de continuidad representa conservación de', 'masa', ['temperatura', 'presión únicamente', 'potencia eléctrica']), ('Número de Reynolds ayuda a clasificar', 'régimen de flujo', ['dureza del material', 'nivel topográfico', 'voltaje']), ('Una pérdida de carga representa', 'disipación de energía mecánica del flujo', ['creación de masa', 'aumento de caudal siempre', 'cambio de unidades'])]),
+    dict(title='Topografía y levantamientos de obra', area='Ingeniería Civil', level='beginner', price=49,
+         topic='nivelación, coordenadas, errores y replanteo', example='Calcula la diferencia de nivel entre dos puntos a partir de lecturas de mira.',
+         answer='Aplica altura de instrumento menos lectura adelante, conservando el signo y las unidades.', video='https://www.usgs.gov/programs/national-geospatial-program', image='land surveying total station construction',
+         questions=[('La nivelación determina principalmente', 'diferencias de altura', ['resistencia eléctrica', 'caudal de diseño', 'costo financiero']), ('Un cierre de nivelación sirve para', 'estimar el error de cierre', ['eliminar observaciones sin criterio', 'medir temperatura', 'definir materiales']), ('El replanteo traslada', 'puntos del diseño al terreno', ['datos del terreno al laboratorio solamente', 'costos a balances', 'una imagen a PDF'])]),
+    dict(title='Automatización industrial con PLC', area='Ingeniería Industrial', level='intermediate', price=69,
+         topic='entradas y salidas, lógica de control, secuencias y seguridad', example='Diseña una secuencia de arranque-parada con enclavamiento y paro de emergencia.',
+         answer='Prioriza el paro de emergencia y evita rearranque automático tras recuperar energía.', video='https://www.plcopen.org/technical-activities/', image='industrial PLC automation control panel',
+         questions=[('Una entrada digital suele representar', 'dos estados lógicos', ['cualquier número decimal sin conversión', 'solo temperatura', 'un archivo']), ('El enclavamiento evita', 'estados incompatibles de operación', ['toda medición', 'el mantenimiento', 'la lectura de sensores']), ('Un paro de emergencia debe', 'llevar el proceso a un estado seguro', ['iniciar automáticamente', 'anular protecciones', 'borrar el programa'])]),
+    dict(title='Máquinas eléctricas y transformadores', area='Ingeniería en Sistemas Electrónicos', level='intermediate', price=69,
+         topic='transformadores, motores, potencia y eficiencia', example='Estima la corriente primaria ideal de un transformador con potencia y tensión conocidas.',
+         answer='En el caso monofásico ideal, I=P/V; considera factor de potencia y pérdidas si corresponden.', video='https://www.nptel.ac.in/courses/108/105/108105155/', image='electric motor transformer engineering',
+         questions=[('Un transformador ideal cambia', 'niveles de tensión y corriente en CA', ['frecuencia de red', 'potencia activa creando energía', 'corriente continua a mecánica directamente']), ('La eficiencia es', 'potencia útil de salida sobre potencia de entrada', ['pérdidas sobre voltaje', 'corriente por resistencia solamente', 'frecuencia por área']), ('Un motor convierte principalmente', 'energía eléctrica en energía mecánica', ['masa en carga', 'calor en datos', 'presión en tensión eléctrica'])]),
+    dict(title='Gestión de proyectos de ingeniería', area='Ingeniería Industrial', level='beginner', price=49,
+         topic='alcance, cronograma, riesgos, costos e indicadores', example='Construye una matriz de riesgos con probabilidad, impacto, respuesta y responsable.',
+         answer='Prioriza riesgos por probabilidad e impacto, define respuesta y asigna un responsable verificable.', video='https://www.pmi.org/learning/library', image='engineering project planning team',
+         questions=[('La ruta crítica identifica', 'actividades que determinan la duración mínima del proyecto', ['todas las tareas opcionales', 'solo gastos indirectos', 'el equipo más grande']), ('Un riesgo debe incluir', 'probabilidad, impacto y respuesta', ['solo un nombre', 'una fecha pasada', 'un costo sin contexto']), ('Un indicador útil debe ser', 'medible y vinculado a un objetivo', ['ambiguo', 'imposible de actualizar', 'distinto cada día'])]),
+    dict(title='Seguridad industrial y análisis de riesgos', area='Ingeniería Industrial', level='beginner', price=49,
+         topic='identificación de peligros, evaluación de riesgos y controles', example='Analiza una tarea de mantenimiento y propone controles según la jerarquía de control.',
+         answer='Prioriza eliminar o sustituir el peligro, luego controles de ingeniería, administrativos y EPP.', video='https://www.osha.gov/safety-management', image='industrial safety equipment engineering',
+         questions=[('La jerarquía de controles prioriza primero', 'eliminación del peligro', ['equipo de protección personal', 'señalización solamente', 'capacitación solamente']), ('Un peligro es', 'una fuente o situación con potencial de daño', ['un control instalado', 'un indicador de producción', 'un permiso aprobado']), ('El EPP se considera', 'una barrera final complementaria', ['sustituto universal de controles', 'eliminación del peligro', 'garantía de riesgo cero'])]),
+    dict(title='Energías renovables y dimensionamiento fotovoltaico', area='Ingeniería Ambiental', level='beginner', price=59,
+         topic='recurso solar, potencia, energía, pérdidas y diseño preliminar', example='Estima energía diaria con potencia pico, horas solares y un factor de rendimiento.',
+         answer='Energía diaria aproximada = potencia pico × horas solares × factor de rendimiento.', video='https://www.nrel.gov/research/re-photovoltaics.html', image='solar panels renewable energy engineering',
+         questions=[('La potencia pico se expresa normalmente en', 'W o kW', ['kWh exclusivamente', 'amperios-hora solamente', 'metros']), ('La energía generada depende de', 'irradiación, potencia y pérdidas', ['solo el color del panel', 'la latitud sin clima', 'el voltaje nominal aislado']), ('Un inversor convierte', 'corriente continua en corriente alterna', ['energía en masa', 'frecuencia en irradiación', 'potencia en área'])]),
+    dict(title='Telecomunicaciones: modulación y ancho de banda', area='Ingeniería en Telecomunicaciones', level='intermediate', price=59,
+         topic='señales, modulación, espectro y capacidad de canal', example='Compara ancho de banda requerido y tasa de símbolos para un esquema digital.',
+         answer='Distingue tasa de bits, tasa de símbolos, ancho de banda y eficiencia espectral.', video='https://www.nptel.ac.in/courses/108/102/108102096/', image='telecommunications radio antenna signal',
+         questions=[('La modulación permite', 'adaptar una señal para su transmisión por un canal', ['eliminar toda interferencia', 'crear ancho de banda infinito', 'evitar codificación']), ('La frecuencia se mide en', 'hertz', ['joule', 'ohm', 'newton']), ('El ancho de banda describe', 'rango de frecuencias ocupado o disponible', ['potencia total siempre', 'distancia física', 'tamaño del archivo'])]),
+    dict(title='Economía de operaciones y cadena de suministro', area='Ingeniería Comercial', level='intermediate', price=59,
+         topic='inventarios, demanda, costos logísticos e indicadores', example='Compara el costo de mantener inventario con el costo de emitir pedidos.',
+         answer='Busca el lote económico bajo supuestos explícitos y verifica sensibilidad a demanda y costos.', video='https://ocw.mit.edu/courses/15-761-introduction-to-operations-management-spring-2004/', image='supply chain warehouse logistics',
+         questions=[('El inventario de seguridad busca', 'amortiguar incertidumbre de demanda o reposición', ['aumentar obsolescencia', 'eliminar pronósticos', 'reemplazar calidad']), ('El tiempo de ciclo mide', 'duración de un proceso definido', ['precio unitario', 'tamaño del almacén', 'número de proveedores']), ('Un pronóstico debe evaluarse con', 'error frente a observaciones reales', ['solo intuición', 'margen bruto', 'velocidad del equipo'])]),
 ]
 
 
@@ -164,6 +241,36 @@ def sync_bundled_images():
                 default_storage.save(image_path, File(source))
 
 
+def sync_mysql_playlist():
+    """Un video público por lección; conserva progresos y títulos editados fuera de este curso."""
+    course = Course.objects.filter(title='Bases de datos MySQL: consultas y modelado').first()
+    if not course:
+        return
+    data = json.loads((ROOT / 'scripts/data/mysql_playlist.json').read_text())
+    labels = ['Introducción y creación de bases de datos', 'Consultas y operadores',
+              'Índices y relaciones entre tablas', 'Consultas y funciones SQL',
+              'Funciones y programación SQL', 'Procedimientos y automatización',
+              'Operaciones avanzadas', 'Administración y recursos complementarios']
+    with transaction.atomic():
+        course.modules.filter(title='Fundamentos').update(order=0)
+        course.modules.filter(title='Aplicación y evaluación').update(order=9)
+        Lesson.objects.filter(module__course=course, video_url__contains='playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc').update(is_published=False)
+        for index, video in enumerate(data['videos']):
+            block = index // 10
+            module, _ = Module.objects.update_or_create(course=course,
+                title=f'{block + 1:02d}. {labels[block]}', defaults={
+                    'order': block + 1, 'description': f'Videos {block * 10 + 1} a {min((block + 1) * 10, len(data["videos"]))} del playlist MYSQL de {data["author"]}.'})
+            note = f'Clase de {data["author"]}. Fuente: {data["channel"]}. Reproduce el video y practica sus consultas en tu propia base de datos.'
+            if 'MD5' in video['title']:
+                note += ' Nota de actualización: MD5 y SHA sin un esquema especializado no son adecuados para almacenar contraseñas; utiliza algoritmos modernos como Argon2id.'
+            Lesson.objects.update_or_create(module=module,
+                video_url=f'https://www.youtube.com/watch?v={video["id"]}', defaults={
+                    'title': video['title'][:200], 'description': f'Clase {index + 1} de {len(data["videos"])} · {data["author"]}',
+                    'content': note, 'lesson_type': 'video', 'order': index % 10 + 1,
+                    'is_free': True, 'is_published': True, 'duration_minutes': video['duration_minutes']})
+    print(f'MySQL: {len(data["videos"])} videos cargados como lecciones individuales.')
+
+
 def run(archive_legacy=False, no_images=False, only_if_empty=False):
     sync_bundled_images()
     existing_titles = set()
@@ -172,6 +279,7 @@ def run(archive_legacy=False, no_images=False, only_if_empty=False):
             title__in=[item['title'] for item in COURSES],
         ).values_list('title', flat=True))
         if len(existing_titles) == len(COURSES):
+            sync_mysql_playlist()
             print('El catálogo inicial ya está completo; no se modifica.')
             return
     teacher, _ = User.objects.get_or_create(username='equipo_academi', defaults={
@@ -207,6 +315,21 @@ def run(archive_legacy=False, no_images=False, only_if_empty=False):
                     attribution.append(credit)
             except (requests.RequestException, ValueError) as exc:
                 print(f'Imagen pendiente para {item["title"]}: {exc}')
+        if not image_path:
+            # Fotos existentes del mismo ámbito, reutilizadas con su atribución.
+            fallback = {
+                'Ingeniería de Sistemas': 'bases-de-datos-y-sql-para-proyectos',
+                'Ingeniería Financiera': 'matematica-financiera-aplicada',
+                'Ingeniería Mecánica': 'control-y-sensores-para-mecatronica',
+                'Ingeniería Civil': 'mecanica-de-estructuras-y-cargas',
+                'Ingeniería Industrial': 'procesos-y-mejora-continua',
+                'Ingeniería en Sistemas Electrónicos': 'circuitos-electricos-fundamentales',
+                'Ingeniería Ambiental': 'hidrologia-y-gestion-del-agua',
+                'Ingeniería en Telecomunicaciones': 'senales-y-telecomunicaciones',
+                'Ingeniería Comercial': 'analisis-de-mercados-y-costos',
+            }.get(item['area'])
+            if fallback and (ROOT / 'media/courses' / f'emi-{fallback}.jpg').is_file():
+                image_path = f'courses/emi-{fallback}.jpg'
         with transaction.atomic():
             defaults = {'description': (
                 f'Aprende {item["topic"]} con casos de ingeniería, ejercicios resueltos y una evaluación final. '
@@ -260,6 +383,7 @@ def run(archive_legacy=False, no_images=False, only_if_empty=False):
             for credit in attribution:
                 if credit.split(' | ')[0] not in known:
                     f.write(credit + '\n')
+    sync_mysql_playlist()
     print(f'Catálogo actualizado: {len(COURSES)} cursos, {Course.objects.filter(status="published").count()} publicados.')
 
 

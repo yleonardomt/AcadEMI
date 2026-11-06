@@ -19,11 +19,13 @@ servidor: crea usuarios de prueba con contraseñas conocidas.
 
 ## 2. Correo para registro y recuperación
 
-Render Free bloquea SMTP en los puertos 25, 465 y 587. Una opción gratuita es
-[Brevo](https://www.brevo.com/), con su servidor SMTP en el puerto 2525.
-Crea una cuenta Free, verifica un remitente y genera una clave SMTP. Sin un
-servicio de correo configurado, el registro y la recuperación de contraseña
-no podrán enviar mensajes.
+Render Free bloquea SMTP en los puertos 25, 465 y 587, incluido el envío habitual
+de Gmail. Se integra [Brevo](https://www.brevo.com/) por su API HTTPS (puerto 443).
+Crea una cuenta Free, añade un remitente en Configuración → Remitentes y dominios,
+confírmalo con el código recibido y genera una clave en SMTP y API → Claves API.
+Completa la activación transaccional o autenticación de dominio si Brevo la solicita.
+Sin un proveedor activo, se crea la cuenta y se muestra la verificación pendiente;
+el sistema informa el fallo y permite reenviar cuando el servicio esté configurado.
 
 ## 3. Formulario de Render
 
@@ -60,12 +62,15 @@ Para correo, añade además:
 
 | Clave | Valor |
 | --- | --- |
-| `EMAIL_HOST` | `smtp-relay.brevo.com` |
-| `EMAIL_PORT` | `2525` |
-| `EMAIL_USE_TLS` | `True` |
-| `EMAIL_HOST_USER` | Usuario SMTP mostrado por Brevo |
-| `EMAIL_HOST_PASSWORD` | Clave SMTP de Brevo |
+| `BREVO_API_KEY` | Clave **API** de Brevo; no es la contraseña de Gmail ni una clave SMTP |
+| `EMAIL_BACKEND` | `academi.email_backends.BrevoBackend` (opcional si no existía esta variable; se elige automáticamente al definir la clave) |
+| `EMAIL_TIMEOUT` | `10` segundos |
 | `DEFAULT_FROM_EMAIL` | Remitente verificado en Brevo, por ejemplo `AcadEMI <correo-verificado@ejemplo.com>` |
+
+Guarda las variables en Render y espera el despliegue. En la cuenta ya creada,
+abre `/verify-pending/`, pulsa **Reenviar correo de verificación** y verifica tanto
+la recepción como el estado del envío en los logs transaccionales de Brevo.
+No uses el backend de consola para validar entrega: no envía correos.
 
 Para el almacenamiento S3 de Neon o Supabase, añade estas variables:
 

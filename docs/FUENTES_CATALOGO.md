@@ -1,5 +1,21 @@
 # Fuentes del catálogo
 
+## Playlist MYSQL del docente
+
+Playlist: https://www.youtube.com/playlist?list=PLdq5lNsLUFYB79viP4Uc_7NRhdt4UTBlc
+
+Canal mostrado por YouTube: **Osamu Yokosaki**, https://www.youtube.com/@oyokosaki.
+El usuario comunicó autorización del docente para enlazar el contenido. Se
+conservan títulos y orden de los 80 videos públicos disponibles al importar;
+cada video se reproduce desde YouTube en una lección independiente. El listado
+con duraciones está en `scripts/data/mysql_playlist.json`. No se descargan ni
+se redistribuyen los videos. Se incluye una nota de actualización en la clase
+sobre hashes de contraseñas que presenta MD5/SHA.
+
+Los cursos añadidos reutilizan fotografías ya atribuidas del mismo ámbito
+cuando no tienen una fotografía específica; la descripción de las licencias
+originales sigue siendo aplicable.
+
 La oferta de carreras se contrastó con la [Unidad Académica La Paz de la EMI](https://emi.edu.bo/index.php/universidad/unidades-academicas/lapaz). AcadEMI es independiente y estos cursos no son asignaturas oficiales de la EMI.
 
 ## Imágenes
