@@ -248,9 +248,9 @@ def sync_mysql_playlist():
         return
     data = json.loads((ROOT / 'scripts/data/mysql_playlist.json').read_text())
     labels = ['Introducción y creación de bases de datos', 'Consultas y operadores',
-              'Índices y relaciones entre tablas', 'Consultas y funciones SQL',
-              'Funciones y programación SQL', 'Procedimientos y automatización',
-              'Operaciones avanzadas', 'Administración y recursos complementarios']
+              'Agrupación, índices y JOIN', 'UNION y subconsultas',
+              'Subconsultas y vistas', 'Vistas y procedimientos almacenados',
+              'Funciones y ALTER TABLE', 'Actualización, administración y complementos']
     with transaction.atomic():
         course.modules.filter(title='Fundamentos').update(order=0)
         course.modules.filter(title='Aplicación y evaluación').update(order=9)
