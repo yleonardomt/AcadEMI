@@ -81,7 +81,10 @@ body.landing-page .main-content {
 .navbar-brand {
     font-weight: 800;
     font-size: 24px;
-    color: var(--nav-heading);
+    color: #fff;
+    background: var(--primary-gradient);
+    padding: 4px 8px;
+    border-radius: 10px;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -89,15 +92,25 @@ body.landing-page .main-content {
 }
 
 .brand-logo { display: block; width: 36px; height: 36px; flex: none; }
-.brand-wordmark { font-weight: 800; letter-spacing: -.055em; white-space: nowrap; }
-.brand-wordmark strong { color: #ad7c00; font-weight: 800; }
-:root[data-theme="dark"] .brand-wordmark strong { color: var(--secondary); }
+.brand-wordmark { color: #fff; font-weight: 800; letter-spacing: -.055em; white-space: nowrap; }
+.brand-wordmark strong { color: var(--secondary); font-weight: 800; }
 .navbar-brand .brand-logo { width: 36px; height: 36px; }
 .offcanvas-title .brand-logo { display: inline-block; vertical-align: middle; margin-right: 7px; width: 34px; height: 34px; }
 
 .navbar-brand span {
-    color: var(--nav-heading);
+    color: #fff;
 }
+
+.offcanvas-title:has(.brand-wordmark) {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 8px;
+    border-radius: 10px;
+    background: var(--primary-gradient);
+    color: #fff;
+}
+.offcanvas-title:has(.brand-wordmark) .brand-logo { margin-right: 0; }
 
 .brand-badge {
     font-size: 10px;
@@ -253,6 +266,10 @@ body.landing-page .main-content {
 }
 
 .user-name {
+    max-width: 144px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-weight: 500;
     font-size: 14px;
     color: var(--nav-text);
@@ -260,7 +277,8 @@ body.landing-page .main-content {
 
 .btn-nav {
     border-radius: var(--border-radius-pill);
-    padding: 8px 22px;
+    padding: 8px 16px;
+    white-space: nowrap;
     font-weight: 600;
     font-size: 13px;
     transition: var(--transition);
@@ -269,6 +287,9 @@ body.landing-page .main-content {
     gap: 8px;
     text-decoration: none;
 }
+
+.navbar-nav > .nav-auth-item { flex-shrink: 0; }
+.navbar-nav > .nav-auth-item + .nav-auth-item { margin-inline-start: 12px; }
 
 .dropdown-menu {
     border-radius: var(--border-radius-lg);
@@ -491,13 +512,14 @@ body.landing-page .main-content {
     color: var(--white);
 }
 
-@media (max-width: 992px) {
+@media (max-width: 1199.98px) {
     .navbar-nav { padding-top: 10px; }
     .nav-item { width: 100%; }
     .nav-link { padding: 10px 16px; justify-content: center; }
     .nav-link::after { display: none; }
     .icon-link { justify-content: center; }
     .btn-nav { width: 100%; justify-content: center; margin: 4px 0; }
+    .navbar-nav > .nav-auth-item + .nav-auth-item { margin-inline-start: 0; margin-top: 8px; }
     .dropdown-menu {
         margin-top: 0;
         box-shadow: none;
@@ -513,7 +535,7 @@ body.landing-page .main-content {
     .navbar-toggler:not(.me-2) { display: none !important; }
 }
 
-@media (min-width: 993px) {
+@media (min-width: 1200px) {
     .navbar-toggler.me-2 { display: none; }
     .btn-nav-mobile-login { display: none; }
 }
@@ -541,7 +563,7 @@ body.landing-page .main-content {
 /* En celular la marca queda pegada al menú y, para quien no ha iniciado
    sesión, aparece un acceso rápido "Ingresar" a la derecha (el resto de
    la navegación vive en el menú lateral). */
-@media (max-width: 992px) {
+@media (max-width: 1199.98px) {
     .navbar-brand { margin-right: auto; }
     .btn-nav-mobile-login {
         display: inline-flex;
@@ -571,6 +593,8 @@ body.landing-page .main-content {
     .navbar { padding: 8px 0; }
     .navbar-brand { font-size: 18px; }
     .navbar-brand .brand-logo { width: 30px; height: 30px; }
+    .navbar-brand { gap: 6px; padding: 4px 6px; }
+    .btn-nav-mobile-login { padding: 8px 10px; gap: 6px; font-size: 13px; }
     .navbar::after { height: 2px; }
 }
 
