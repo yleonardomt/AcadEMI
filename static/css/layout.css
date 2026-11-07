@@ -81,10 +81,7 @@ body.landing-page .main-content {
 .navbar-brand {
     font-weight: 800;
     font-size: 24px;
-    color: #fff;
-    background: var(--primary-gradient);
-    padding: 4px 8px;
-    border-radius: 10px;
+    color: var(--nav-heading);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -92,25 +89,15 @@ body.landing-page .main-content {
 }
 
 .brand-logo { display: block; width: 36px; height: 36px; flex: none; }
-.brand-wordmark { color: #fff; font-weight: 800; letter-spacing: -.055em; white-space: nowrap; }
-.brand-wordmark strong { color: var(--secondary); font-weight: 800; }
+.brand-wordmark { font-weight: 800; letter-spacing: -.055em; white-space: nowrap; }
+.brand-wordmark strong { color: #ad7c00; font-weight: 800; }
+:root[data-theme="dark"] .brand-wordmark strong { color: var(--secondary); }
 .navbar-brand .brand-logo { width: 36px; height: 36px; }
 .offcanvas-title .brand-logo { display: inline-block; vertical-align: middle; margin-right: 7px; width: 34px; height: 34px; }
 
 .navbar-brand span {
-    color: #fff;
+    color: var(--nav-heading);
 }
-
-.offcanvas-title:has(.brand-wordmark) {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 8px;
-    border-radius: 10px;
-    background: var(--primary-gradient);
-    color: #fff;
-}
-.offcanvas-title:has(.brand-wordmark) .brand-logo { margin-right: 0; }
 
 .brand-badge {
     font-size: 10px;
@@ -593,7 +580,6 @@ body.landing-page .main-content {
     .navbar { padding: 8px 0; }
     .navbar-brand { font-size: 18px; }
     .navbar-brand .brand-logo { width: 30px; height: 30px; }
-    .navbar-brand { gap: 6px; padding: 4px 6px; }
     .btn-nav-mobile-login { padding: 8px 10px; gap: 6px; font-size: 13px; }
     .navbar::after { height: 2px; }
 }
