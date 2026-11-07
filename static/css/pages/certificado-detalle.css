@@ -47,7 +47,7 @@
 .certificate-student {
     font-size: 32px;
     font-weight: var(--font-weight-bold);
-    color: var(--primary);
+    color: var(--primary-text);
     margin: var(--space-3) 0;
 }
 
@@ -79,4 +79,9 @@
     .navbar, .footer, .certificate-actions, .page-header { display: none !important; }
     .main-content { padding: 0 !important; }
     .certificate-diploma { box-shadow: none; border-color: var(--primary-lighter); }
+    body { background: #fff !important; color: #1a202c !important; }
+    .certificate-diploma { background: #fff; color: #1a202c; }
+    .certificate-student { color: #02167f; }
+    .certificate-course, .certificate-meta strong { color: #1a202c; }
+    .certificate-heading, .certificate-meta { color: #59677d; }
 }

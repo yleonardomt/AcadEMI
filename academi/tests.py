@@ -52,6 +52,9 @@ class CatalogBootstrapTests(TestCase):
             run(no_images=True, only_if_empty=True)
         self.assertEqual(Course.objects.count(), len(COURSES))
         self.assertEqual(Course.objects.exclude(image='').count(), len(COURSES))
+        self.assertFalse(Course.objects.filter(is_free=True).exists())
+        self.assertFalse(Course.objects.filter(price__lt=100).exists())
+        self.assertFalse(Course.objects.filter(price__gt=150).exists())
         with redirect_stdout(StringIO()):
             run(no_images=True, only_if_empty=True)
         self.assertEqual(Course.objects.count(), len(COURSES))
@@ -66,7 +69,7 @@ class CatalogBootstrapTests(TestCase):
             run(no_images=True, only_if_empty=True)
         course = Course.objects.get(title='Bases de datos MySQL: consultas y modelado')
         self.assertFalse(course.is_free)
-        self.assertEqual(course.price, 59)
+        self.assertEqual(course.price, 150)
         lessons = Lesson.objects.filter(module__course=course, lesson_type='video', is_published=True).order_by('module__order', 'order')
         self.assertEqual(lessons.count(), 80)
         self.assertEqual(lessons.filter(is_free=True).count(), 1)
@@ -556,3 +559,28 @@ class NavigationRegressionTests(TestCase):
                 with self.subTest(role=role, page=name):
                     self.assertEqual(self.client.get(reverse(name)).status_code, 200)
             self.client.logout()
+
+
+class CatalogPricingMigrationTests(TestCase):
+    def test_new_catalog_prices_preserve_previous_orders_and_learning_progress(self):
+        import importlib
+        from types import SimpleNamespace
+        from django.apps import apps
+        from django.db import connection
+        from .models import PaymentItem
+        teacher = User.objects.create_user(username='pricing_teacher', role='teacher')
+        student = User.objects.create_user(username='pricing_student')
+        course = Course.objects.create(title='Bases de datos MySQL: consultas y modelado',
+            teacher=teacher, price=59, is_free=False, status='published')
+        enrollment = Enrollment.objects.create(student=student, course=course,
+            status='in_progress', progress_percentage=25)
+        payment = Payment.objects.create(student=student, amount=59, final_amount=59,
+            payment_method='demo', status='completed')
+        line = PaymentItem.objects.create(payment=payment, course=course, price=59, final_price=59)
+        migration = importlib.import_module('academi.migrations.0013_catalog_prices_range')
+        migration.update_prices(apps, SimpleNamespace(connection=connection))
+        course.refresh_from_db(); payment.refresh_from_db(); line.refresh_from_db(); enrollment.refresh_from_db()
+        self.assertEqual(course.price, 150)
+        self.assertEqual(payment.final_amount, 59)
+        self.assertEqual(line.final_price, 59)
+        self.assertEqual(enrollment.progress_percentage, 25)

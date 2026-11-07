@@ -54,7 +54,7 @@
 }
 
 .modal .btn-success {
-    background: linear-gradient(135deg, #10b981, #059669) !important;
+    background: linear-gradient(135deg, #087a52, #056440) !important;
     color: white !important;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
 }
@@ -77,13 +77,13 @@
 }
 
 .modal .btn-outline-secondary:hover {
-    background: #f7fafc !important;
+    background: var(--bg-light) !important;
     border-color: #cbd5e0 !important;
     transform: translateY(-2px);
 }
 
 .modal .btn-danger {
-    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    background: linear-gradient(135deg, #b42335, #921b2a) !important;
     color: white !important;
     box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
 }
@@ -119,3 +119,6 @@
         min-width: 100px !important;
     }
 }
+
+:root[data-theme="dark"] .modal .btn-close { filter: invert(1) grayscale(1) brightness(2); }
+.modal .modal-header, .modal .modal-footer { border-color: var(--border-color); }

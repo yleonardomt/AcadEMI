@@ -6,7 +6,7 @@
     overflow: hidden;
 }
 .form-header {
-    background: var(--primary-lighter);
+    background: var(--bg-light);
     padding: 20px 28px;
     border-bottom: 3px solid var(--primary);
 }
@@ -20,7 +20,7 @@
     margin-bottom: 6px;
 }
 .form-label .required {
-    color: var(--danger);
+    color: var(--danger-text);
     margin-left: 2px;
 }
 .form-control, .form-select {
@@ -131,7 +131,7 @@
     font-weight: 700;
 }
 .header-title {
-    color: var(--primary-dark);
+    color: var(--primary-text);
     font-weight: 700;
     margin-bottom: 0;
     font-size: 1.25rem;
@@ -151,7 +151,7 @@
     padding: 16px 20px;
 }
 .deadline-section {
-    background: var(--primary-lighter);
+    background: var(--bg-light);
     border: 1px solid var(--primary-light);
     border-radius: 8px;
     padding: 16px 20px;

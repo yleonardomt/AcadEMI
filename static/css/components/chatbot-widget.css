@@ -218,7 +218,7 @@
 }
 
 .chatbot-quick button:hover {
-    background: var(--primary-lighter);
+    background: var(--bg-light);
 }
 
 .chatbot-panel-footer {
@@ -231,6 +231,7 @@
 
 .chatbot-panel-footer input {
     flex: 1;
+    min-width: 0;
     border: 1px solid var(--gray-light);
     border-radius: var(--border-radius-pill);
     padding: 8px 14px;

@@ -118,6 +118,7 @@
     border-left: none;
     padding: 12px 28px;
     background: var(--primary-gradient);
+    background-color: var(--primary);
     color: var(--white);
     font-weight: 600;
     border-radius: 0 var(--border-radius-pill) var(--border-radius-pill) 0;

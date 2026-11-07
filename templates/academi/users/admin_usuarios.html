@@ -127,8 +127,7 @@
                                     </td>
                                     <td>{{ u.email }}</td>
                                     <td>
-                                        <span class="badge" style="background: 
-                                            {% if u.role == 'admin' %}#ef5350{% elif u.role == 'teacher' %}#f59e0b{% else %}#3b82f6{% endif %}; color: white; padding: 6px 12px; border-radius: 50px;">
+                                        <span class="badge badge-role role-{{ u.role }}">
                                             <i class="fas fa-user-tag"></i> {{ u.get_role_display }}
                                         </span>
                                     </td>

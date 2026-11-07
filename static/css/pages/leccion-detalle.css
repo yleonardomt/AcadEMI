@@ -24,7 +24,7 @@
     margin: 0 0 8px 0;
 }
 .lesson-header .breadcrumb a {
-    color: var(--primary);
+    color: var(--primary-text);
     text-decoration: none;
 }
 .lesson-header .breadcrumb a:hover {
@@ -39,7 +39,7 @@
     font-size: 14px;
 }
 .lesson-header .lesson-meta i {
-    color: var(--primary);
+    color: var(--primary-text);
 }
 .lesson-content {
     font-size: 16px;

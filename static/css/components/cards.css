@@ -15,7 +15,7 @@
 
 .card:hover {
     box-shadow: var(--shadow-hover);
-    transform: translateY(-2px);
+
 }
 
 .card-body {
@@ -62,3 +62,8 @@
         padding: var(--space-4) !important;
     }
 }
+
+/* Las tarjetas con tintes claros conservan texto oscuro en ambos temas. */
+.stat-card[style*="background:"] { color: #1a202c; }
+.stat-card[style*="background:"] :is(.text-muted, p) { color: #4b5563 !important; }
+.stat-card[style*="background:"] h4 { color: #02167f; }

@@ -44,18 +44,18 @@
 }
 
 .btn-group .btn-outline-danger:hover {
-    background: var(--danger);
+    background: #b42335;
     color: var(--white);
 }
 
 .btn-group .btn-outline-success:hover {
-    background: var(--success);
+    background: #087a52;
     color: var(--white);
 }
 
 .btn-group .btn-outline-warning:hover {
     background: var(--warning);
-    color: var(--white);
+    color: #172033;
 }
 
 .btn-group .btn-outline-primary:hover {

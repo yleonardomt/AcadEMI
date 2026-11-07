@@ -140,7 +140,7 @@
 }
 
 .notif-badge-new {
-    background: var(--success);
+    background: #087a52;
     color: var(--white);
     font-size: 12px;
     font-weight: 600;

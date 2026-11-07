@@ -1,7 +1,7 @@
 /* ============================================
    FORMULARIOS
    ============================================ */
-.form-control {
+.form-control, .form-select {
     height: var(--input-height);
     padding: var(--input-padding-y) var(--input-padding-x);
     border: 2px solid var(--input-border);
@@ -21,7 +21,7 @@
     color: var(--ink-muted);
 }
 
-.form-control:focus {
+.form-control:focus, .form-select:focus {
     border-color: var(--input-focus);
     box-shadow: 0 0 0 3px rgba(2, 22, 127, 0.08);
     /* Bootstrap define su propio .form-control:focus con background-color
@@ -32,6 +32,25 @@
     background: var(--surface);
     color: var(--ink);
 }
+
+textarea.form-control {
+    height: auto;
+    min-height: 128px;
+    line-height: 1.6;
+    resize: vertical;
+}
+
+.form-select { padding-right: 40px; cursor: pointer; }
+.form-select option { background: var(--surface); color: var(--ink); }
+.form-control:disabled, .form-control[readonly], .form-select:disabled {
+    background-color: var(--bg-light);
+    color: var(--ink-muted);
+    opacity: 1;
+}
+.input-group-text { color: var(--ink-muted); background: var(--bg-light); border-color: var(--input-border); }
+.form-text, .form-control::file-selector-button { color: var(--ink-muted); }
+.form-control::file-selector-button { background: var(--bg-light); }
+.invalid-feedback { color: var(--danger-text); }
 
 .form-control.is-invalid {
     border-color: var(--danger);
@@ -44,7 +63,7 @@
 }
 
 .form-label .required {
-    color: var(--danger);
+    color: var(--danger-text);
     margin-left: 4px;
 }
 
@@ -139,3 +158,8 @@
         transform: translateY(0);
     }
 }
+
+.form-select[multiple] { height: auto; min-height: 128px; }
+
+.form-control:hover:not(:disabled):not([readonly])::file-selector-button { background: var(--bg-light); color: var(--ink); }
+input:-webkit-autofill { -webkit-text-fill-color: var(--ink); caret-color: var(--ink); box-shadow: 0 0 0 1000px var(--surface) inset; }

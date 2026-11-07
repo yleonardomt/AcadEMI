@@ -61,7 +61,7 @@
 }
 
 .cart-header h2 i {
-    color: var(--primary);
+    color: var(--primary-text);
 }
 
 .cart-badge {
@@ -131,13 +131,13 @@
 
 .cart-item .item-meta i {
     width: 16px;
-    color: var(--primary);
+    color: var(--primary-text);
 }
 
 .cart-item .item-price {
     font-weight: 700;
     font-size: 17px;
-    color: var(--primary);
+    color: var(--primary-text);
     white-space: nowrap;
 }
 
@@ -200,7 +200,7 @@
     border-top: 2px solid var(--gray-light);
     padding-top: 16px;
     margin-top: 8px;
-    color: var(--primary);
+    color: var(--primary-text);
 }
 
 .summary-row.discount {

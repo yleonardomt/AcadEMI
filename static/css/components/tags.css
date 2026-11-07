@@ -37,23 +37,27 @@
     text-transform: capitalize;
 }
 .badge-status.published {
-    background: var(--success);
+    background: #087a52;
     color: var(--white);
 }
 .badge-status.draft {
-    background: var(--warning);
-    color: var(--white);
+    background: #fef3c7;
+    color: #805600;
 }
 .badge-status.pending {
-    background: var(--info);
+    background: #1d4ed8;
     color: var(--white);
 }
 .badge-status.rejected,
 .badge-status.revoked {
-    background: var(--danger);
+    background: #b42335;
     color: var(--white);
 }
 .badge-status.archived {
-    background: var(--gray);
+    background: #59677d;
     color: var(--white);
 }
+
+.badge-role { padding: 6px 12px; border-radius: var(--border-radius-pill); background: #1d4ed8; color: #fff; }
+.badge-role.role-admin { background: #b42335; }
+.badge-role.role-teacher { background: #805600; }

@@ -18,7 +18,7 @@
                         <i class="{{ icono|default:'fas fa-tasks' }}" style="color: var(--primary); font-size: 24px;"></i>
                     </div>
                     <div>
-                        <h4 class="fw-bold mb-0" style="color: var(--primary-dark);">{{ titulo_pagina|default:"Crear cuestionario" }}</h4>
+                        <h4 class="fw-bold mb-0" style="color: var(--primary-text);">{{ titulo_pagina|default:"Crear cuestionario" }}</h4>
                         <p class="text-muted mb-0">
                             <i class="far fa-folder"></i> Módulo: <strong>{{ module.title }}</strong>
                             <span class="mx-1">|</span>
@@ -149,10 +149,10 @@
                             </div>
                         </div>
 
-                        <div class="mb-3 p-3 rounded" style="background: var(--primary-lighter); border: 1px solid var(--primary-light);">
+                        <div class="mb-3 p-3 rounded" style="background: var(--bg-light); border: 1px solid var(--border-color);">
                             <div class="d-flex align-items-center gap-2">
                                 <i class="fas fa-info-circle" style="color: var(--primary);"></i>
-                                <span class="fw-semibold" style="color: var(--primary-dark);">Nota:</span>
+                                <span class="fw-semibold" style="color: var(--primary-text);">Nota:</span>
                                 <span class="text-muted small">{{ nota|default:"Las preguntas y opciones se guardan al crear el cuestionario." }}</span>
                             </div>
                         </div>
