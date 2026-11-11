@@ -188,14 +188,26 @@ def me(request):
         ]
         for field in text_fields:
             if field in data:
-                setattr(user, field, (data.get(field) or '').strip() or None)
+                value = (data.get(field) or '').strip()
+                setattr(user, field, value if field in ('first_name', 'last_name') else value or None)
         if 'name' in data and data['name'].strip():
             name = data['name'].strip()
+            if len(name) > 150:
+                return error('El nombre completo no puede superar 150 caracteres.')
             if user.role == 'teacher':
                 user.teacher_full_name = name
             else:
                 user.full_name = name
             user.first_name = name
+            user.last_name = ''
+        elif 'first_name' in data or 'last_name' in data:
+            name = user.get_full_name().strip()
+            if len(user.first_name or '') > 150 or len(user.last_name or '') > 150 or len(name) > 200:
+                return error('El nombre o los apellidos son demasiado largos.')
+            if user.role == 'teacher':
+                user.teacher_full_name = name
+            else:
+                user.full_name = name
         if 'email' in data and data['email'].strip().lower() != user.email:
             new_email = data['email'].strip().lower()
             try:

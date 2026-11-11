@@ -330,6 +330,34 @@ class PasswordResetConfirmForm(forms.Form):
 # PERFIL (RF-08, RF-09)
 # ============================================
 class UserProfileForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self.initial.get('first_name') and not self.initial.get('last_name'):
+            name = self.instance.teacher_full_name if self.instance.role == 'teacher' else self.instance.full_name
+            self.initial['first_name'] = name or ''
+
+    def clean(self):
+        cleaned = super().clean()
+        for field in ('first_name', 'last_name'):
+            if field not in self.data:
+                cleaned[field] = self.initial.get(field) or ''
+        name = f"{cleaned.get('first_name') or ''} {cleaned.get('last_name') or ''}".strip()
+        if len(name) > 200:
+            self.add_error('first_name', 'El nombre completo no puede superar 200 caracteres.')
+        return cleaned
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        name = user.get_full_name().strip()
+        if user.role == 'teacher':
+            user.teacher_full_name = name
+        else:
+            user.full_name = name
+        if commit:
+            user.save()
+            self.save_m2m()
+        return user
+
     class Meta:
         model = User
         fields = ['username', 'email', 'phone', 'bio', 'profile_picture', 'first_name', 'last_name']

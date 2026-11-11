@@ -4,10 +4,11 @@ from django.utils import timezone
 
 from ..models import (
     Course, Lesson, Enrollment, LessonProgress, Comment, Question, AssignmentSubmission,
-    Evaluation, QuestionEvaluation, QuestionOption, EvaluationResult, EvaluationIncident,
+    Evaluation, QuestionEvaluation, EvaluationResult, EvaluationIncident,
     Certificate,
 )
 from ..utils import get_client_ip
+from ..utils.evaluation_attempts import record_attempt
 from ..utils.lesson_completion import completion_blocker
 from .auth import api_view, error, ok, parse_body
 from .progress import mark_lesson_done
@@ -278,24 +279,15 @@ def quiz_submit(request, lesson_id):
 
     answers = data.get('answers') or {}
     tab_switches = int(data.get('tab_switches') or 0)
-    score = total = 0
-    for q in QuestionEvaluation.objects.filter(evaluation=evaluation):
-        points = q.points or 1
-        total += points
-        selected = answers.get(str(q.id))
-        if selected:
-            option = QuestionOption.objects.filter(id=selected, question=q).first()
-            if option and option.is_correct:
-                score += points
-
+    try:
+        result = record_attempt(
+            enrollment, evaluation, answers, completed_at=timezone.now(), time_spent=elapsed,
+            ip_address=get_client_ip(request), user_agent=request.META.get('HTTP_USER_AGENT', ''),
+        )
+    except ValueError as exc:
+        return error(str(exc), 400)
+    score, total, passed = result.score, result.total_points, result.passed
     percentage = int(score / total * 100) if total else 0
-    passed = percentage >= evaluation.passing_score
-    result = EvaluationResult.objects.create(
-        enrollment=enrollment, evaluation=evaluation, score=score, total_points=total,
-        passed=passed, completed_at=timezone.now(), time_spent=elapsed,
-        attempt_number=EvaluationResult.objects.filter(enrollment=enrollment, evaluation=evaluation).count() + 1,
-        ip_address=get_client_ip(request), user_agent=request.META.get('HTTP_USER_AGENT', ''),
-    )
     if tab_switches:
         EvaluationIncident.objects.create(
             evaluation_result=result, incident_type='tab_switch',

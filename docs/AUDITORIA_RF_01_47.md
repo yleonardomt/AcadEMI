@@ -41,8 +41,8 @@ Las pruebas de esta revisión usan una base SQLite aislada y correo en memoria. 
 | 21 Videos y documentos | Implementado | `lesson_view`, recursos y API `/lessons/<id>/`. |
 | 22 Progreso por curso | Implementado | `LessonProgress`, `mark_lesson_complete`, API `/learn/<id>/`. |
 | 23 Preguntas y respuestas | Implementado | `add_question_view`, `answer_question_view`, panel docente. |
-| 24 Gestionar evaluaciones | Implementado | Crear, editar, eliminar y configurar están disponibles antes de registrar intentos. Web y API impiden reemplazar una evaluación con intentos iniciados o terminados; se debe crear otra evaluación para conservar las respuestas y calificaciones históricas. No se implementó versionado de preguntas dentro de una misma evaluación. |
-| 25 Realizar evaluaciones | Implementado | `quiz_view`, API `/quizzes/<id>/start/` y `/submit/`, límites de tiempo e intentos. |
+| 24 Gestionar evaluaciones | Implementado | Crear, editar, eliminar y configurar están disponibles antes de registrar intentos. Web y API impiden reemplazar una evaluación con intentos registrados; se debe crear otra evaluación para conservar las respuestas y calificaciones históricas. La edición conserva las opciones escritas por el docente. No se implementó versionado de preguntas dentro de una misma evaluación. |
+| 25 Realizar evaluaciones | Implementado | `quiz_view`, API `/quizzes/<id>/start/` y `/submit/`, límites de tiempo e intentos. La calificación compartida guarda la opción elegida, corrección y puntos de cada pregunta en `UserAnswer`. |
 | 26 Historial y resultados | Implementado | `my_grades_view`, `quiz_result_view`, API `/grades/`; conservan puntajes e intentos. |
 | 27 Comentarios en lecciones | Implementado | Altas, edición y borrado en `academi/views/engagement.py`. |
 | 28 Reportar contenido | Implementado | `report_content_view`, API `/reports/`; comentarios, preguntas, reseñas y cursos. |
@@ -85,11 +85,11 @@ Las pruebas de esta revisión usan una base SQLite aislada y correo en memoria. 
 
 ## Resultado y prioridades
 
-**46 implementados en código para el alcance académico y 1 pendiente (RF-32).** Esto no equivale a 46 RF aprobados mediante pruebas integrales: la suite actual contiene 56 pruebas centradas en flujos específicos. La disponibilidad de servicios externos y dispositivos físicos requiere verificación adicional.
+**46 implementados en código para el alcance académico y 1 pendiente (RF-32).** Esto no equivale a 46 RF aprobados mediante pruebas integrales: la suite actual contiene 66 pruebas centradas en flujos específicos, además de los recorridos de usuario documentados. La disponibilidad de servicios externos y dispositivos físicos requiere verificación adicional.
 
 1. Para cumplir RF-32 falta ofrecer una elección de método en la compra académica y conservar esa elección en el pedido. Para cobrar dinero real en el futuro hará falta integrar y verificar un proveedor de cobro.
 2. Configurar y comprobar almacenamiento persistente para nuevos archivos subidos si el servicio sigue alojado en Render Free. El soporte S3 está preparado; las credenciales de un bucket externo no se comprobaron en esta revisión.
 3. Probar el recorrido completo en el teléfono físico que se utilizará para la presentación, incluida reproducción de YouTube y descarga de archivos.
 4. Probar el proveedor externo de IA si se desean demostrar respuestas generadas por Gemini; catálogo, progreso, compras y calificaciones tienen respuestas locales.
 
-Comprobaciones actualizadas: `python manage.py check`, 56 pruebas de `academi.tests`, recopilación de archivos estáticos, análisis de Flutter y 5 pruebas básicas de la app. Se revisaron 740 combinaciones de ruta/rol/ancho/tema en Chromium y 57 recursos públicos del despliegue. En la auditoría inicial, enviar `payment_method=card` terminó guardando `demo`, confirmando que RF-32 no usa la elección del cliente; ese comportamiento continúa. Las pruebas de escritura usan SQLite y no modifican PostgreSQL de producción. Véase [revisión de coherencia del 11 de noviembre](REVISION_COHERENCIA_2026_11_11.md).
+Comprobaciones actualizadas: `python manage.py check`, 66 pruebas de `academi.tests`, recopilación de archivos estáticos, análisis de Flutter y 5 pruebas básicas de la app. Se revisaron 740 combinaciones de ruta/rol/ancho/tema en Chromium, 30 casos adicionales del perfil actualizado y 57 recursos públicos del despliegue. Los [recorridos completos de usuario](PRUEBAS_DE_USUARIO_2026_11_11.md) suman 70 pasos de navegador y API móvil. En la auditoría inicial, enviar `payment_method=card` terminó guardando `demo`, confirmando que RF-32 no usa la elección del cliente; ese comportamiento continúa. Las pruebas de escritura usan SQLite y no modifican PostgreSQL de producción. Véase [revisión de coherencia del 11 de noviembre](REVISION_COHERENCIA_2026_11_11.md).

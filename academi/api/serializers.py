@@ -51,7 +51,8 @@ def youtube_id(url):
 
 
 def display_name(user):
-    return (user.teacher_full_name or user.full_name or user.get_full_name()
+    name = user.teacher_full_name if user.role == 'teacher' else user.full_name
+    return (name or user.get_full_name()
             or user.first_name or user.username)
 
 

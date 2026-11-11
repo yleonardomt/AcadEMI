@@ -146,19 +146,18 @@ def edit_lesson_view(request, lesson_id):
 
                                     option_count = 0
                                     for opt_key, opt_value in request.POST.items():
-                                        if opt_key.startswith(f'question_{q_num}_option_'):
-                                            opt_parts = opt_key.split('_')
-                                            if len(opt_parts) >= 5:
-                                                opt_index = opt_parts[3]
-                                                if opt_index.isdigit() and opt_value.strip():
-                                                    correct_key = f'question_{q_num}_correct_{opt_index}'
-                                                    is_correct = correct_key in request.POST
-                                                    QuestionOption.objects.create(
-                                                        question=question,
-                                                        text=opt_value.strip(),
-                                                        is_correct=is_correct
-                                                    )
-                                                    option_count += 1
+                                        prefix = f'question_{q_num}_option_'
+                                        if opt_key.startswith(prefix):
+                                            opt_index = opt_key[len(prefix):]
+                                            if opt_index.isdigit() and opt_value.strip():
+                                                correct_key = f'question_{q_num}_correct_{opt_index}'
+                                                is_correct = correct_key in request.POST
+                                                QuestionOption.objects.create(
+                                                    question=question,
+                                                    text=opt_value.strip(),
+                                                    is_correct=is_correct
+                                                )
+                                                option_count += 1
 
                                     if option_count == 0:
                                         default_options = ['Opción A', 'Opción B', 'Opción C', 'Opción D']

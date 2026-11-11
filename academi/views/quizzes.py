@@ -9,10 +9,11 @@ from django.http import JsonResponse
 from django_ratelimit.decorators import ratelimit
 
 from ..models import (
-    Lesson, QuestionEvaluation, QuestionOption, EvaluationResult,
+    Lesson, QuestionEvaluation, EvaluationResult,
     EvaluationIncident, LessonProgress,
 )
 from ..utils import get_client_ip, issue_certificate
+from ..utils.evaluation_attempts import record_attempt
 from ..decorators.quiz_decorators import quiz_required, prevent_cheating
 
 
@@ -59,27 +60,6 @@ def quiz_view(request, lesson_id):
                     'code': 'INVALID_TOKEN'
                 }, status=403)
 
-            # Calcular puntaje
-            score = 0
-            total_points = 0
-
-            for question in questions:
-                total_points += question.points or 1
-                answer_key = f'q_{question.id}'
-
-                if answer_key in answers:
-                    selected_option_id = answers[answer_key]
-                    option = QuestionOption.objects.filter(
-                        id=selected_option_id,
-                        question=question
-                    ).first()
-
-                    if option and option.is_correct:
-                        score += question.points or 1
-
-            percentage = int((score / total_points) * 100) if total_points > 0 else 0
-            passed = percentage >= evaluation.passing_score
-
             # Calcular tiempo
             start_time_str = request.session.get('quiz_start_time')
             time_spent = 0
@@ -91,21 +71,18 @@ def quiz_view(request, lesson_id):
                     pass
 
             # Crear resultado
-            result = EvaluationResult.objects.create(
+            result = record_attempt(
                 enrollment=enrollment,
                 evaluation=evaluation,
-                score=score,
-                total_points=total_points,
-                passed=passed,
+                answers=answers,
+                key_prefix='q_',
                 completed_at=timezone.now(),
                 time_spent=time_spent,
-                attempt_number=EvaluationResult.objects.filter(
-                    enrollment=enrollment,
-                    evaluation=evaluation
-                ).count() + 1,
                 ip_address=request.session.get('quiz_ip'),
                 user_agent=request.session.get('quiz_user_agent')
             )
+            score, total_points, passed = result.score, result.total_points, result.passed
+            percentage = int(score / total_points * 100) if total_points else 0
 
             # ============================================
             # MARCAR LECCIÓN COMO COMPLETADA
@@ -188,6 +165,8 @@ def quiz_view(request, lesson_id):
                 'error': 'Datos inválidos',
                 'code': 'INVALID_DATA'
             }, status=400)
+        except ValueError as exc:
+            return JsonResponse({'error': str(exc), 'code': 'INVALID_DATA'}, status=400)
         except Exception as e:
             return JsonResponse({
                 'error': str(e),

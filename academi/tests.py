@@ -799,3 +799,170 @@ class ReviewReadinessTests(TestCase):
             self.assertNotIn('soporte@academi.com', html)
             self.assertIn('https://academi.example/terminos/#privacidad', html)
             self.assertIn('https://academi.example/chatbot/', html)
+
+
+class EvaluationAttemptJourneyTests(TestCase):
+    def setUp(self):
+        from .models import QuestionEvaluation, QuestionOption
+        from django.core.cache import cache
+        cache.clear()
+        teacher = User.objects.create_user(username='attempt_teacher', role='teacher', email_verified=True)
+        self.student = User.objects.create_user(username='attempt_student', email_verified=True)
+        course = Course.objects.create(title='Curso de evaluación', teacher=teacher, status='published')
+        module = Module.objects.create(course=course, title='Módulo')
+        self.lesson = Lesson.objects.create(module=module, title='Examen', lesson_type='exam')
+        self.evaluation = Evaluation.objects.create(lesson=self.lesson, title='Examen', max_attempts=2)
+        self.enrollment = Enrollment.objects.create(student=self.student, course=course, status='enrolled')
+        self.first = QuestionEvaluation.objects.create(evaluation=self.evaluation, text='Pregunta 1', points=2)
+        self.second = QuestionEvaluation.objects.create(evaluation=self.evaluation, text='Pregunta 2', points=3)
+        self.correct = QuestionOption.objects.create(question=self.first, text='Correcta', is_correct=True)
+        self.wrong = QuestionOption.objects.create(question=self.second, text='Incorrecta', is_correct=False)
+        self.client.force_login(self.student)
+
+    def test_web_attempt_keeps_selected_answers_score_and_attempt_number(self):
+        import json
+        from .models import EvaluationResult
+        self.client.get(reverse('quiz_view', args=[self.lesson.pk]))
+        response = self.client.post(reverse('quiz_view', args=[self.lesson.pk]),
+            json.dumps({'token': self.client.session['quiz_token'], 'answers': {
+                f'q_{self.first.pk}': str(self.correct.pk), f'q_{self.second.pk}': str(self.wrong.pk)}}),
+            content_type='application/json')
+        self.assertEqual(response.status_code, 200)
+        result = EvaluationResult.objects.get(pk=response.json()['result_id'])
+        self.assertEqual((result.score, result.total_points, result.attempt_number), (2, 5, 1))
+        self.assertFalse(result.passed)
+        self.assertEqual(result.user_answers.count(), 2)
+        first = result.user_answers.get(question=self.first)
+        self.assertEqual(first.selected_option_id, self.correct.pk)
+        self.assertEqual(first.points_obtained, 2)
+        self.assertTrue(first.is_correct)
+        self.assertFalse(result.user_answers.get(question=self.second).is_correct)
+        self.enrollment.refresh_from_db()
+        self.assertEqual(self.enrollment.progress_percentage, 0)
+
+    def test_mobile_attempt_keeps_answers_and_cannot_exceed_attempt_limit(self):
+        import json
+        from .models import EvaluationResult
+        auth = {'HTTP_AUTHORIZATION': 'Bearer ' + make_token(self.student)}
+        for attempt in [1, 2]:
+            start = self.client.post(f'/api/v1/quizzes/{self.lesson.pk}/start/', **auth).json()
+            response = self.client.post(f'/api/v1/quizzes/{self.lesson.pk}/submit/', json.dumps({
+                'token': start['token'], 'answers': {str(self.first.pk): self.correct.pk}}),
+                content_type='application/json', **auth)
+            self.assertEqual(response.status_code, 200)
+            result = EvaluationResult.objects.get(pk=response.json()['result']['id'])
+            self.assertEqual(result.attempt_number, attempt)
+            self.assertEqual(result.user_answers.count(), 2)
+            skipped = result.user_answers.get(question=self.second)
+            self.assertIsNone(skipped.selected_option)
+            self.assertEqual(skipped.points_obtained, 0)
+        self.assertEqual(self.client.post(f'/api/v1/quizzes/{self.lesson.pk}/start/', **auth).status_code, 403)
+
+    def test_wrong_question_option_never_earns_points(self):
+        from .utils.evaluation_attempts import record_attempt
+        result = record_attempt(self.enrollment, self.evaluation, {str(self.second.pk): self.correct.pk},
+                                completed_at=timezone.now())
+        self.assertEqual(result.score, 0)
+        self.assertIsNone(result.user_answers.get(question=self.second).selected_option)
+
+    def test_invalid_answer_payload_does_not_leave_partial_result(self):
+        from .models import EvaluationResult
+        from .utils.evaluation_attempts import record_attempt
+        with self.assertRaises(ValueError):
+            record_attempt(self.enrollment, self.evaluation, {str(self.first.pk): [self.correct.pk]},
+                           completed_at=timezone.now())
+        self.assertFalse(EvaluationResult.objects.filter(enrollment=self.enrollment).exists())
+
+    def test_teacher_edit_keeps_actual_options_and_correct_answer(self):
+        from .models import QuestionOption
+        teacher = self.lesson.module.course.teacher
+        self.client.force_login(teacher)
+        response = self.client.post(reverse('edit_lesson', args=[self.lesson.pk]), {
+            'title': 'Examen editado', 'description': 'Descripción actualizada', 'content': 'Selecciona una respuesta.',
+            'time_limit': 15, 'passing_score': 70, 'max_attempts': 2,
+            'question_1_text': '¿Qué instrucción consulta registros?',
+            'question_1_option_0': 'SELECT', 'question_1_option_1': 'DELETE',
+            'question_1_option_2': 'DROP', 'question_1_option_3': 'TRUNCATE',
+            'question_1_correct_0': 'on',
+        })
+        self.assertRedirects(response, reverse('manage_course', args=[self.lesson.module.course_id]))
+        question = self.evaluation.questions.get()
+        options = list(QuestionOption.objects.filter(question=question).order_by('pk'))
+        self.assertEqual([o.text for o in options], ['SELECT', 'DELETE', 'DROP', 'TRUNCATE'])
+        self.assertEqual([o.is_correct for o in options], [True, False, False, False])
+
+
+class ProfileJourneyConsistencyTests(TestCase):
+    def test_long_combined_profile_name_is_rejected_without_changing_stored_name(self):
+        user = User.objects.create_user(username='profile_length', email='length@example.com',
+            email_verified=True, first_name='Ana', last_name='Quispe', full_name='Ana Quispe')
+        self.client.force_login(user)
+        response = self.client.post(reverse('profile'), {
+            'username': user.username, 'email': user.email, 'first_name': 'A' * 150, 'last_name': 'B' * 60,
+        })
+        self.assertContains(response, 'El nombre completo no puede superar 200 caracteres.')
+        user.refresh_from_db()
+        self.assertEqual(user.full_name, 'Ana Quispe')
+        import json
+        response = self.client.patch('/api/v1/me/', data=json.dumps({'first_name': 'A' * 150, 'last_name': 'B' * 60}),
+            content_type='application/json', HTTP_AUTHORIZATION='Bearer '+make_token(user))
+        self.assertEqual(response.status_code, 400)
+        user.refresh_from_db()
+        self.assertEqual(user.full_name, 'Ana Quispe')
+
+    def test_updating_other_profile_fields_does_not_erase_name(self):
+        user = User.objects.create_user(username='profile_phone', email='profile@example.com',
+            email_verified=True, first_name='Ana', last_name='Quispe', full_name='Ana Quispe')
+        self.client.force_login(user)
+        response = self.client.post(reverse('profile'), {
+            'username': user.username, 'email': user.email, 'phone': '79123456', 'bio': 'Otra biografía',
+        })
+        self.assertRedirects(response, reverse('profile'))
+        user.refresh_from_db()
+        self.assertEqual(user.get_full_name(), 'Ana Quispe')
+        self.assertEqual(user.full_name, 'Ana Quispe')
+
+    def test_web_profile_changes_name_consistently_for_student_and_teacher(self):
+        for role in ['student', 'teacher']:
+            with self.subTest(role=role):
+                user = User.objects.create_user(username='profile_'+role, role=role,
+                    email=role+'@example.com', email_verified=True, first_name='Nombre anterior',
+                    full_name='Nombre anterior', teacher_full_name='Nombre anterior')
+                self.client.force_login(user)
+                page = self.client.get(reverse('profile'))
+                self.assertContains(page, 'name="first_name"')
+                self.assertContains(page, 'name="last_name"')
+                response = self.client.post(reverse('profile'), {
+                    'username': user.username, 'email': user.email,
+                    'first_name': 'Ana María', 'last_name': 'Quispe', 'phone': '79123456', 'bio': 'Perfil actualizado',
+                })
+                self.assertRedirects(response, reverse('profile'))
+                user.refresh_from_db()
+                self.assertEqual(user.get_full_name(), 'Ana María Quispe')
+                canonical = user.teacher_full_name if role == 'teacher' else user.full_name
+                self.assertEqual(canonical, 'Ana María Quispe')
+                mobile = self.client.get('/api/v1/me/', HTTP_AUTHORIZATION='Bearer '+make_token(user))
+                self.assertEqual(mobile.json()['user']['name'], 'Ana María Quispe')
+
+    def test_mobile_name_change_does_not_duplicate_previous_surname_in_web(self):
+        user = User.objects.create_user(username='profile_mobile', email_verified=True,
+            first_name='Ana', last_name='Anterior', full_name='Ana Anterior')
+        response = self.client.patch('/api/v1/me/', data='{"name":"Lucía Nueva"}',
+            content_type='application/json', HTTP_AUTHORIZATION='Bearer '+make_token(user))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['user']['name'], 'Lucía Nueva')
+        user.refresh_from_db()
+        self.assertEqual(user.get_full_name(), 'Lucía Nueva')
+        response = self.client.patch('/api/v1/me/', data='{"first_name":"Ana","last_name":""}',
+            content_type='application/json', HTTP_AUTHORIZATION='Bearer '+make_token(user))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()['user']['name'], 'Ana')
+
+    def test_legacy_full_name_is_available_for_editing_and_role_name_is_respected(self):
+        from .api.serializers import display_name
+        user = User.objects.create_user(username='profile_legacy', email_verified=True,
+                                       full_name='Nombre vigente', teacher_full_name='Antiguo docente')
+        self.client.force_login(user)
+        page = self.client.get(reverse('profile'))
+        self.assertEqual(page.context['form'].initial['first_name'], 'Nombre vigente')
+        self.assertEqual(display_name(user), 'Nombre vigente')
