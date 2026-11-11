@@ -63,10 +63,11 @@ def home_view(request):
     published = Course.objects.filter(status='published')
 
     featured_courses = published.annotate(
-        student_count=Count('enrollments', distinct=True)
+        student_count=Count('enrollments', filter=Q(
+            enrollments__status__in=['enrolled', 'in_progress', 'completed']), distinct=True)
     ).select_related('category', 'teacher').order_by('-is_featured', '-student_count')[:6]
 
-    avg_rating = Review.objects.aggregate(avg=Avg('rating'))['avg']
+    avg_rating = Review.objects.filter(course__status='published').aggregate(avg=Avg('rating'))['avg']
 
     # RF-29: testimonios reales (reseñas de estudiantes), no textos
     # inventados. Solo reseñas con comentario y buena calificación.

@@ -54,25 +54,6 @@
     </div>
 
     {% if not selected_category %}
-
-        {% if featured_courses %}
-        <h3 class="catalog-section-heading"><i class="fas fa-star"></i> Cursos destacados</h3>
-        <div class="row g-4 catalog-scroll-row">
-            {% for course in featured_courses %}
-                {% include 'academi/courses/_course_card.html' %}
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        {% if bestseller_courses %}
-        <h3 class="catalog-section-heading bestsellers"><i class="fas fa-fire"></i> Los más comprados</h3>
-        <div class="row g-4 catalog-scroll-row">
-            {% for course in bestseller_courses %}
-                {% include 'academi/courses/_course_card.html' %}
-            {% endfor %}
-        </div>
-        {% endif %}
-
         <h3 class="catalog-section-heading"><i class="fas fa-book-open"></i> Todos los cursos</h3>
     {% else %}
         <h3 class="catalog-section-heading"><i class="fas fa-tag"></i> {{ selected_category_obj.name }}</h3>
@@ -80,7 +61,7 @@
 
     <div class="d-flex justify-content-between align-items-center mb-3">
         <span class="results-count">
-            <strong>{{ courses.count }}</strong> cursos disponibles
+            <strong>{{ courses.count }}</strong> curso{{ courses.count|pluralize }} disponible{{ courses.count|pluralize }}
         </span>
     </div>
 

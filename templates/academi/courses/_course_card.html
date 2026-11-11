@@ -1,11 +1,11 @@
 {% load static %}
 <div class="col-md-6 col-xl-4">
-    <div class="course-card-catalog card h-100 position-relative">
+    <div class="course-card-catalog card h-100 position-relative" data-course-id="{{ course.id }}">
 
         {% if course.is_featured %}
         <span class="badge-featured"><i class="fas fa-star"></i> Destacado</span>
         {% elif course.id in bestseller_ids %}
-        <span class="badge-featured badge-bestseller"><i class="fas fa-fire"></i> Más comprado</span>
+        <span class="badge-featured badge-bestseller"><i class="fas fa-fire"></i> Popular</span>
         {% endif %}
 
         {% if user.is_authenticated and user.role == 'student' and course.id in user_enrolled_courses %}
@@ -76,7 +76,7 @@
             </div>
 
             <div class="course-meta">
-                <span><i class="fas fa-user"></i> {{ course.total_students }}</span>
+                <span><i class="fas fa-user"></i> {{ course.student_count }}</span>
                 <span><i class="fas fa-book"></i> {{ course.total_lessons }}</span>
                 <span><i class="fas fa-clock"></i> {{ course.total_duration }} min</span>
             </div>
@@ -98,7 +98,7 @@
                     <a href="{% url 'course_detail' course.id %}" class="btn-view-course">
                         <i class="fas fa-eye"></i> Ver curso
                     </a>
-                    {% if user.is_authenticated %}
+                    {% if user.is_authenticated and user.role == 'student' %}
                     <button class="btn-add-cart" onclick="addToCart({{ course.id }}, '{{ course.title|escapejs }}')" id="cartBtn{{ course.id }}" title="Agregar al carrito">
                         <i class="fas fa-shopping-cart"></i>
                         <span class="btn-text" id="cartText{{ course.id }}">Carrito</span>

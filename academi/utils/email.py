@@ -23,6 +23,12 @@ def _public_domain(request):
     return urlparse(settings.SITE_URL).netloc if settings.SITE_URL else request.get_host()
 
 
+def _email_navigation(request):
+    terms = _public_link(request, 'terms')
+    return {'terms_link': terms, 'privacy_link': terms + '#privacidad',
+            'help_link': _public_link(request, 'chatbot')}
+
+
 def send_verification_email(user, request):
     """RF-07: Enviar correo de verificación"""
     token = default_token_generator.make_token(user)
@@ -31,6 +37,7 @@ def send_verification_email(user, request):
     verify_link = _public_link(request, 'verify_email', uid, token)
 
     context = {
+        **_email_navigation(request),
         'user': user,
         'verify_link': verify_link,
         'domain': domain,
@@ -52,6 +59,7 @@ def send_verification_email(user, request):
 def send_password_reset_email(user, request, reset_link):
     """RF-03: Enviar correo de recuperación de contraseña"""
     context = {
+        **_email_navigation(request),
         'user': user,
         'reset_link': reset_link,
         'domain': _public_domain(request),

@@ -35,8 +35,9 @@ def home(request):
     published = _published()
 
     featured = published.filter(is_featured=True).order_by('-created_at')[:8]
-    bestsellers = (published.annotate(n=Count('enrollments', distinct=True))
-                   .filter(n__gt=0).order_by('-n')[:8])
+    bestsellers = (published.annotate(n=Count(
+        'enrollments', filter=Q(enrollments__status__in=ACTIVE_STATUSES), distinct=True))
+                   .filter(n__gt=0).order_by('-n', '-pk')[:8])
     newest = published.order_by('-created_at')[:8]
     categories = (Category.objects
                   .annotate(course_count=Count('courses', filter=Q(courses__status='published'), distinct=True))
@@ -90,9 +91,15 @@ def course_list(request):
     if q:
         qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) |
                        Q(teacher__username__icontains=q) | Q(teacher__teacher_full_name__icontains=q) |
+                       Q(teacher__full_name__icontains=q) | Q(teacher__first_name__icontains=q) |
+                       Q(teacher__last_name__icontains=q) |
                        Q(category__name__icontains=q))
     if request.GET.get('category'):
-        qs = qs.filter(category_id=request.GET['category'])
+        category_id = request.GET['category']
+        if not category_id.isascii() or not category_id.isdigit() or len(category_id) > 18:
+            return error('Categoría inválida.', 400)
+        category = get_object_or_404(Category, pk=int(category_id))
+        qs = qs.filter(category=category)
     if request.GET.get('level'):
         qs = qs.filter(level=request.GET['level'])
     price = request.GET.get('price')
@@ -102,7 +109,9 @@ def course_list(request):
         qs = qs.filter(is_free=False, price__gt=0)
 
     sort = request.GET.get('sort', 'featured')
-    qs = qs.annotate(n_students=Count('enrollments', distinct=True), avg_rating=Avg('reviews__rating'))
+    qs = qs.annotate(n_students=Count(
+        'enrollments', filter=Q(enrollments__status__in=ACTIVE_STATUSES), distinct=True),
+        avg_rating=Avg('reviews__rating'))
     order = {
         'featured': ('-is_featured', '-created_at'),
         'recent': ('-created_at',),
@@ -111,7 +120,7 @@ def course_list(request):
         'price_asc': ('price',),
         'price_desc': ('-price',),
     }.get(sort, ('-is_featured', '-created_at'))
-    qs = qs.order_by(*order)
+    qs = qs.order_by(*order, '-pk')
 
     try:
         page = max(int(request.GET.get('page', 1)), 1)

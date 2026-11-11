@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
+from types import SimpleNamespace
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
@@ -72,6 +73,15 @@ def coupon_discount(coupon, items):
                 for item in items if coupon.course_id is None or item.course_id == coupon.course_id), Decimal('0'))
     discount = base * coupon.discount_value / Decimal('100') if coupon.discount_type == 'percentage' else coupon.discount_value
     return min(max(discount, Decimal('0')), base)
+
+
+def best_course_coupon(course, candidates):
+    """Compara promociones por su descuento en Bs., incluidos cupones globales."""
+    if course.is_free or course.price <= 0:
+        return None
+    item = SimpleNamespace(course=course, course_id=course.pk)
+    applicable = [c for c in candidates if c.course_id is None or c.course_id == course.pk]
+    return max(applicable, key=lambda c: (coupon_discount(c, [item]), -c.pk), default=None)
 
 
 def find_coupon(code, items):

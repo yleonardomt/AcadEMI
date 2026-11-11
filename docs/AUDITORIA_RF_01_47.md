@@ -1,8 +1,8 @@
 # Auditoría de requisitos funcionales RF-01 a RF-47
 
-Revisión del código de AcadEMI realizada el 1 de noviembre de 2026, **según el alcance académico acordado: las compras se registran sin pasarela de cobro**. **Implementado** significa que existe un flujo en el código web y/o API que cubre el requisito en ese alcance; no significa que se haya ejecutado una prueba integral de ese RF con todos sus casos. **Parcial** indica una parte funcional con una limitación concreta. **Pendiente** indica que falta el flujo solicitado.
+Revisión del código de AcadEMI actualizada el 11 de noviembre de 2026, **según el alcance académico acordado: las compras se registran sin pasarela de cobro**. **Implementado** significa que existe un flujo en el código web y/o API que cubre el requisito en ese alcance; no significa que se haya ejecutado una prueba integral de ese RF con todos sus casos. **Parcial** indica una parte funcional con una limitación concreta. **Pendiente** indica que falta el flujo solicitado.
 
-Configuración local observada sin mostrar secretos: `DEMO_CHECKOUT=True`; SMTP y Gemini tienen credenciales configuradas. No se verificó una entrega de correo ni una respuesta real del proveedor externo.
+Las pruebas de esta revisión usan una base SQLite aislada y correo en memoria. El usuario confirmó previamente la recepción real de correos mediante Brevo en Render. No se volvió a enviar correo real ni se verificó una respuesta externa de Gemini en esta revisión.
 
 ## Módulo 1: usuarios
 
@@ -14,7 +14,7 @@ Configuración local observada sin mostrar secretos: `DEMO_CHECKOUT=True`; SMTP 
 | 04 Perfil | Implementado | `profile_view` y `UserProfileForm`; API `/me/`. |
 | 05 Cursos adquiridos | Implementado | `my_courses_view`; API `/my-courses/`. |
 | 06 Progreso e historial | Implementado | `my_progress_view`, `LessonProgress`, API `/progress/`. |
-| 07 Recuperar contraseña | Implementado | Enlace y correo implementados en `password_reset_request_view`; SMTP configurado. La entrega externa real no se comprobó. |
+| 07 Recuperar contraseña | Implementado | Enlace y correo en `password_reset_request_view`; transporte HTTPS de Brevo y manejo de fallos. Los enlaces se verifican con correo en memoria; esta revisión no solicitó restablecimientos reales. |
 | 08 Cambiar contraseña | Implementado | `change_password_view`; API `/auth/change-password/`. |
 | 09 Calificaciones | Implementado | `my_grades_view`; API `/grades/`. |
 | 10 Notificaciones | Implementado | `notifications_view`, marcado de lectura y API `/notifications/`. |
@@ -41,7 +41,7 @@ Configuración local observada sin mostrar secretos: `DEMO_CHECKOUT=True`; SMTP 
 | 21 Videos y documentos | Implementado | `lesson_view`, recursos y API `/lessons/<id>/`. |
 | 22 Progreso por curso | Implementado | `LessonProgress`, `mark_lesson_complete`, API `/learn/<id>/`. |
 | 23 Preguntas y respuestas | Implementado | `add_question_view`, `answer_question_view`, panel docente. |
-| 24 Gestionar evaluaciones | Parcial | Crear, editar, eliminar y configurar están disponibles; al editar se borran y recrean preguntas/opciones, lo que puede eliminar respuestas históricas asociadas. |
+| 24 Gestionar evaluaciones | Implementado | Crear, editar, eliminar y configurar están disponibles antes de registrar intentos. Web y API impiden reemplazar una evaluación con intentos iniciados o terminados; se debe crear otra evaluación para conservar las respuestas y calificaciones históricas. No se implementó versionado de preguntas dentro de una misma evaluación. |
 | 25 Realizar evaluaciones | Implementado | `quiz_view`, API `/quizzes/<id>/start/` y `/submit/`, límites de tiempo e intentos. |
 | 26 Historial y resultados | Implementado | `my_grades_view`, `quiz_result_view`, API `/grades/`; conservan puntajes e intentos. |
 | 27 Comentarios en lecciones | Implementado | Altas, edición y borrado en `academi/views/engagement.py`. |
@@ -69,7 +69,7 @@ Configuración local observada sin mostrar secretos: `DEMO_CHECKOUT=True`; SMTP 
 | RF | Estado | Evidencia y límite |
 | --- | --- | --- |
 | 39 Usuarios | Implementado | CRUD, activar/desactivar y roles en `academi/views/admin_panel.py`; eliminación restringida si existen datos vinculados. |
-| 40 Cursos y categorías | Parcial | Aprobar, rechazar, retirar y gestionar categorías funciona; la edición de curso permite al admin por URL, pero falta acceso de edición desde la tabla del panel. |
+| 40 Cursos y categorías | Implementado | Aprobar, rechazar, retirar y gestionar categorías; el panel incluye accesos a editar el curso y gestionar su contenido. |
 | 41 Compras e ingresos | Implementado | Panel y API muestran pedidos e importes académicos; no representan dinero cobrado. |
 | 42 Contenido reportado | Implementado | Panel web permite resolver/descartar y API permite también retirar comentarios, preguntas o reseñas. |
 | 43 Certificados emitidos | Implementado | Panel y API listan certificados y permiten revocarlos/reactivarlos. |
@@ -81,15 +81,15 @@ Configuración local observada sin mostrar secretos: `DEMO_CHECKOUT=True`; SMTP 
 | RF | Estado | Evidencia y límite |
 | --- | --- | --- |
 | 46 Acceder al chatbot | Implementado | `/chatbot/`, widget y API `/chatbot/send/`. |
-| 47 Información mediante chatbot | Parcial | Usa catálogo/precios actuales y responde al progreso del usuario; compras y evaluaciones se explican de forma general, sin consultar aún el historial de pagos ni las calificaciones personales. La respuesta de Gemini no se probó en vivo. |
+| 47 Información mediante chatbot | Implementado | Usa catálogo/precios actuales y consulta progreso, compras recientes y resultados de evaluaciones del usuario autenticado. Las pruebas comprueban aislamiento entre usuarios; las respuestas personales se resuelven localmente. La respuesta externa de Gemini no se probó en vivo. |
 
 ## Resultado y prioridades
 
-**43 implementados en código para el alcance académico, 3 parciales y 1 pendiente.** Esto no equivale a 43 RF aprobados mediante pruebas integrales: la suite actual contiene 25 pruebas, centradas en flujos específicos.
+**46 implementados en código para el alcance académico y 1 pendiente (RF-32).** Esto no equivale a 46 RF aprobados mediante pruebas integrales: la suite actual contiene 56 pruebas centradas en flujos específicos. La disponibilidad de servicios externos y dispositivos físicos requiere verificación adicional.
 
 1. Para cumplir RF-32 falta ofrecer una elección de método en la compra académica y conservar esa elección en el pedido. Para cobrar dinero real en el futuro hará falta integrar y verificar un proveedor de cobro.
-2. Completar RF-24 sin borrar respuestas históricas al editar preguntas.
-3. Añadir el acceso de edición de cursos al panel administrador para RF-40.
-4. Ampliar las consultas del chatbot sobre evaluaciones, compras e historial personal para RF-47. Probar la entrega real de correo de RF-07 y el proveedor de IA.
+2. Configurar y comprobar almacenamiento persistente para nuevos archivos subidos si el servicio sigue alojado en Render Free. El soporte S3 está preparado; las credenciales de un bucket externo no se comprobaron en esta revisión.
+3. Probar el recorrido completo en el teléfono físico que se utilizará para la presentación, incluida reproducción de YouTube y descarga de archivos.
+4. Probar el proveedor externo de IA si se desean demostrar respuestas generadas por Gemini; catálogo, progreso, compras y calificaciones tienen respuestas locales.
 
-Comprobaciones ejecutadas: `python manage.py check`, 25 pruebas de `academi.tests` y un recorrido aislado con SQLite del checkout académico, historial, PDF y panel/reporte de ventas. En ese recorrido, enviar `payment_method=card` terminó guardando `demo`, confirmando que RF-32 no usa la elección del cliente. La base PostgreSQL de trabajo no se modificó por esta auditoría.
+Comprobaciones actualizadas: `python manage.py check`, 56 pruebas de `academi.tests`, recopilación de archivos estáticos, análisis de Flutter y 5 pruebas básicas de la app. Se revisaron 740 combinaciones de ruta/rol/ancho/tema en Chromium y 57 recursos públicos del despliegue. En la auditoría inicial, enviar `payment_method=card` terminó guardando `demo`, confirmando que RF-32 no usa la elección del cliente; ese comportamiento continúa. Las pruebas de escritura usan SQLite y no modifican PostgreSQL de producción. Véase [revisión de coherencia del 11 de noviembre](REVISION_COHERENCIA_2026_11_11.md).

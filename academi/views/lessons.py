@@ -10,7 +10,7 @@ from django.http import FileResponse, JsonResponse, Http404
 from ..models import (
     Module, Lesson, LessonResource, Evaluation, QuestionEvaluation,
     QuestionOption, Enrollment, LessonProgress, Comment, Question,
-    AssignmentSubmission,
+    AssignmentSubmission, EvaluationResult,
 )
 from ..utils import send_certificate_email, issue_certificate
 from ..utils.course_review import require_course_review
@@ -65,6 +65,11 @@ def edit_lesson_view(request, lesson_id):
     if request.user != course.teacher and request.user.role != 'admin':
         messages.error(request, 'No tienes permisos.')
         return redirect('dashboard')
+
+    evaluation_locked = EvaluationResult.objects.filter(evaluation__lesson=lesson).exists()
+    if request.method == 'POST' and evaluation_locked:
+        messages.error(request, 'Esta evaluación ya tiene intentos registrados. Crea una nueva evaluación para conservar las respuestas y calificaciones existentes.')
+        return redirect('edit_lesson', lesson_id=lesson.pk)
 
     # ============================================
     # DETERMINAR TEMPLATE
@@ -267,6 +272,7 @@ def edit_lesson_view(request, lesson_id):
         'max_intentos': max_intentos,
         'nota': nota,
         'es_edicion': True,
+        'evaluation_locked': evaluation_locked,
     })
 
 

@@ -597,6 +597,18 @@
 }
 
 @media (max-width: 768px) {
+    .category-pills {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-block: 4px;
+        scrollbar-width: thin;
+    }
+
+    .category-pill {
+        flex-shrink: 0;
+        white-space: nowrap;
+    }
+
     .catalog-hero {
         padding: 20px;
     }

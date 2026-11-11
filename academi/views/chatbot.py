@@ -11,7 +11,7 @@ from django.conf import settings
 
 from ..models import (
     ChatSession, ChatMessage, ChatKnowledgeBase, ChatIntent, ChatAnalytics, ChatFeedback,
-    Course, Category, Enrollment,
+    Course, Category, Enrollment, Payment, EvaluationResult,
 )
 from ..utils.ai_chatbot import get_ai_response
 
@@ -103,6 +103,9 @@ def recommend_courses_by_category(user_message):
         if not any(_stem_match(word, tw) for word in words for tw in text_words):
             continue
 
+        if course.category is None:
+            return (f'Te recomiendo {course.title} ({course.get_price_display()}). '
+                    'Puedes consultar su contenido en el catálogo.')
         courses = Course.objects.filter(status='published', category=course.category).order_by('title')[:3]
         lines = [f'{c.title} ({c.get_price_display()})' for c in courses]
         return (
@@ -153,17 +156,22 @@ def match_knowledge_base(user_message):
                     'Las compras de cursos pagos aún no están habilitadas; puedes inscribirte en cursos gratuitos.')
         return ('Las compras de cursos pagos aún no están habilitadas. '
                 'Puedes inscribirte en cursos gratuitos y consultar el catálogo mientras se integra un cobro verificable.')
+    # Una consulta por una materia debe recomendar esa materia, mientras
+    # que una pregunta por el total siempre devuelve el conteo completo.
+    recommendation = None
+    if not text_words & {'cuantos', 'cuantas', 'cantidad', 'total'}:
+        recommendation = recommend_courses_by_category(user_message)
+    if recommendation:
+        return recommendation
+
     if text_words & {'cursos', 'catalogo', 'disponibles'} and not text_words & {'comprar', 'pagar', 'precio', 'descuento'}:
         published = Course.objects.filter(status='published').order_by('title')
         count = published.count()
         if not count:
             return 'Todavía no hay cursos publicados. Puedes volver a consultar el catálogo más adelante.'
         names = '; '.join(f'{c.title} ({c.get_price_display()})' for c in published[:5])
-        return f'Hay {count} cursos publicados. Algunos son: {names}. Consulta el catálogo para ver todos los cursos y precios actuales.'
-
-    recommendation = recommend_courses_by_category(user_message)
-    if recommendation:
-        return recommendation
+        noun = 'curso publicado' if count == 1 else 'cursos publicados'
+        return f'Hay {count} {noun}. Puedes encontrar: {names}. Consulta el catálogo para ver todos los cursos y precios actuales.'
 
     best_answer = None
     best_score = 0
@@ -206,7 +214,8 @@ def build_platform_context():
 
     context = {
         'total_courses': Course.objects.filter(status='published').count(),
-        'categories': list(Category.objects.values_list('name', flat=True)[:12]),
+        'categories': list(Category.objects.filter(courses__status='published').order_by('name')
+                           .values_list('name', flat=True).distinct()),
         'catalog': catalog,
     }
     return context
@@ -215,10 +224,34 @@ def build_platform_context():
 def personal_answer(user, user_message):
     """Consulta datos de la cuenta sin enviarlos a un proveedor externo."""
     words = set(_normalize(user_message).split())
-    if not words & {'mis', 'mi'} or not words & {'cursos', 'curso', 'progreso', 'avance'}:
+    if not words & {'mis', 'mi'}:
+        return None
+    purchases = bool(words & {'compras', 'compra', 'pagos', 'pago', 'pedidos', 'pedido', 'comprobantes'})
+    grades = bool(words & {'notas', 'nota', 'calificaciones', 'calificacion', 'resultados', 'evaluaciones', 'examenes'})
+    if not purchases and not grades and not words & {'cursos', 'curso', 'progreso', 'avance'}:
         return None
     if not user.is_authenticated:
-        return 'Inicia sesión para consultar tus cursos y tu progreso.'
+        return 'Inicia sesión para consultar tus cursos, compras y calificaciones.'
+    if purchases:
+        payments = Payment.objects.filter(student=user).order_by('-created_at', '-pk')[:5]
+        if not payments:
+            return 'Todavía no tienes compras registradas. Puedes explorar el catálogo y agregar cursos al carrito.'
+        rows = '; '.join(
+            f'{p.invoice_number or "Pedido " + str(p.pk)}: Bs. {p.final_amount:.2f}, {p.get_status_display()}'
+            for p in payments
+        )
+        return f'Tus compras recientes: {rows}. En Historial de compras puedes consultar el detalle y descargar tus comprobantes.'
+    if grades:
+        results = (EvaluationResult.objects.filter(enrollment__student=user, completed_at__isnull=False)
+                   .select_related('evaluation', 'enrollment__course')
+                   .order_by('-completed_at', '-pk')[:5])
+        if not results:
+            return 'Todavía no tienes evaluaciones finalizadas. En Mis calificaciones aparecerán los resultados cuando completes una evaluación.'
+        rows = '; '.join(
+            f'{r.evaluation.title} ({r.enrollment.course.title}): {r.score}/{r.total_points} puntos, '
+            f'{"aprobado" if r.passed else "no aprobado"}' for r in results
+        )
+        return f'Tus resultados recientes: {rows}. En Mis calificaciones puedes consultar todos tus intentos.'
     enrollments = Enrollment.objects.filter(
         student=user, status__in=('enrolled', 'in_progress', 'completed')
     ).select_related('course').order_by('-id')[:8]

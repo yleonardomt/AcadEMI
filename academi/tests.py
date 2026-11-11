@@ -5,6 +5,7 @@ from datetime import timedelta
 from contextlib import redirect_stdout
 from io import StringIO
 from urllib.parse import urlsplit
+import re
 
 from django.utils import timezone
 from django.test import override_settings
@@ -584,3 +585,217 @@ class CatalogPricingMigrationTests(TestCase):
         self.assertEqual(payment.final_amount, 59)
         self.assertEqual(line.final_price, 59)
         self.assertEqual(enrollment.progress_percentage, 25)
+
+
+class CatalogConsistencyTests(TestCase):
+    def setUp(self):
+        self.teacher = User.objects.create_user(username='catalog_teacher', role='teacher',
+            teacher_full_name='Marcela Valdez', email_verified=True)
+        self.student = User.objects.create_user(username='catalog_student', email_verified=True)
+        self.category = Category.objects.create(name='Sistemas digitales')
+        self.other_category = Category.objects.create(name='Mecánica aplicada')
+        self.featured = Course.objects.create(title='Bases de datos', teacher=self.teacher,
+            category=self.category, status='published', is_featured=True, price=150)
+        self.second = Course.objects.create(title='Redes', teacher=self.teacher,
+            category=self.category, status='published', price=100)
+        self.third = Course.objects.create(title='Termodinámica', teacher=self.teacher,
+            category=self.other_category, status='published', price=120)
+        self.draft = Course.objects.create(title='Curso privado', teacher=self.teacher,
+            category=self.category, status='draft', price=130)
+        Enrollment.objects.create(student=self.student, course=self.featured, status='in_progress')
+
+    def test_catalog_renders_each_course_once_including_featured_and_popular(self):
+        self.client.force_login(self.student)
+        page = self.client.get(reverse('catalog'))
+        ids = re.findall(r'data-course-id="(\d+)"', page.content.decode())
+        self.assertCountEqual(ids, [str(c.pk) for c in [self.featured, self.second, self.third]])
+        self.assertEqual(len(ids), len(set(ids)))
+        controls = re.findall(r'\bid="([^"]+)"', page.content.decode())
+        self.assertEqual(len(controls), len(set(controls)))
+        self.assertEqual(page.context['total_courses'], len(ids))
+        self.assertContains(page, 'Destacado')
+        self.assertContains(page, 'Adquirido')
+        self.assertNotContains(page, self.draft.title)
+
+    def test_home_catalog_api_and_chatbot_use_current_published_total(self):
+        from .views.chatbot import match_knowledge_base, build_platform_context
+        for status, expected in [('draft', 3), ('published', 4), ('archived', 3)]:
+            self.draft.status = status
+            self.draft.save(update_fields=['status'])
+            with self.subTest(status=status):
+                self.assertEqual(self.client.get(reverse('home')).context['total_courses'], expected)
+                self.assertEqual(self.client.get(reverse('catalog')).context['total_courses'], expected)
+                self.assertEqual(self.client.get('/api/v1/courses/').json()['total'], expected)
+                self.assertEqual(self.client.get('/api/v1/home/').json()['total_courses'], expected)
+                self.assertEqual(build_platform_context()['total_courses'], expected)
+                self.assertIn(f'Hay {expected} cursos publicados', match_knowledge_base('¿Cuántos cursos hay en total?'))
+
+    def test_category_filter_keeps_global_total_and_shows_only_matching_courses(self):
+        page = self.client.get(reverse('catalog'), {'category': self.category.pk})
+        self.assertEqual(page.context['total_courses'], 3)
+        self.assertEqual(page.context['courses'].count(), 2)
+        self.assertCountEqual(re.findall(r'data-course-id="(\d+)"', page.content.decode()),
+                              [str(self.featured.pk), str(self.second.pk)])
+        self.assertEqual(self.client.get('/api/v1/courses/', {'category': self.category.pk}).json()['total'], 2)
+
+    def test_invalid_category_never_returns_server_error(self):
+        for value in ['abc', '-1', '0', '999999', '١٢', '1e3', '9' * 100]:
+            with self.subTest(category=value):
+                self.assertEqual(self.client.get(reverse('catalog'), {'category': value}).status_code, 404)
+                self.assertIn(self.client.get('/api/v1/courses/', {'category': value}).status_code, [400, 404])
+
+    def test_web_and_api_search_match_category_and_teacher_display_name(self):
+        for term, expected in [(' Sistemas digitales ', [self.featured.pk, self.second.pk]),
+                               ('Marcela Valdez', [self.featured.pk, self.second.pk, self.third.pk])]:
+            with self.subTest(term=term):
+                page = self.client.get(reverse('search_courses'), {'q': term})
+                self.assertCountEqual(page.context['courses'].values_list('pk', flat=True), expected)
+                api = self.client.get('/api/v1/courses/', {'q': term}).json()
+                self.assertCountEqual([c['id'] for c in api['courses']], expected)
+
+    def test_pending_and_cancelled_enrollments_do_not_make_course_popular(self):
+        Enrollment.objects.create(student=self.student, course=self.second, status='pending')
+        Enrollment.objects.create(student=self.student, course=self.third, status='cancelled')
+        page = self.client.get(reverse('catalog'))
+        self.assertEqual(page.context['bestseller_ids'], [self.featured.pk])
+        self.assertEqual([c['id'] for c in self.client.get('/api/v1/home/').json()['bestsellers']], [self.featured.pk])
+
+    def test_catalog_purchase_controls_are_available_only_to_students(self):
+        for user, can_buy in [(self.student, True), (self.teacher, False),
+                               (User.objects.create_user(username='catalog_admin', role='admin', email_verified=True), False)]:
+            self.client.force_login(user)
+            page = self.client.get(reverse('catalog'))
+            self.assertEqual(f'id="cartBtn{self.second.pk}"' in page.content.decode(), can_buy)
+
+    def test_mobile_pagination_does_not_repeat_courses_with_equal_sort_values(self):
+        Course.objects.bulk_create([Course(title=f'Curso {i}', teacher=self.teacher,
+            status='published', price=100) for i in range(25)])
+        Course.objects.filter(status='published').update(created_at=timezone.now(), is_featured=False)
+        expected = set(Course.objects.filter(status='published').values_list('pk', flat=True))
+        for sort in ['featured', 'recent', 'popular', 'rating', 'price_asc', 'price_desc']:
+            ids = []
+            for page in [1, 2, 3]:
+                data = self.client.get('/api/v1/courses/', {'sort': sort, 'page': page}).json()
+                ids.extend(c['id'] for c in data['courses'])
+            with self.subTest(sort=sort):
+                self.assertEqual(set(ids), expected)
+                self.assertEqual(len(ids), len(expected))
+
+    def test_subject_recommendation_and_course_without_category_do_not_fail(self):
+        from .views.chatbot import match_knowledge_base
+        self.assertIn('Sistemas digitales', match_knowledge_base('Quiero cursos de sistemas'))
+        uncategorized = Course.objects.create(title='Robótica autónoma', teacher=self.teacher,
+                                              status='published', price=140)
+        self.assertIn(uncategorized.title, match_knowledge_base('Quiero aprender robótica'))
+
+    def test_web_and_mobile_promote_same_best_coupon_in_bolivianos(self):
+        common = {'created_by': self.teacher, 'expires_at': timezone.now() + timedelta(days=3), 'max_uses': 100}
+        Coupon.objects.create(code='FIXED40', course=self.featured, discount_type='fixed', discount_value=40, **common)
+        percentage = Coupon.objects.create(code='PERCENT30', course=self.featured,
+            discount_type='percentage', discount_value=30, **common)
+        global_coupon = Coupon.objects.create(code='GLOBAL50', discount_type='fixed', discount_value=50, **common)
+        for expected in [global_coupon, percentage]:
+            web = self.client.get(reverse('catalog'))
+            course = next(c for c in web.context['courses'] if c.pk == self.featured.pk)
+            self.assertEqual(course.active_coupon.pk, expected.pk)
+            api = self.client.get(f'/api/v1/courses/{self.featured.pk}/').json()
+            self.assertEqual(api['course']['coupon']['code'], expected.code)
+            global_coupon.is_active = False
+            global_coupon.save(update_fields=['is_active'])
+        self.featured.is_free = True
+        self.featured.save(update_fields=['is_free'])
+        api = self.client.get(f'/api/v1/courses/{self.featured.pk}/').json()
+        self.assertIsNone(api['course']['coupon'])
+
+
+class ReviewReadinessTests(TestCase):
+    def setUp(self):
+        self.teacher = User.objects.create_user(username='review_teacher', role='teacher', email_verified=True)
+        self.student = User.objects.create_user(username='review_student', email_verified=True)
+        self.other = User.objects.create_user(username='review_other', email_verified=True)
+        self.course = Course.objects.create(title='Álgebra', teacher=self.teacher, status='published', price=120)
+
+    def test_chatbot_purchases_and_grades_belong_only_to_current_user(self):
+        from .models import EvaluationResult
+        from .views.chatbot import personal_answer
+        Payment.objects.create(student=self.student, amount=120, final_amount=120,
+                               status='completed', payment_method='demo', invoice_number='OWN-001')
+        Payment.objects.create(student=self.other, amount=150, final_amount=150,
+                               status='completed', payment_method='demo', invoice_number='OTHER-002')
+        module = Module.objects.create(course=self.course, title='Módulo')
+        lesson = Lesson.objects.create(module=module, title='Examen', lesson_type='exam')
+        evaluation = Evaluation.objects.create(lesson=lesson, title='Examen de álgebra')
+        own = Enrollment.objects.create(student=self.student, course=self.course, status='in_progress')
+        other = Enrollment.objects.create(student=self.other, course=self.course, status='in_progress')
+        EvaluationResult.objects.create(enrollment=own, evaluation=evaluation,
+            score=8, total_points=10, passed=True, completed_at=timezone.now())
+        EvaluationResult.objects.create(enrollment=other, evaluation=evaluation,
+            score=3, total_points=10, passed=False, completed_at=timezone.now())
+        purchases = personal_answer(self.student, '¿Cuál es el estado de mis compras?')
+        self.assertIn('OWN-001', purchases)
+        self.assertNotIn('OTHER-002', purchases)
+        grades = personal_answer(self.student, 'Quiero consultar mis calificaciones')
+        self.assertIn('8/10 puntos', grades)
+        self.assertNotIn('3/10', grades)
+
+    def test_evaluation_with_attempts_cannot_lose_answers_when_edited_on_web_or_api(self):
+        from .models import EvaluationResult, QuestionEvaluation, QuestionOption, UserAnswer
+        module = Module.objects.create(course=self.course, title='Módulo')
+        lesson = Lesson.objects.create(module=module, title='Examen original', lesson_type='exam')
+        evaluation = Evaluation.objects.create(lesson=lesson, title='Examen original')
+        question = QuestionEvaluation.objects.create(evaluation=evaluation, text='2 + 2 = ?')
+        option = QuestionOption.objects.create(question=question, text='4', is_correct=True)
+        enrollment = Enrollment.objects.create(student=self.student, course=self.course, status='in_progress')
+        result = EvaluationResult.objects.create(enrollment=enrollment, evaluation=evaluation,
+            score=1, total_points=1, passed=True, completed_at=timezone.now())
+        answer = UserAnswer.objects.create(evaluation_result=result, question=question,
+            selected_option=option, is_correct=True, points_obtained=1)
+        self.client.force_login(self.teacher)
+        url = reverse('edit_lesson', args=[lesson.pk])
+        self.assertContains(self.client.get(url), 'crea una nueva evaluación')
+        self.assertRedirects(self.client.post(url, {'title': 'Reemplazo', 'lesson_type': 'exam'}), url)
+        api = self.client.post(f'/api/v1/manage/lessons/{lesson.pk}/update/',
+            data='{"title":"Reemplazo","type":"exam","questions":[]}', content_type='application/json',
+            HTTP_AUTHORIZATION='Bearer ' + make_token(self.teacher))
+        self.assertEqual(api.status_code, 409)
+        lesson.refresh_from_db()
+        answer.refresh_from_db()
+        self.assertEqual(lesson.title, 'Examen original')
+        self.assertEqual(answer.question_id, question.pk)
+        self.assertEqual(answer.selected_option_id, option.pk)
+        self.assertEqual(result.user_answers.count(), 1)
+
+    def test_admin_has_working_course_edit_and_content_links(self):
+        admin = User.objects.create_user(username='review_admin', role='admin', email_verified=True)
+        self.client.force_login(admin)
+        page = self.client.get(reverse('admin_courses'))
+        for name in ['edit_course', 'manage_course']:
+            url = reverse(name, args=[self.course.pk])
+            self.assertContains(page, f'href="{url}"')
+            self.assertEqual(self.client.get(url).status_code, 200)
+
+    def test_unverified_account_can_read_help_but_cannot_enter_protected_pages(self):
+        pending = User.objects.create_user(username='review_pending', email_verified=False)
+        self.client.force_login(pending)
+        self.assertEqual(self.client.get(reverse('chatbot')).status_code, 200)
+        self.assertEqual(self.client.get(reverse('terms')).status_code, 200)
+        response = self.client.post(reverse('chatbot_send'), {'message': '¿Cuántos cursos hay en total?'})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn('Hay 1 curso publicado', response.json()['response'])
+        for name in ['dashboard', 'profile', 'cart']:
+            self.assertRedirects(self.client.get(reverse(name)), reverse('verify_pending'))
+
+    @override_settings(EMAIL_BACKEND='django.core.mail.backends.locmem.EmailBackend', SITE_URL='https://academi.example')
+    def test_authentication_emails_have_real_navigation_instead_of_placeholder_links(self):
+        from django.core import mail
+        from .utils.email import send_verification_email, send_password_reset_email
+        self.student.email = 'review@example.com'
+        request = RequestFactory().get('/')
+        send_verification_email(self.student, request)
+        send_password_reset_email(self.student, request, 'https://academi.example/reset-password/token/')
+        for message in mail.outbox:
+            html = message.alternatives[0].content
+            self.assertNotIn('href="#"', html)
+            self.assertNotIn('soporte@academi.com', html)
+            self.assertIn('https://academi.example/terminos/#privacidad', html)
+            self.assertIn('https://academi.example/chatbot/', html)

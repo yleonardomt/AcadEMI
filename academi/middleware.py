@@ -13,7 +13,10 @@ class EmailVerificationMiddleware:
     acá como middleware, y no como un chequeo repetido en cada vista,
     para no duplicar la misma lógica en todas las vistas protegidas."""
 
-    EXEMPT_URL_NAMES = {'verify_pending', 'resend_verification_email', 'verify_email', 'logout', 'terms'}
+    EXEMPT_URL_NAMES = {
+        'verify_pending', 'resend_verification_email', 'verify_email', 'logout', 'terms',
+        'chatbot', 'chatbot_send',
+    }
 
     def __init__(self, get_response):
         self.get_response = get_response

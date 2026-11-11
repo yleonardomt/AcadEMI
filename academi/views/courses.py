@@ -6,12 +6,11 @@ from django.utils import timezone
 from django.http import JsonResponse
 from django.http import Http404
 from decimal import Decimal, InvalidOperation
-from types import SimpleNamespace
 
 from ..models import Category, Course, Module, Enrollment, LessonProgress, Favorite, Review, EvaluationResult, Certificate, Coupon
 from ..utils import issue_certificate, compute_course_stats
 from ..utils.course_review import require_course_review
-from ..utils.coupons import coupon_discount
+from ..utils.coupons import best_course_coupon
 
 
 # ============================================
@@ -364,36 +363,34 @@ def attach_active_coupons(*course_lists):
 
     for course_list in course_lists:
         for course in course_list:
-            applicable = global_coupons + per_course.get(course.id, []) if not course.is_free else []
-            item = SimpleNamespace(course=course, course_id=course.id)
-            course.active_coupon = max(applicable, key=lambda c: coupon_discount(c, [item]), default=None)
+            course.active_coupon = best_course_coupon(course, global_coupons + per_course.get(course.id, []))
 
 
 def catalog_view(request):
     all_published = Course.objects.filter(status='published')
-    courses = all_published.annotate(student_count=Count('enrollments', distinct=True))
+    courses = all_published.annotate(student_count=Count(
+        'enrollments', filter=Q(enrollments__status__in=['enrolled', 'in_progress', 'completed']),
+        distinct=True,
+    )).select_related('category', 'teacher').prefetch_related('modules__lessons', 'reviews')
 
     category_id = request.GET.get('category')
     selected_category = None
     selected_category_obj = None
     if category_id:
-        courses = courses.filter(category_id=category_id)
-        selected_category = int(category_id)
-        selected_category_obj = Category.objects.filter(id=category_id).first()
+        if not category_id.isascii() or not category_id.isdigit() or len(category_id) > 18:
+            raise Http404('La categoría no existe.')
+        selected_category_obj = get_object_or_404(Category, pk=int(category_id))
+        selected_category = selected_category_obj.pk
+        courses = courses.filter(category=selected_category_obj)
 
-    courses = courses.order_by('-is_featured', '-created_at')
+    courses = courses.order_by('-is_featured', '-created_at', '-pk')
 
     categories = Category.objects.annotate(
         course_count=Count('courses', filter=Q(courses__status='published'), distinct=True)
     ).filter(course_count__gt=0).order_by('name')
 
-    featured_courses = all_published.filter(is_featured=True).annotate(
-        student_count=Count('enrollments', distinct=True)
-    ).order_by('-created_at')[:8]
-
-    bestseller_courses = all_published.annotate(
-        student_count=Count('enrollments', distinct=True)
-    ).filter(student_count__gt=0).order_by('-student_count')[:8]
+    popular_ids = list(courses.filter(student_count__gt=0)
+                       .order_by('-student_count', '-pk').values_list('id', flat=True)[:8])
 
     user_enrolled_courses = []
     user_favorite_courses = []
@@ -406,16 +403,14 @@ def catalog_view(request):
             student=request.user
         ).values_list('course_id', flat=True)
 
-    attach_active_coupons(courses, featured_courses, bestseller_courses)
+    attach_active_coupons(courses)
 
     context = {
         'courses': courses,
         'categories': categories,
         'selected_category': selected_category,
         'selected_category_obj': selected_category_obj,
-        'featured_courses': featured_courses,
-        'bestseller_courses': bestseller_courses,
-        'bestseller_ids': [c.id for c in bestseller_courses],
+        'bestseller_ids': popular_ids,
         'user_enrolled_courses': list(user_enrolled_courses),
         'user_favorite_courses': list(user_favorite_courses),
         'total_courses': all_published.count(),
@@ -424,13 +419,19 @@ def catalog_view(request):
 
 
 def search_courses_view(request):
-    query = request.GET.get('q', '')
-    courses = Course.objects.filter(status='published')
+    query = request.GET.get('q', '').strip()
+    courses = (Course.objects.filter(status='published').select_related('category', 'teacher')
+               .prefetch_related('modules__lessons', 'reviews'))
     if query:
         courses = courses.filter(
             Q(title__icontains=query) |
             Q(description__icontains=query) |
-            Q(teacher__username__icontains=query)
+            Q(teacher__username__icontains=query) |
+            Q(teacher__teacher_full_name__icontains=query) |
+            Q(teacher__full_name__icontains=query) |
+            Q(teacher__first_name__icontains=query) |
+            Q(teacher__last_name__icontains=query) |
+            Q(category__name__icontains=query)
         )
     return render(request, 'academi/courses/buscar.html', {'courses': courses, 'query': query})
 

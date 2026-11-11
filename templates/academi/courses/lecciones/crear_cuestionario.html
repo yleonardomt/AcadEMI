@@ -28,8 +28,13 @@
                 </div>
 
                 <div class="card-body p-4 p-lg-5">
+                    {% if evaluation_locked %}
+                    <div class="alert alert-info" role="status">Esta evaluación ya tiene intentos registrados y se conserva para mantener las respuestas y calificaciones. Para cambiar las preguntas, crea una nueva evaluación desde la gestión del curso.</div>
+                    <a href="{% url 'manage_course' module.course_id %}" class="btn btn-outline-primary mb-3">Volver a gestionar el curso</a>
+                    {% endif %}
                     <form method="POST" novalidate id="quizForm" data-es-edicion="{{ es_edicion|yesno:'true,false' }}" data-preguntas="{{ preguntas_json|default:'[]' }}">
                         {% csrf_token %}
+                        <fieldset {% if evaluation_locked %}disabled{% endif %}>
                         {% if es_edicion %}
                             <input type="hidden" name="es_edicion" value="true">
                             <input type="hidden" name="lesson_id" value="{{ lesson.id }}">
@@ -188,6 +193,7 @@
                             </a>
                         </div>
 
+                        </fieldset>
                     </form>
                 </div>
             </div>

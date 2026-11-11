@@ -351,6 +351,8 @@ def lesson_save(request, module_id=None, lesson_id=None):
         if problem:
             return problem
         module = lesson.module
+        if EvaluationResult.objects.filter(evaluation__lesson=lesson).exists():
+            return error('Esta evaluación ya tiene intentos registrados. Crea una nueva evaluación para conservar las respuestas y calificaciones existentes.', 409)
     else:
         module, problem = _own_module(request.user, module_id)
         if problem:

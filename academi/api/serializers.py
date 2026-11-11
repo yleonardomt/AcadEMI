@@ -7,6 +7,7 @@ from django.db.models import Avg, Count
 from ..models import (
     Coupon, Enrollment, Favorite, LessonProgress, Certificate,
 )
+from ..utils.coupons import best_course_coupon
 
 YOUTUBE_PATTERNS = [
     r'(?:youtube\.com/watch\?v=|youtu\.be/)([^&\n?#]+)',
@@ -108,15 +109,15 @@ def teacher_json(request, teacher, with_stats=False):
 def active_coupons_map():
     """Mejor promoción vigente por curso (o global), como el catálogo web."""
     candidates = [
-        c for c in Coupon.objects.filter(is_active=True).select_related('course').order_by('-discount_value')
+        c for c in Coupon.objects.filter(is_active=True).select_related('course')
         if c.is_valid()
     ]
-    global_coupon = next((c for c in candidates if c.course_id is None), None)
+    global_coupons = [c for c in candidates if c.course_id is None]
     per_course = {}
     for c in candidates:
         if c.course_id is not None:
-            per_course.setdefault(c.course_id, c)
-    return per_course, global_coupon
+            per_course.setdefault(c.course_id, []).append(c)
+    return per_course, global_coupons
 
 
 def coupon_json(coupon):
@@ -141,10 +142,10 @@ class CourseContext:
             self.enrolled = set(Enrollment.objects.filter(
                 student=user, status__in=ACTIVE_STATUSES).values_list('course_id', flat=True))
             self.favorites = set(Favorite.objects.filter(student=user).values_list('course_id', flat=True))
-        self.per_course_coupon, self.global_coupon = active_coupons_map()
+        self.per_course_coupons, self.global_coupons = active_coupons_map()
 
     def coupon_for(self, course):
-        return self.per_course_coupon.get(course.id) or self.global_coupon
+        return best_course_coupon(course, self.global_coupons + self.per_course_coupons.get(course.id, []))
 
 
 def course_card(request, course, ctx):
