@@ -32,10 +32,11 @@
             <div class="auth-topbar"><a href="{% url 'home' %}" class="auth-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</a><button type="button" class="auth-theme-toggle theme-toggle-btn" aria-label="Cambiar modo noche o día" title="Cambiar modo noche o día"><i class="fas fa-moon" aria-hidden="true"></i></button></div>
             <div class="auth-heading">
                 <h2 id="login-title">Bienvenido de nuevo</h2>
-                <p>Accede con tu correo o nombre de usuario.</p>
+                <p>{% if google_login_available %}Continúa con Google o usa tu correo o usuario.{% else %}Accede con tu correo o nombre de usuario.{% endif %}</p>
             </div>
             {% if messages %}{% for message in messages %}<div class="auth-notice {% if message.tags == 'error' %}auth-notice-error{% endif %}" role="status">{{ message }}</div>{% endfor %}{% endif %}
             {% if form.non_field_errors %}<div class="auth-notice auth-notice-error" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>{% endif %}
+            {% include 'academi/auth/_google_button.html' with google_intent='login' %}
             <form method="post" class="auth-form">
                 {% csrf_token %}
                 <div class="auth-field">

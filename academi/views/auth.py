@@ -5,6 +5,7 @@ from django.contrib.auth import login, logout, update_session_auth_hash, get_use
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.auth.forms import SetPasswordForm
 from django.db.models import Avg, Count, Q
 from django.urls import reverse
 from django.utils.http import urlsafe_base64_decode
@@ -209,8 +210,10 @@ def logout_view(request):
 # ============================================
 @login_required
 def change_password_view(request):
+    setting_password = not request.user.has_usable_password()
+    form_class = SetPasswordForm if setting_password else CustomPasswordChangeForm
     if request.method == 'POST':
-        form = CustomPasswordChangeForm(request.user, request.POST)
+        form = form_class(request.user, request.POST)
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)
@@ -219,9 +222,13 @@ def change_password_view(request):
         else:
             messages.error(request, 'Error al cambiar la contraseña. Revisa los campos.')
     else:
-        form = CustomPasswordChangeForm(request.user)
+        form = form_class(request.user)
 
-    return render(request, 'academi/auth/cambiar_contraseña.html', {'form': form})
+    if setting_password:
+        for field in form.fields.values():
+            field.widget.attrs.update({'class': 'form-control', 'autocomplete': 'new-password'})
+
+    return render(request, 'academi/auth/cambiar_contraseña.html', {'form': form, 'setting_password': setting_password})
 
 
 # ============================================

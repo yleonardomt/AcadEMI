@@ -1,4 +1,5 @@
 {% extends 'partials/base.html' %}
+{% load static %}
 {% load static static_extras %}
 
 {% block title %}Mi perfil - Academia Bolivia{% endblock %}
@@ -145,7 +146,7 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <a href="{% url 'change_password' %}" class="btn btn-outline-primary w-100 py-2">
-                                    <i class="fas fa-key"></i> Cambiar contraseña
+                                    <i class="fas fa-key"></i> {% if user.has_usable_password %}Cambiar contraseña{% else %}Crear contraseña{% endif %}
                                 </a>
                             </div>
                         </div>
@@ -157,6 +158,23 @@
                             </button>
                         </div>
                     </form>
+
+                    {% if google_login_available %}
+                    <div class="mt-4 pt-4 border-top">
+                        <h6 class="fw-bold"><img src="{% static 'images/google-g.svg' %}" width="20" height="20" alt="" class="me-2">Acceso con Google</h6>
+                        {% if user.google_identity %}
+                        <p class="text-muted mb-0">Cuenta vinculada: <strong>{{ user.google_identity.google_email }}</strong>. Puedes usar Google para iniciar sesión.</p>
+                        {% else %}
+                        <p class="text-muted small">Vincula tu cuenta de Google para acceder conservando tus cursos y tu perfil.</p>
+                        <form method="post" action="{% url 'google_start' %}">
+                            {% csrf_token %}<input type="hidden" name="intent" value="link">
+                            <label for="google-link-password" class="form-label">Confirma tu contraseña actual</label>
+                            <input id="google-link-password" type="password" name="password" autocomplete="current-password" class="form-control mb-3" required>
+                            <button type="submit" class="btn btn-outline-primary">Vincular Google</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                    {% endif %}
                     
                     <!-- ====== VOLVER ====== -->
                     <div class="text-center mt-4">

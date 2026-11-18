@@ -22,6 +22,7 @@
     function syncRole() {
         if (!role) return;
         var isTeacher = role.value === 'teacher';
+        document.querySelectorAll('[data-google-role]').forEach(function (input) { input.value = role.value; });
         if (student && teacher) {
             student.hidden = isTeacher;
             teacher.hidden = !isTeacher;

@@ -86,4 +86,12 @@
 @media (max-width: 960px) { .auth-shell { grid-template-columns: minmax(280px, 38%) 1fr; } .auth-story { padding: 30px; } .auth-story h1 { font-size: clamp(2.25rem, 4vw, 3.5rem); } }
 @media (max-width: 730px) { .auth-shell { display: block; } .auth-story { position: relative; height: auto; min-height: 104px; padding: 23px 24px 28px; } .auth-story-content { display: none; } .auth-panel { min-height: calc(100vh - 104px); padding: 28px 20px 55px; align-items: flex-start; } .auth-topbar { margin-bottom: 28px; } }
 @media (max-width: 420px) { .auth-panel { padding: 23px 16px 40px; } .password-rules { grid-template-columns: 1fr; } .role-card { padding: 12px; } }
+.auth-social { margin-bottom: 22px; }
+.auth-page .auth-google-button { width: 100%; min-height: 46px; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px; border: 1px solid #747775; border-radius: 10px; background: #fff; color: #1f1f1f; font: 600 14px/1.4 Inter, Arial, sans-serif; letter-spacing: .2px; box-shadow: none; transition: background .15s, box-shadow .15s; }
+.auth-page .auth-google-button:hover { background: #f2f6fc; color: #1f1f1f; box-shadow: 0 1px 3px #0002; }
+.auth-page .auth-google-button:focus-visible { outline: 3px solid var(--primary-text); outline-offset: 3px; }
+.auth-google-button img { flex: 0 0 20px; filter: none; }
+.auth-divider { display: flex; align-items: center; gap: 14px; margin-top: 22px; color: var(--text-muted); font-size: .8rem; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
+.google-account-email { overflow-wrap: anywhere; }
 @media (prefers-reduced-motion: reduce) { .auth-page *, .auth-page *::before, .auth-page *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; } }

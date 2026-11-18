@@ -29,6 +29,8 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-tu-clave-secreta-aqui
 
 DEBUG = env_bool('DEBUG')
 DEMO_CHECKOUT = env_bool('DEMO_CHECKOUT')
+GOOGLE_OAUTH_CLIENT_ID = os.environ.get('GOOGLE_OAUTH_CLIENT_ID', '').strip()
+GOOGLE_OAUTH_CLIENT_SECRET = os.environ.get('GOOGLE_OAUTH_CLIENT_SECRET', '').strip()
 
 RENDER_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME', '').strip()
 RENDER_URL = os.environ.get('RENDER_EXTERNAL_URL', '').strip().rstrip('/')

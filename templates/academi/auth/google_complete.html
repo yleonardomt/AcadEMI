@@ -1,0 +1,49 @@
+{% load static static_extras %}
+<!doctype html>
+<html lang="es">
+<head>
+    {% include 'partials/theme_init.html' %}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Completa tu cuenta | AcadEMI</title>
+    <link rel="icon" type="image/svg+xml" href="{% static_v 'images/logo-mark.svg' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static_v 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/components/forms.css' %}">
+    <link rel="stylesheet" href="{% static_v 'css/pages/auth.css' %}">
+</head>
+<body class="auth-page auth-register-page">
+<main class="auth-shell">
+    <aside class="auth-story" aria-label="AcadEMI">
+        <a class="auth-brand" href="{% url 'home' %}"><img src="{% static_v 'images/logo-mark.svg' %}" alt="" class="brand-logo" width="42" height="42"><span class="brand-wordmark">Acad<strong>EMI</strong></span></a>
+        <div class="auth-story-content"><h1>Tu próximo<br><em>paso.</em></h1><p>Elige cómo participar en AcadEMI y empieza a explorar tus cursos.</p></div>
+    </aside>
+    <section class="auth-panel" aria-labelledby="google-title">
+        <div class="auth-panel-inner">
+            <div class="auth-topbar"><a href="{% url 'register' %}" class="auth-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al registro</a><button type="button" class="auth-theme-toggle theme-toggle-btn" aria-label="Cambiar modo noche o día"><i class="fas fa-moon" aria-hidden="true"></i></button></div>
+            <div class="auth-heading"><h2 id="google-title">Completa tu cuenta</h2><p>Continúas con <strong class="google-account-email">{{ google_email }}</strong>. Confirma tus datos para empezar.</p></div>
+            {% if form.non_field_errors %}<div class="auth-notice auth-notice-error" role="alert">{{ form.non_field_errors }}</div>{% endif %}
+            <form method="post" class="auth-form" id="googleCompleteForm">
+                {% csrf_token %}
+                <div class="auth-field">
+                    <label for="id_role">Quiero participar como</label>
+                    <div class="role-picker"><button type="button" class="role-card" data-role="student" aria-pressed="false"><i class="fas fa-graduation-cap" aria-hidden="true"></i><strong>Estudiante</strong><small>Quiero aprender</small></button><button type="button" class="role-card" data-role="teacher" aria-pressed="false"><i class="fas fa-chalkboard-user" aria-hidden="true"></i><strong>Docente</strong><small>Quiero enseñar</small></button></div>
+                    {{ form.role }}{% for error in form.role.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}
+                </div>
+                <div id="studentFields" class="role-fields"><div class="auth-field"><label for="id_full_name">Nombre completo</label>{{ form.full_name }}{% for error in form.full_name.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div></div>
+                <div id="teacherFields" class="role-fields" hidden>
+                    <div class="auth-field"><label for="id_teacher_full_name">Nombre completo</label>{{ form.teacher_full_name }}{% for error in form.teacher_full_name.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                    <div class="auth-field"><label for="id_specialty">Especialidad</label>{{ form.specialty }}{% for error in form.specialty.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}</div>
+                </div>
+                <div class="auth-terms">{{ form.accept_terms }}<label for="id_accept_terms">Acepto los <a href="{% url 'terms' %}" target="_blank" rel="noopener">términos y condiciones</a> de AcadEMI.</label></div>{% for error in form.accept_terms.errors %}<small class="auth-error">{{ error }}</small>{% endfor %}
+                <button class="auth-submit" type="submit">Crear mi cuenta <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
+            </form>
+        </div>
+    </section>
+</main>
+<script src="{% static_v 'js/theme-toggle.js' %}"></script>
+<script src="{% static_v 'js/auth.js' %}"></script>
+</body>
+</html>

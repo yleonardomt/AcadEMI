@@ -1,5 +1,6 @@
 from django.urls import path
 from . import views
+from .views import google_auth
 
 urlpatterns = [
     # Home
@@ -7,6 +8,9 @@ urlpatterns = [
     
     # Autenticación
     path('register/', views.register_view, name='register'),
+    path('auth/google/start/', google_auth.google_start, name='google_start'),
+    path('auth/google/callback/', google_auth.google_callback, name='google_callback'),
+    path('auth/google/complete/', google_auth.google_complete, name='google_complete'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout'),
     path('change-password/', views.change_password_view, name='change_password'),

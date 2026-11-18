@@ -16,6 +16,7 @@ class EmailVerificationMiddleware:
     EXEMPT_URL_NAMES = {
         'verify_pending', 'resend_verification_email', 'verify_email', 'logout', 'terms',
         'chatbot', 'chatbot_send',
+        'google_start', 'google_callback', 'google_complete',
     }
 
     def __init__(self, get_response):

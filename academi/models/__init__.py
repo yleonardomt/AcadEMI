@@ -1,4 +1,4 @@
-from .users import User, Notification
+from .users import User, Notification, GoogleIdentity
 from .courses import Category, Course, Module, Lesson, LessonResource
 from .learning import (
     Favorite, Enrollment, LessonProgress, Comment, Question, Answer, Review,
@@ -19,7 +19,7 @@ from .chatbot import (
 )
 
 __all__ = [
-    'User', 'Notification',
+    'User', 'Notification', 'GoogleIdentity',
     'Category', 'Course', 'Module', 'Lesson', 'LessonResource',
     'Favorite', 'Enrollment', 'LessonProgress', 'Comment', 'Question', 'Answer', 'Review',
     'AssignmentSubmission',

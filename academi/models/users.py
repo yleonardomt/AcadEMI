@@ -86,6 +86,17 @@ class User(AbstractUser):
 # MÓDULO 2: PERFIL Y GESTIÓN DEL ESTUDIANTE (RF-08 al RF-14)
 # ============================================
 
+class GoogleIdentity(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='google_identity')
+    subject = models.CharField(max_length=255, unique=True)
+    google_email = models.EmailField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    terms_accepted_at = models.DateTimeField(blank=True, null=True)
+
+    def __str__(self):
+        return f'Google: {self.user.username}'
+
+
 class Notification(models.Model):  # RF-14
     NOTIFICATION_TYPES = (
         ('course', 'Curso'),

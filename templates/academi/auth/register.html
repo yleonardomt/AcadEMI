@@ -30,8 +30,10 @@
     <section class="auth-panel" aria-labelledby="register-title">
         <div class="auth-panel-inner">
             <div class="auth-topbar"><a href="{% url 'home' %}" class="auth-back"><i class="fas fa-arrow-left" aria-hidden="true"></i> Volver al inicio</a><button type="button" class="auth-theme-toggle theme-toggle-btn" aria-label="Cambiar modo noche o día" title="Cambiar modo noche o día"><i class="fas fa-moon" aria-hidden="true"></i></button></div>
-            <div class="auth-heading"><h2 id="register-title">Crea tu cuenta</h2><p>Empieza gratis. Completar el registro toma unos minutos.</p></div>
+            <div class="auth-heading"><h2 id="register-title">Crea tu cuenta</h2><p>{% if google_login_available %}Regístrate con Google o con tu correo.{% else %}Crear tu cuenta es gratis. Completa tus datos para empezar.{% endif %}</p></div>
             {% if form.non_field_errors %}<div class="auth-notice auth-notice-error" role="alert">{% for error in form.non_field_errors %}{{ error }}{% endfor %}</div>{% endif %}
+            {% if messages %}{% for message in messages %}<div class="auth-notice {% if message.tags == 'error' %}auth-notice-error{% endif %}" role="status">{{ message }}</div>{% endfor %}{% endif %}
+            {% include 'academi/auth/_google_button.html' with google_intent='register' %}
             <form method="post" class="auth-form" id="registerForm">
                 {% csrf_token %}
                 <div class="auth-field">

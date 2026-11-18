@@ -1,0 +1,16 @@
+{% load static static_extras %}
+{% if google_login_available %}
+<div class="auth-social">
+    <form method="post" action="{% url 'google_start' %}">
+        {% csrf_token %}
+        <input type="hidden" name="intent" value="{{ google_intent|default:'login' }}">
+        <input type="hidden" name="role" value="student" data-google-role>
+        <input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+        <button type="submit" class="auth-google-button">
+            <img src="{% static_v 'images/google-g.svg' %}" width="20" height="20" alt="">
+            <span>Continuar con Google</span>
+        </button>
+    </form>
+    <div class="auth-divider"><span>o usa tu correo</span></div>
+</div>
+{% endif %}

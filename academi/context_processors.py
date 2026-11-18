@@ -7,10 +7,12 @@ def header_counters(request):
     preguntas sin responder) disponibles en cada página, no solo en el
     dashboard."""
     if not request.user.is_authenticated:
-        return {'demo_mode': settings.DEMO_CHECKOUT}
+        return {'demo_mode': settings.DEMO_CHECKOUT,
+                'google_login_available': bool(settings.GOOGLE_OAUTH_CLIENT_ID and settings.GOOGLE_OAUTH_CLIENT_SECRET)}
 
     context = {
         'demo_mode': settings.DEMO_CHECKOUT,
+        'google_login_available': bool(settings.GOOGLE_OAUTH_CLIENT_ID and settings.GOOGLE_OAUTH_CLIENT_SECRET),
         'unread_notifications': Notification.objects.filter(user=request.user, is_read=False).count(),
     }
 
