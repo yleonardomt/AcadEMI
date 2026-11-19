@@ -35,12 +35,13 @@ El botón aparece al configurar ambas variables. Sin ellas, continúa funcionand
 
 Revisión del 18 de noviembre de 2026:
 
-- **88 pruebas Django correctas**, incluidas **22 pruebas** para esta integración.
+- **89 pruebas Django correctas**, incluidas **23 pruebas** para esta integración.
 - Tokens JWT firmados con claves RSA de prueba, verificados por la biblioteca oficial: se rechazan firma incorrecta, audiencia/issuer incorrectos, token vencido, nonce incorrecto y correo sin verificar. Las peticiones de red se sustituyen por respuestas de prueba.
 - Pruebas de CSRF, método HTTP, estado vencido/reutilizado, PKCE, roles, términos, vínculo de cuentas, cuentas desactivadas, errores del proveedor, conservación de inscripciones y creación opcional de contraseña.
 - **4 comprobaciones de navegador del acceso directo**, con una base nueva aislada y proveedor OAuth local de prueba: estudiante nuevo llega directamente al dashboard, perfil con nombre y Google vinculado, acceso repetido a la misma cuenta y registro docente con especialidad. El doble del proveedor existe solo en el directorio local de revisión; no forma parte del código desplegado.
 - **20 combinaciones** de página/ancho/tema para login y registro con el aviso de términos, en 320/390/768/1024/1440 px y temas claro/oscuro: sin desbordamiento horizontal ni fallos de contraste detectados en los controles analizados. La pantalla docente conserva el diseño revisado en la integración inicial.
 - `manage.py check`, migración sobre SQLite aislado y recopilación de estáticos correctos.
+- Regreso OAuth entre sitios distintos en Chromium (`localhost` → `127.0.0.1`): con la cookie `Strict` se reproduce el regreso al login sin sesión; con `Lax` se conserva la sesión y se llega al dashboard. La cookie CSRF sigue en `Strict`. [Referencia de SameSite en MDN](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Set-Cookie#samesitesamesite-value).
 
 El acceso con una cuenta personal real de Google requiere que su titular complete el selector/consentimiento de Google. Las pruebas locales no sustituyen ese último recorrido en Render ni verifican las restricciones de audiencia del proyecto en Google.
 

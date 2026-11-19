@@ -132,6 +132,13 @@ class GoogleFlowTests(TestCase):
         self.assertEqual(params['state'], [flow['state']])
         self.assertNotIn('client_secret', params)
 
+    def test_oauth_session_cookie_allows_top_level_cross_site_callback(self):
+        response = self.client.post(reverse('google_start'), {'intent': 'login'})
+        cookie = response.cookies[settings.SESSION_COOKIE_NAME]
+        self.assertEqual(cookie['samesite'], 'Lax')
+        self.assertTrue(cookie['httponly'])
+        self.assertEqual(settings.CSRF_COOKIE_SAMESITE, 'Strict')
+
     def test_invalid_expired_or_replayed_state_cannot_authenticate(self):
         flow, _ = self.start()
         with patch('academi.views.google_auth.exchange_code') as exchange:

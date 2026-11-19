@@ -357,7 +357,9 @@ CSP_CONNECT_SRC = ("'self'",)
 
 # Las cookies Secure solo funcionan cuando el navegador accede por HTTPS.
 SESSION_COOKIE_HTTPONLY = True
-SESSION_COOKIE_SAMESITE = 'Strict'
+# El callback de Google llega mediante navegación GET desde otro sitio.
+# Lax conserva la sesión OAuth en ese regreso; Strict omite la cookie.
+SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Strict'
 
