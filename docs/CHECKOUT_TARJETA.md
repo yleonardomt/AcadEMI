@@ -9,7 +9,7 @@ El carrito web incluye titular, número, vencimiento MM/AA y CVC de tres dígito
 | visa_debit | 4000 0566 5566 5556 | Visa débito |
 | mastercard_debit | 5200 8282 8282 8210 | Mastercard débito |
 
-Usar una fecha futura, por ejemplo `12/30`, y CVC `123`. El formulario explica que no se realiza ningún cargo. Solo admite los números de prueba indicados. No hay comunicación con bancos ni una pasarela de pagos.
+Usar una fecha futura, por ejemplo `12/30`, y CVC `123`. Solo admite los números de prueba indicados. No hay comunicación con bancos ni una pasarela de pagos. Los datos de prueba se documentan aquí; el formulario no muestra el aviso de la presentación.
 
 ## Registro y privacidad de los datos
 

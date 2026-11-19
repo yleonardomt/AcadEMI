@@ -160,14 +160,13 @@
                 {% if demo_checkout %}
                 <fieldset class="debit-card-fields" id="debitCardFields" {% if not items or total <= 0 %}hidden disabled{% endif %}>
                     <legend><i class="far fa-credit-card" aria-hidden="true"></i> Tarjeta de débito</legend>
-                    <p class="card-test-help" id="cardTestHelp">Para la presentación usa <strong>4000 0566 5566 5556</strong>, una fecha futura y CVC <strong>123</strong>. No se realiza ningún cargo.</p>
                     <div class="form-group">
                         <label for="cardHolder">Titular de la tarjeta</label>
                         <input id="cardHolder" type="text" maxlength="150" value="{{ user.get_full_name|default:user.username }}" autocomplete="off" required>
                     </div>
                     <div class="form-group">
                         <label for="cardNumber">Número de tarjeta</label>
-                        <input id="cardNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000" aria-describedby="cardTestHelp" required>
+                        <input id="cardNumber" type="text" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000" required>
                     </div>
                     <div class="row-2 card-date-cvc">
                         <div class="form-group">
