@@ -1,6 +1,6 @@
 import logging
 import secrets
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from django.core import signing
 from django.conf import settings
@@ -47,6 +47,7 @@ def _pricing(user, items, coupon=None):
         emi = min(subtotal * (EMI_STUDENT_DISCOUNT_PERCENT / D('100')), subtotal)
         if emi > discount:
             discount, coupon, label = emi, None, 'Descuento estudiante EMI (primera compra)'
+    discount = discount.quantize(D('0.01'), rounding=ROUND_HALF_UP)
     return {'subtotal': subtotal, 'discount': discount, 'total': subtotal - discount,
             'label': label, 'coupon': coupon}
 
@@ -248,7 +249,7 @@ def _payment_json(payment, with_items=False, request=None):
         'id': payment.id, 'invoice_number': payment.invoice_number,
         'amount': money(payment.amount), 'discount': money(payment.discount_applied),
         'total': money(payment.final_amount), 'method': payment.payment_method,
-        'method_label': payment.get_payment_method_display(),
+        'method_label': payment.display_payment_method,
         'status': payment.status, 'status_label': payment.get_status_display(),
         'created_at': payment.created_at.isoformat(), 'transaction_id': payment.transaction_id,
         'courses_count': payment.items.count(),

@@ -49,7 +49,7 @@
             </div>
             <div class="col-6 text-end">
                 <p class="invoice-section-title">Método de pago</p>
-                <p class="mb-0">{{ payment.get_payment_method_display }}</p>
+                <p class="mb-0">{{ payment.display_payment_method }}</p>
                 {% if payment.transaction_id %}<p class="mb-0 text-muted small">Ref: {{ payment.transaction_id }}</p>{% endif %}
             </div>
         </div>

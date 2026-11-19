@@ -210,6 +210,13 @@ class Payment(models.Model):
     def __str__(self):
         return f"{self.invoice_number or 'Pago'} - {self.student.username} - Bs.{self.final_amount}"
 
+    @property
+    def display_payment_method(self):
+        details = self.payment_details or {}
+        if self.payment_method == 'demo' and details.get('method') == 'debit_card':
+            return f"Tarjeta de débito · {details.get('card_brand', '')} •••• {details.get('card_last_four', '')}"
+        return self.get_payment_method_display()
+
     def save(self, *args, **kwargs):
         if not self.invoice_number:
             self.invoice_number = self.generate_invoice_number()

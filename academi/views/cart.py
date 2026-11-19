@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.conf import settings
+from ..utils.demo_cards import DEMO_CARDS
 
 from ..models import (
     Cart, CartItem, Course, Enrollment,
@@ -122,5 +123,6 @@ def cart_view(request):
         'emi_discount_eligible': is_eligible_for_emi_first_purchase_discount(request.user),
         'emi_discount_percent': EMI_STUDENT_DISCOUNT_PERCENT,
         'demo_checkout': settings.DEMO_CHECKOUT,
+        'demo_cards': DEMO_CARDS if settings.DEMO_CHECKOUT else {},
     }
     return render(request, 'academi/payments/carrito.html', context)

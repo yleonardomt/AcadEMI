@@ -6,7 +6,8 @@ var cartState = {
     subtotal: 0,
     discount: 0,
     total: 0,
-    couponCode: null
+    couponCode: null,
+    processing: false
 };
 
 // ============================================
@@ -15,7 +16,57 @@ var cartState = {
 document.addEventListener('DOMContentLoaded', function() {
     updateCartState();
     loadCouponFromSession();
+    initCardFields();
 });
+
+function initCardFields() {
+    ['cardNumber', 'cardExpiry', 'cardCvc', 'cardHolder'].forEach(function(id) {
+        var input = document.getElementById(id);
+        if (!input) return;
+        input.addEventListener('input', function() {
+            if (id === 'cardNumber') {
+                input.value = input.value.replace(/\D/g, '').slice(0, 16).replace(/(.{4})(?=.)/g, '$1 ');
+            } else if (id === 'cardExpiry') {
+                var digits = input.value.replace(/\D/g, '').slice(0, 4);
+                input.value = digits.length > 2 ? digits.slice(0, 2) + '/' + digits.slice(2) : digits;
+            } else if (id === 'cardCvc') {
+                input.value = input.value.replace(/\D/g, '').slice(0, 3);
+            }
+            input.removeAttribute('aria-invalid');
+            document.getElementById('cardError').hidden = true;
+        });
+    });
+}
+
+function validateCard() {
+    var error = document.getElementById('cardError');
+    function fail(id, message) {
+        error.textContent = message;
+        error.hidden = false;
+        var field = document.getElementById(id);
+        field.setAttribute('aria-invalid', 'true');
+        field.focus();
+        return null;
+    }
+    if (!document.getElementById('cardHolder').value.trim()) {
+        return fail('cardHolder', 'Ingresa el nombre del titular de la tarjeta.');
+    }
+    var number = document.getElementById('cardNumber').value.replace(/\s/g, '');
+    var cards = JSON.parse(document.getElementById('demoCards').textContent);
+    var testCard = Object.keys(cards).find(function(key) { return cards[key].number === number; });
+    if (!testCard) return fail('cardNumber', 'Usa una tarjeta de prueba para esta presentación: 4000 0566 5566 5556.');
+    var expiry = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(document.getElementById('cardExpiry').value);
+    if (!expiry) return fail('cardExpiry', 'Ingresa una fecha válida con formato MM/AA.');
+    var now = new Date();
+    if (2000 + Number(expiry[2]) < now.getFullYear() ||
+            (2000 + Number(expiry[2]) === now.getFullYear() && Number(expiry[1]) < now.getMonth() + 1)) {
+        return fail('cardExpiry', 'La tarjeta está vencida. Ingresa una fecha futura.');
+    }
+    if (!/^\d{3}$/.test(document.getElementById('cardCvc').value)) {
+        return fail('cardCvc', 'El CVC debe tener 3 dígitos.');
+    }
+    return testCard;
+}
 
 // ============================================
 // ACTUALIZAR ESTADO DEL CARRITO
@@ -35,7 +86,7 @@ function updateCartState() {
 
     cartState.items = items;
     cartState.subtotal = subtotal;
-    cartState.total = subtotal - cartState.discount;
+    cartState.total = Math.max(0, subtotal - cartState.discount);
 
     var subtotalDisplay = document.getElementById('subtotalDisplay');
     var totalDisplay = document.getElementById('totalDisplay');
@@ -43,6 +94,11 @@ function updateCartState() {
     var discountRow = document.getElementById('discountRow');
     var discountDisplay = document.getElementById('discountDisplay');
     var checkoutBtn = document.getElementById('checkoutBtn');
+    var cardFields = document.getElementById('debitCardFields');
+    if (cardFields) {
+        cardFields.hidden = cartState.total <= 0 || itemCount === 0;
+        cardFields.disabled = cardFields.hidden;
+    }
 
     if (subtotalDisplay) {
         subtotalDisplay.innerHTML = '<i class="fas fa-bolivian-sign"></i> ' + subtotal.toFixed(2);
@@ -64,7 +120,7 @@ function updateCartState() {
     }
 
     if (checkoutBtn) {
-        checkoutBtn.disabled = itemCount === 0 || (cartState.subtotal > 0 && checkoutBtn.dataset.demo !== 'true');
+        checkoutBtn.disabled = cartState.processing || itemCount === 0 || (cartState.subtotal > 0 && checkoutBtn.dataset.demo !== 'true');
         checkoutBtn.innerHTML = cartState.subtotal > 0 && checkoutBtn.dataset.demo === 'true'
             ? '<i class="fas fa-bag-shopping"></i> Finalizar compra'
             : '<i class="fas fa-book-open"></i> Inscribirme gratis';
@@ -235,14 +291,19 @@ function loadCouponFromSession() {
 // ============================================
 function processCheckout() {
     var btn = document.getElementById('checkoutBtn');
-    if (!btn) return;
+    if (!btn || cartState.processing || !cartState.items.length) return;
     if (cartState.subtotal > 0 && btn.dataset.demo !== 'true') {
         showToast('Las compras de cursos pagos aún no están habilitadas.', 'error');
         return;
     }
 
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner"></span> Procesando...';
+    var form = document.getElementById('paymentForm');
+    if (!form.reportValidity()) return;
+    var testCard = null;
+    if (cartState.total > 0) {
+        testCard = validateCard();
+        if (!testCard) return;
+    }
 
     var fullName = document.getElementById('fullName');
     var email = document.getElementById('email');
@@ -268,9 +329,16 @@ function processCheckout() {
         email: email.value.trim(),
         phone: phone ? phone.value.trim() : '',
         address: address ? address.value.trim() : '',
-        payment_method: cartState.subtotal > 0 ? 'demo' : 'free',
+        payment_method: cartState.total > 0 ? 'debit_card' : 'free',
+        test_card: testCard,
         coupon_code: cartState.couponCode
     };
+
+    // Solo se envía el identificador público de la tarjeta de prueba.
+    // Número, titular de tarjeta, fecha y CVC permanecen en el navegador.
+    cartState.processing = true;
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Procesando...';
 
     fetch('/checkout/', {
         method: 'POST',
@@ -290,17 +358,23 @@ function processCheckout() {
     })
     .then(function(data) {
         if (data.success) {
+            ['cardNumber', 'cardExpiry', 'cardCvc', 'cardHolder'].forEach(function(id) {
+                var input = document.getElementById(id);
+                if (input) input.value = '';
+            });
             showToast(data.message || 'Inscripción realizada.', 'success');
             setTimeout(function() {
                 window.location.href = '/my-courses/';
             }, 1500);
         } else {
+            cartState.processing = false;
             showToast(data.message || 'Error al procesar la compra', 'error');
             btn.disabled = false;
             updateCartState();
         }
     })
     .catch(function(error) {
+        cartState.processing = false;
         console.error('Error:', error);
         showToast(error.message || 'Error de conexión al servidor', 'error');
         btn.disabled = false;

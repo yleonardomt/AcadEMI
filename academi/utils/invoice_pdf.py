@@ -43,7 +43,7 @@ def render_invoice_pdf(payment):
     c.setFont('Helvetica-Bold', 11)
     name = payment.billing_name or payment.student.get_full_name() or payment.student.username
     c.drawString(left, y - 6 * mm, name)
-    c.drawString(width / 2 + 5 * mm, y - 6 * mm, payment.get_payment_method_display())
+    c.drawString(width / 2 + 5 * mm, y - 6 * mm, payment.display_payment_method.replace("••••", "****"))
     c.setFont('Helvetica', 10)
     c.setFillColor(MUTED)
     c.drawString(left, y - 12 * mm, payment.billing_email or payment.student.email)

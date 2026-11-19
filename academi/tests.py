@@ -337,7 +337,7 @@ class ChatbotAndCheckoutTests(TestCase):
         self.client.force_login(self.student)
         with patch('academi.views.payments.send_purchase_confirmation_email') as email:
             response = self.client.post(reverse('checkout'),
-                                        data='{"full_name":"Alumna", "email":"a@example.com"}',
+                                        data='{"full_name":"Alumna", "email":"a@example.com", "payment_method":"debit_card", "test_card":"visa_debit"}',
                                         content_type='application/json')
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.json()['demo'])
@@ -364,7 +364,7 @@ class ChatbotAndCheckoutTests(TestCase):
         CartItem.objects.create(cart=Cart.objects.create(student=self.student), course=self.course)
         self.client.force_login(self.student)
         response = self.client.post(reverse('checkout'),
-                                    data='{"full_name":"Alumna", "email":"a@example.com", "coupon_code":"OFERTA10"}',
+                                    data='{"full_name":"Alumna", "email":"a@example.com", "coupon_code":"OFERTA10", "payment_method":"debit_card", "test_card":"visa_debit"}',
                                     content_type='application/json')
         self.assertEqual(response.status_code, 200)
         coupon.refresh_from_db()

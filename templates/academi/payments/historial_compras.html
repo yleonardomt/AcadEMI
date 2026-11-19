@@ -100,7 +100,7 @@
                         {{ payment.get_status_display }}
                     </span>
                     <span class="text-muted ms-3" style="font-size: 13px;">
-                        <i class="fas fa-credit-card"></i> {{ payment.get_payment_method_display }}
+                        <i class="fas fa-credit-card"></i> {{ payment.display_payment_method }}
                     </span>
                     {% if payment.transaction_id %}
                     <span class="text-muted ms-3" style="font-size: 13px;">

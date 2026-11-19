@@ -204,11 +204,11 @@
 }
 
 .summary-row.discount {
-    color: var(--success);
+    color: var(--success-text);
 }
 
 .summary-row.discount .label {
-    color: var(--success);
+    color: var(--success-text);
 }
 
 /* ============================================
@@ -423,6 +423,17 @@
     grid-template-columns: 1fr 1fr;
     gap: 12px;
 }
+
+.debit-card-fields { min-width: 0; padding: 18px 0 0; margin-top: 8px; border: 0; border-top: 1px solid var(--gray-light); }
+.debit-card-fields[hidden] { display: none; }
+.debit-card-fields legend { float: none; width: auto; font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; }
+.card-test-help { font-size: 12px; line-height: 1.6; color: var(--text-muted); overflow-wrap: anywhere; }
+.debit-card-fields small { display: block; margin-top: 5px; font-size: 12px; color: var(--text-muted); }
+.payment-form input { min-width: 0; color: var(--text-primary); background: var(--surface); }
+.payment-form .card-date-cvc { grid-template-columns: 1fr 1fr; }
+.card-error { color: var(--danger-text, #b91c1c); font-size: 13px; line-height: 1.5; margin: 0 0 12px; }
+:root[data-theme="dark"] .card-error { color: #fca5a5; }
+.debit-card-fields input[aria-invalid="true"] { border-color: #dc3545; }
 
 /* ============================================
    QR DE PAGO (estático + dinámico)

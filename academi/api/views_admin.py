@@ -355,7 +355,7 @@ def payments(request):
         payments=[{
             'id': p.id, 'invoice_number': p.invoice_number, 'student': display_name(p.student),
             'email': p.student.email, 'total': money(p.final_amount), 'discount': money(p.discount_applied),
-            'method_label': p.get_payment_method_display(), 'status': p.status,
+            'method_label': p.display_payment_method, 'status': p.status,
             'status_label': p.get_status_display(), 'created_at': p.created_at.isoformat(),
             'courses': [i.course.title for i in p.items.all()],
         } for p in qs[:150]],

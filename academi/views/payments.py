@@ -12,6 +12,8 @@ from django.db.models import Sum
 from django.utils import timezone
 from django.http import JsonResponse
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 
 from ..models import (
     Cart, Coupon, Payment, PaymentItem, Enrollment, Notification,
@@ -21,6 +23,7 @@ from ..models import (
 from ..utils import get_client_ip, send_purchase_confirmation_email, render_invoice_pdf
 from ..utils.coupons import save_coupon as save_coupon_record
 from ..utils.demo_sales import visible_sales
+from ..utils.demo_cards import card_payment_details
 from ..api.views_commerce import _find_coupon, _pricing, _line_amounts
 from django.http import HttpResponse
 
@@ -46,11 +49,14 @@ def checkout_view(request):
 
     try:
         data = json.loads(request.body)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, UnicodeDecodeError):
         return JsonResponse({
             'success': False,
             'message': 'Datos inválidos'
         }, status=400)
+
+    if not isinstance(data, dict):
+        return JsonResponse({'success': False, 'message': 'Datos inválidos'}, status=400)
 
     # OBTENER CARRITO
     cart = Cart.objects.filter(student=request.user).first()
@@ -90,11 +96,16 @@ def checkout_view(request):
         }, status=503)
 
     # VALIDAR DATOS DE PAGO
-    full_name = data.get('full_name', '').strip()
-    email = data.get('email', '').strip()
-    phone = data.get('phone', '').strip()
-    address = data.get('address', '').strip()
+    full_name = str(data.get('full_name') or '').strip()[:200]
+    email = str(data.get('email') or '').strip()[:254]
+    phone = str(data.get('phone') or '').strip()[:50]
+    address = str(data.get('address') or '').strip()[:500]
     payment_method = 'demo' if demo else 'free'
+    payment_details = {'mode': 'demo'} if demo else {}
+    if demo and total > 0:
+        payment_details = card_payment_details(data.get('test_card'))
+        if data.get('payment_method') != 'debit_card' or not payment_details:
+            return JsonResponse({'success': False, 'message': 'Completa los datos de la tarjeta de prueba.'}, status=400)
 
     if not full_name:
         return JsonResponse({
@@ -107,6 +118,10 @@ def checkout_view(request):
             'success': False,
             'message': 'El correo electrónico es obligatorio'
         })
+    try:
+        validate_email(email)
+    except ValidationError:
+        return JsonResponse({'success': False, 'message': 'Ingresa un correo electrónico válido.'}, status=400)
     if any(Enrollment.objects.filter(student=request.user, course=item.course).exists() for item in items):
         return JsonResponse({'success': False, 'message': 'Ya estás inscrito en uno de estos cursos. Quítalo del carrito.'}, status=400)
 
@@ -126,7 +141,7 @@ def checkout_view(request):
                 billing_email=email,
                 billing_phone=phone,
                 billing_address=address,
-                payment_details={'mode': 'demo'} if demo else {},
+                payment_details=payment_details,
                 confirmed_at=timezone.now(),
                 ip_address=get_client_ip(request),
                 user_agent=request.META.get('HTTP_USER_AGENT', ''),
