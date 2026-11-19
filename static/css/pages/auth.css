@@ -91,6 +91,8 @@
 .auth-page .auth-google-button:hover { background: #f2f6fc; color: #1f1f1f; box-shadow: 0 1px 3px #0002; }
 .auth-page .auth-google-button:focus-visible { outline: 3px solid var(--primary-text); outline-offset: 3px; }
 .auth-google-button img { flex: 0 0 20px; filter: none; }
+.auth-google-terms { margin: 10px 0 0; color: var(--text-muted); font-size: .76rem; line-height: 1.55; }
+.auth-google-terms a { color: var(--primary-text); text-decoration: underline; text-underline-offset: 2px; }
 .auth-divider { display: flex; align-items: center; gap: 14px; margin-top: 22px; color: var(--text-muted); font-size: .8rem; }
 .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--border-color); }
 .google-account-email { overflow-wrap: anywhere; }

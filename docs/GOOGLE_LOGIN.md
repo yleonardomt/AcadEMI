@@ -22,8 +22,9 @@ El botón aparece al configurar ambas variables. Sin ellas, continúa funcionand
 
 ## Comportamiento
 
-- Cuenta nueva: después de elegir Google, se confirma el nombre, el rol Estudiante/Docente y los términos. Un docente indica su especialidad. Google no permite crear administradores desde el registro.
-- Gmail o Google Workspace con correo verificado: acceso directo después de completar el registro, sin otro correo de activación. Si Google no es autoridad del correo externo, se conserva la verificación por email de AcadEMI.
+- Estudiante nuevo con Gmail o Google Workspace verificado: **Continuar con Google → elegir cuenta/autorizar en Google → dashboard**. Se crea la cuenta con el nombre y correo de Google, sin otro formulario, contraseña local, CAPTCHA ni correo adicional de activación. El aviso junto al botón explica la creación de cuenta y enlaza los términos antes de continuar. Si Google no aporta un nombre, se usa provisionalmente la parte del correo anterior a `@`, editable en Mi perfil.
+- Docente nuevo: seleccionar Docente en el registro antes de continuar con Google. Solo la primera vez se solicita confirmar el nombre, la especialidad y los términos. Google no permite crear administradores desde el registro.
+- El CAPTCHA del formulario de usuario/contraseña es independiente del botón Google. Google puede solicitar sus propias comprobaciones de acceso. Si Google no es autoridad del correo externo, se conserva el formulario de registro y la verificación por email de AcadEMI.
 - Cuenta local existente con el mismo correo verificado de Gmail/Workspace: se conserva la cuenta, sus cursos, su contraseña y su rol. No se modifica el rol por elegir otro perfil en el registro.
 - Administrador, cuenta con correo local pendiente, correo externo o coincidencia ambigua: ingresar primero con usuario/contraseña. Después de verificar el correo, usar **Mi perfil → Vincular Google**, confirmando la contraseña actual. Para correos duplicados, cada titular debe identificar su cuenta por usuario.
 - Una identidad de Google corresponde a una sola cuenta de AcadEMI. No se permite moverla a otro usuario desde un inicio de sesión diferente.
@@ -34,11 +35,11 @@ El botón aparece al configurar ambas variables. Sin ellas, continúa funcionand
 
 Revisión del 18 de noviembre de 2026:
 
-- **85 pruebas Django correctas**, incluidas **19 pruebas nuevas** para esta integración.
+- **88 pruebas Django correctas**, incluidas **22 pruebas** para esta integración.
 - Tokens JWT firmados con claves RSA de prueba, verificados por la biblioteca oficial: se rechazan firma incorrecta, audiencia/issuer incorrectos, token vencido, nonce incorrecto y correo sin verificar. Las peticiones de red se sustituyen por respuestas de prueba.
 - Pruebas de CSRF, método HTTP, estado vencido/reutilizado, PKCE, roles, términos, vínculo de cuentas, cuentas desactivadas, errores del proveedor, conservación de inscripciones y creación opcional de contraseña.
-- **9 pasos de navegador** en una base aislada, con un proveedor OAuth local de prueba: registro de estudiante y docente, acceso repetido a la misma cuenta, perfil vinculado y creación de contraseña. El doble del proveedor existe solo en el directorio local de revisión; no forma parte del código desplegado.
-- **30 combinaciones** de página/ancho/tema para login, registro y completar cuenta, en 320/390/768/1024/1440 px y temas claro/oscuro: sin desbordamiento horizontal ni fallos de contraste detectados en los controles analizados.
+- **4 comprobaciones de navegador del acceso directo**, con una base nueva aislada y proveedor OAuth local de prueba: estudiante nuevo llega directamente al dashboard, perfil con nombre y Google vinculado, acceso repetido a la misma cuenta y registro docente con especialidad. El doble del proveedor existe solo en el directorio local de revisión; no forma parte del código desplegado.
+- **20 combinaciones** de página/ancho/tema para login y registro con el aviso de términos, en 320/390/768/1024/1440 px y temas claro/oscuro: sin desbordamiento horizontal ni fallos de contraste detectados en los controles analizados. La pantalla docente conserva el diseño revisado en la integración inicial.
 - `manage.py check`, migración sobre SQLite aislado y recopilación de estáticos correctos.
 
 El acceso con una cuenta personal real de Google requiere que su titular complete el selector/consentimiento de Google. Las pruebas locales no sustituyen ese último recorrido en Render ni verifican las restricciones de audiencia del proyecto en Google.

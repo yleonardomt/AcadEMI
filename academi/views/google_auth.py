@@ -40,6 +40,24 @@ def _failure(request, text, destination='login'):
     return redirect(destination)
 
 
+def _create_google_user(identity, role, name, specialty=''):
+    """Crear usuario y vínculo dentro de la transacción del flujo OAuth."""
+    base = re.sub(r'[^a-zA-Z0-9_]', '', identity['email'].split('@')[0])[:25] or 'usuario'
+    username = base
+    while User.objects.filter(username=username).exists():
+        username = f'{base}_{secrets.token_hex(4)}'
+    user = User.objects.create_user(username=username, email=identity['email'], password=None,
+        role=role, first_name=name, email_verified=identity['authoritative'],
+        full_name=name if role == 'student' else '', teacher_full_name=name if role == 'teacher' else '',
+        specialty=specialty if role == 'teacher' else '')
+    GoogleIdentity.objects.create(user=user, subject=identity['subject'], google_email=identity['email'],
+                                  terms_accepted_at=timezone.now())
+    if role == 'student' and is_emi_student_email(user.email):
+        Notification.objects.create(user=user, type='system', title='Descuento estudiante EMI',
+            message=f'Tienes {EMI_STUDENT_DISCOUNT_PERCENT:g}% de descuento en tu primera compra paga.', link='/catalog/')
+    return user
+
+
 @never_cache
 @require_POST
 @ratelimit(key='ip', rate='20/m', method='POST', block=False)
@@ -133,6 +151,10 @@ def google_callback(request):
                 if not user.is_active:
                     raise GoogleLoginError('Esta cuenta está desactivada. Contacta al administrador.')
                 return _finish(request, user, flow['next'])
+            if flow['role'] == 'student' and identity['authoritative']:
+                name = identity['name'].strip() or identity['email'].split('@')[0][:150]
+                user = _create_google_user(identity, 'student', name)
+                return _finish(request, user, flow['next'])
         request.session[SIGNUP_KEY] = {**identity, 'issued': time.time(), 'role': flow['role'], 'next': flow['next']}
         return redirect('google_complete')
     except GoogleLoginError as exc:
@@ -159,19 +181,7 @@ def google_complete(request):
                     raise GoogleLoginError('Ya existe una cuenta con ese correo.')
                 role = form.cleaned_data['role']
                 name = form.cleaned_data['teacher_full_name' if role == 'teacher' else 'full_name']
-                base = re.sub(r'[^a-zA-Z0-9_]', '', identity['email'].split('@')[0])[:25] or 'usuario'
-                username = base
-                while User.objects.filter(username=username).exists():
-                    username = f'{base}_{secrets.token_hex(4)}'
-                user = User.objects.create_user(username=username, email=identity['email'], password=None,
-                    role=role, first_name=name, email_verified=identity['authoritative'],
-                    full_name=name if role == 'student' else '', teacher_full_name=name if role == 'teacher' else '',
-                    specialty=form.cleaned_data.get('specialty', '') if role == 'teacher' else '')
-                GoogleIdentity.objects.create(user=user, subject=identity['subject'], google_email=identity['email'],
-                                              terms_accepted_at=timezone.now())
-                if role == 'student' and is_emi_student_email(user.email):
-                    Notification.objects.create(user=user, type='system', title='Descuento estudiante EMI',
-                        message=f'Tienes {EMI_STUDENT_DISCOUNT_PERCENT:g}% de descuento en tu primera compra paga.', link='/catalog/')
+                user = _create_google_user(identity, role, name, form.cleaned_data.get('specialty', ''))
             request.session.pop(SIGNUP_KEY, None)
             login(request, user, backend=BACKEND)
             if not user.email_verified:

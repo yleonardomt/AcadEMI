@@ -9,6 +9,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 from django.conf import settings
 from django.core.cache import cache
+from django.db import IntegrityError
 from django.test import Client, SimpleTestCase, TestCase, override_settings
 from django.urls import reverse
 from google.auth import crypt, jwt
@@ -111,6 +112,7 @@ class GoogleFlowTests(TestCase):
             response = self.client.get(reverse(page))
             self.assertContains(response, 'Continuar con Google')
             self.assertContains(response, reverse('google_start'))
+            self.assertContains(response, 'Al continuar, aceptas los')
             self.assertNotContains(response, CONFIG['GOOGLE_OAUTH_CLIENT_SECRET'])
 
     @override_settings(GOOGLE_OAUTH_CLIENT_ID='', GOOGLE_OAUTH_CLIENT_SECRET='')
@@ -141,7 +143,7 @@ class GoogleFlowTests(TestCase):
         with patch('academi.views.google_auth.exchange_code') as exchange:
             self.client.get(reverse('google_callback'), {'state': flow['state'], 'code': 'code'})
             exchange.assert_not_called()
-        self.callback()
+        self.callback(intent='register', role='teacher')
         self.assertNotIn(FLOW_KEY, self.client.session)
         with patch('academi.views.google_auth.exchange_code') as exchange:
             self.client.get(reverse('google_callback'), {'state': flow['state'], 'code': 'code'})
@@ -155,15 +157,11 @@ class GoogleFlowTests(TestCase):
         with patch('academi.views.google_auth.exchange_code', side_effect=GoogleLoginError('No pudimos verificar tu cuenta.')):
             self.assertRedirects(self.client.get(reverse('google_callback'), {'state': flow['state'], 'code': 'code'}), reverse('login'))
 
-    def test_new_google_student_requires_terms_and_keeps_google_identity(self):
-        self.assertRedirects(self.callback(), reverse('google_complete'))
-        self.assertFalse(User.objects.filter(email='new@gmail.com').exists())
-        response = self.complete(accept_terms='')
-        self.assertContains(response, 'accept_terms')
-        self.assertFalse(User.objects.filter(email='new@gmail.com').exists())
-        self.assertRedirects(self.complete(email='forged@example.com'), reverse('dashboard'))
+    def test_new_google_student_enters_directly_without_captcha_or_second_form(self):
+        self.assertRedirects(self.callback(next='/my-courses/'), reverse('my_courses'))
         user = User.objects.get(email='new@gmail.com')
         self.assertEqual(user.role, 'student')
+        self.assertEqual(user.full_name, 'Ana Quispe')
         self.assertTrue(user.email_verified)
         self.assertFalse(user.has_usable_password())
         self.assertIsNotNone(user.google_identity.terms_accepted_at)
@@ -171,10 +169,36 @@ class GoogleFlowTests(TestCase):
         self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
         self.assertEqual(self.client.post(reverse('google_complete'), {}).status_code, 302)
         self.assertEqual(User.objects.filter(email='new@gmail.com').count(), 1)
+        self.client.logout()
+        self.assertRedirects(self.callback(), reverse('dashboard'))
+        self.assertEqual(int(self.client.session['_auth_user_id']), user.pk)
+        self.assertEqual(User.objects.filter(email='new@gmail.com').count(), 1)
+
+    def test_student_registration_also_enters_directly_and_handles_missing_name(self):
+        response = self.callback({'subject': 'nameless', 'email': 'nameless@gmail.com',
+                                   'name': '', 'authoritative': True}, intent='register', role='student')
+        self.assertRedirects(response, reverse('dashboard'))
+        self.assertEqual(User.objects.get(email='nameless@gmail.com').full_name, 'nameless')
+
+    def test_automatic_signup_does_not_create_admin_or_reuse_taken_username(self):
+        existing = User.objects.create_user(username='new', email='someone@example.com')
+        self.assertRedirects(self.callback(role='admin'), reverse('dashboard'))
+        user = User.objects.get(email='new@gmail.com')
+        self.assertNotEqual(user.username, existing.username)
+        self.assertEqual(user.role, 'student')
+        self.assertFalse(user.is_staff or user.is_superuser)
+
+    def test_automatic_signup_rolls_back_user_if_identity_creation_conflicts(self):
+        with patch('academi.views.google_auth.GoogleIdentity.objects.create', side_effect=IntegrityError):
+            self.assertEqual(self.callback().url, reverse('login'))
+        self.assertFalse(User.objects.filter(email='new@gmail.com').exists())
+        self.assertNotIn('_auth_user_id', self.client.session)
 
     def test_teacher_requires_specialty_and_admin_signup_is_rejected(self):
         self.callback(intent='register', role='teacher')
         self.assertContains(self.client.get(reverse('google_complete')), 'teacher_full_name')
+        self.assertEqual(self.complete(accept_terms='').status_code, 200)
+        self.assertFalse(User.objects.filter(email='new@gmail.com').exists())
         self.assertEqual(self.complete(role='admin').status_code, 200)
         response = self.complete(role='teacher', teacher_full_name='Docente Google', specialty='')
         self.assertContains(response, 'Ingresa tu especialidad.')
@@ -192,12 +216,12 @@ class GoogleFlowTests(TestCase):
         self.assertEqual(len(mail.outbox), 1)
 
     def test_expired_signup_and_email_registered_during_signup_do_not_duplicate(self):
-        self.callback()
+        self.callback(intent='register', role='teacher')
         session = self.client.session
         session[SIGNUP_KEY] = {**session[SIGNUP_KEY], 'issued': time.time() - 601}
         session.save()
         self.assertRedirects(self.complete(), reverse('register'))
-        self.callback()
+        self.callback(intent='register', role='teacher')
         User.objects.create_user(username='existing', email='new@gmail.com')
         self.assertRedirects(self.complete(), reverse('login'))
         self.assertEqual(User.objects.filter(email='new@gmail.com').count(), 1)
@@ -268,7 +292,6 @@ class GoogleFlowTests(TestCase):
 
     def test_google_only_account_can_create_password_without_losing_google_login(self):
         self.callback()
-        self.complete()
         user = User.objects.get(email='new@gmail.com')
         response = self.client.get(reverse('change_password'))
         self.assertNotIn('old_password', response.context['form'].fields)
