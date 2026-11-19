@@ -75,7 +75,7 @@ def render_certificate_pdf(certificate):
         c.drawCentredString(x, meta_y, label)
 
     meta_column(0, certificate.issued_at.strftime('%d/%m/%Y'), 'FECHA DE EMISIÓN')
-    meta_column(1, f'{course.total_duration} min', 'DURACIÓN DEL CURSO')
+    meta_column(1, course.total_duration_display, 'DURACIÓN DEL CURSO')
     meta_column(2, certificate.certificate_code, 'CÓDIGO DE VERIFICACIÓN')
 
     c.setFont('Helvetica', 8)

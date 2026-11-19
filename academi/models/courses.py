@@ -80,6 +80,13 @@ class Course(models.Model):  # RF-15, RF-16, RF-17, RF-21
         return total
 
     @property
+    def total_duration_display(self):
+        hours, minutes = divmod(max(0, self.total_duration), 60)
+        if not hours:
+            return f'{minutes} min'
+        return f'{hours} h {minutes} min' if minutes else f'{hours} h'
+
+    @property
     def average_rating(self):  # RF-24, RF-29, RF-40
         ratings = self.reviews.all()
         if ratings:
