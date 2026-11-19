@@ -214,7 +214,8 @@ class Payment(models.Model):
     def display_payment_method(self):
         details = self.payment_details or {}
         if self.payment_method == 'demo' and details.get('method') == 'debit_card':
-            return f"Tarjeta de débito · {details.get('card_brand', '')} •••• {details.get('card_last_four', '')}"
+            brand = f"{details['card_brand']} " if details.get('card_brand') else ''
+            return f"Tarjeta de débito · {brand}•••• {details.get('card_last_four', '')}"
         return self.get_payment_method_display()
 
     def save(self, *args, **kwargs):

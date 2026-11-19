@@ -52,9 +52,7 @@ function validateCard() {
         return fail('cardHolder', 'Ingresa el nombre del titular de la tarjeta.');
     }
     var number = document.getElementById('cardNumber').value.replace(/\s/g, '');
-    var cards = JSON.parse(document.getElementById('demoCards').textContent);
-    var testCard = Object.keys(cards).find(function(key) { return cards[key].number === number; });
-    if (!testCard) return fail('cardNumber', 'Usa una tarjeta de prueba para esta presentación: 4000 0566 5566 5556.');
+    if (!/^[0-9]{16}$/.test(number)) return fail('cardNumber', 'El número de tarjeta debe tener 16 dígitos.');
     var expiry = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(document.getElementById('cardExpiry').value);
     if (!expiry) return fail('cardExpiry', 'Ingresa una fecha válida con formato MM/AA.');
     var now = new Date();
@@ -65,7 +63,7 @@ function validateCard() {
     if (!/^\d{3}$/.test(document.getElementById('cardCvc').value)) {
         return fail('cardCvc', 'El CVC debe tener 3 dígitos.');
     }
-    return testCard;
+    return number.slice(-4);
 }
 
 // ============================================
@@ -299,10 +297,10 @@ function processCheckout() {
 
     var form = document.getElementById('paymentForm');
     if (!form.reportValidity()) return;
-    var testCard = null;
+    var cardLastFour = null;
     if (cartState.total > 0) {
-        testCard = validateCard();
-        if (!testCard) return;
+        cardLastFour = validateCard();
+        if (!cardLastFour) return;
     }
 
     var fullName = document.getElementById('fullName');
@@ -330,11 +328,12 @@ function processCheckout() {
         phone: phone ? phone.value.trim() : '',
         address: address ? address.value.trim() : '',
         payment_method: cartState.total > 0 ? 'debit_card' : 'free',
-        test_card: testCard,
+        test_card: cardLastFour ? 'debit_card' : null,
+        card_last_four: cardLastFour,
         coupon_code: cartState.couponCode
     };
 
-    // Solo se envía el identificador público de la tarjeta de prueba.
+    // Solo se envían el tipo de operación y los cuatro últimos dígitos.
     // Número, titular de tarjeta, fecha y CVC permanecen en el navegador.
     cartState.processing = true;
     btn.disabled = true;

@@ -103,9 +103,9 @@ def checkout_view(request):
     payment_method = 'demo' if demo else 'free'
     payment_details = {'mode': 'demo'} if demo else {}
     if demo and total > 0:
-        payment_details = card_payment_details(data.get('test_card'))
+        payment_details = card_payment_details(data.get('test_card'), data.get('card_last_four'))
         if data.get('payment_method') != 'debit_card' or not payment_details:
-            return JsonResponse({'success': False, 'message': 'Completa los datos de la tarjeta de prueba.'}, status=400)
+            return JsonResponse({'success': False, 'message': 'Completa los datos de la tarjeta.'}, status=400)
 
     if not full_name:
         return JsonResponse({

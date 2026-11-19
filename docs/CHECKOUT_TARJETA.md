@@ -2,24 +2,23 @@
 
 El carrito web incluye titular, número, vencimiento MM/AA y CVC de tres dígitos cuando el importe final es mayor que cero y `DEMO_CHECKOUT=True`. La fecha admite el mes actual y meses futuros. Los cursos gratuitos y pedidos con descuento del 100% no requieren tarjeta.
 
-## Tarjetas para la presentación
+## Datos para la presentación
 
-| Identificador | Número de prueba | Marca |
-| --- | --- | --- |
-| visa_debit | 4000 0566 5566 5556 | Visa débito |
-| mastercard_debit | 5200 8282 8282 8210 | Mastercard débito |
+El formulario admite cualquier número de 16 dígitos, por ejemplo `1111 1111 1111 1111`. No comprueba titularidad bancaria ni usa Luhn, porque se trata de un flujo académico sin pasarela.
 
-Usar una fecha futura, por ejemplo `12/30`, y CVC `123`. Solo admite los números de prueba indicados. No hay comunicación con bancos ni una pasarela de pagos. Los datos de prueba se documentan aquí; el formulario no muestra el aviso de la presentación.
+Usar una fecha futura, por ejemplo `12/30`, y CVC `123`. No hay comunicación con bancos ni una pasarela de pagos. Los ejemplos se documentan aquí; el formulario no muestra el aviso de la presentación.
 
 ## Registro y privacidad de los datos
 
-El navegador valida los datos y envía únicamente `payment_method=debit_card` y el identificador público `test_card`, junto con los datos de facturación y el cupón. No envía el número completo, el vencimiento, el titular de la tarjeta ni el CVC. No guarda esos datos en almacenamiento del navegador. Los campos se vacían después de una compra correcta.
+El navegador valida los datos y envía únicamente `payment_method=debit_card`, `test_card=debit_card` y los cuatro últimos dígitos, junto con los datos de facturación y el cupón. No envía el número completo, el vencimiento, el titular de la tarjeta ni el CVC. No guarda esos datos en almacenamiento del navegador. Los campos se vacían después de una compra correcta.
 
-El servidor usa metadatos propios para registrar marca y cuatro últimos dígitos en `Payment.payment_details`. La operación mantiene el tipo interno `demo`, conserva las reglas de descuentos, inscripción, estadísticas académicas y exclusión de ingresos reales. Historial web, comprobante HTML/PDF y etiquetas de la API muestran el método de débito y los cuatro últimos dígitos. Con `DEMO_CHECKOUT=False`, una tarjeta de prueba no habilita compras reales.
+El servidor valida que los últimos cuatro dígitos tengan ese formato y los registra en `Payment.payment_details`. La operación mantiene el tipo interno `demo`, conserva las reglas de descuentos, inscripción, estadísticas académicas y exclusión de ingresos reales. Historial web, comprobante HTML/PDF y etiquetas de la API muestran el método de débito y los cuatro últimos dígitos. Con `DEMO_CHECKOUT=False`, una tarjeta de prueba no habilita compras reales. Los identificadores anteriores `visa_debit` y `mastercard_debit` se conservan para formularios que ya estaban abiertos durante el despliegue.
 
 Los descuentos se redondean a centavos antes de generar el pedido y repartir las líneas: Bs.120,50 con descuento de 25% registra Bs.30,13 de descuento y Bs.90,37 de total. El importe del carrito coincide con el comprobante.
 
 ## Verificación
+
+La actualización para admitir cualquier número pasó las once pruebas del checkout: incluye conservación exclusiva de los últimos cuatro dígitos y rechazo de metadatos de longitud o tipo incorrectos. Se mantienen las validaciones de vencimiento y CVC.
 
 El 18 de noviembre de 2026 pasaron 98 pruebas Django, incluidas nueve del checkout con tarjeta: compra e inscripción, metadatos sin número completo/CVC, tarjeta desconocida, método ausente, Mastercard, correo inválido, pedido gratuito, repetición del envío, funcionamiento sin modo académico, JSON inválido y redondeo de descuentos.
 

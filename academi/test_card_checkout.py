@@ -57,6 +57,19 @@ class DebitCardCheckoutTests(TestCase):
         self.assertTrue(self.checkout(test_card='mastercard_debit', card_last_four='9999').json()['success'])
         self.assertEqual(Payment.objects.get().display_payment_method, 'Tarjeta de débito · Mastercard •••• 8210')
 
+    def test_arbitrary_sixteen_digit_card_uses_only_last_four(self):
+        response = self.checkout(test_card='debit_card', card_last_four='1111')
+        self.assertTrue(response.json()['success'])
+        payment = Payment.objects.get()
+        self.assertEqual(payment.payment_details, {'mode': 'demo', 'method': 'debit_card', 'card_last_four': '1111'})
+        self.assertEqual(payment.display_payment_method, 'Tarjeta de débito · •••• 1111')
+
+    def test_generic_card_requires_exactly_four_digits_of_metadata(self):
+        for last_four in ['', None, '1111111111111111', 'abcd', 1111, {'number': '1111'}]:
+            with self.subTest(last_four=last_four):
+                self.assertEqual(self.checkout(test_card='debit_card', card_last_four=last_four).status_code, 400)
+        self.assertFalse(Payment.objects.exists())
+
     def test_bad_email_cannot_complete_order(self):
         self.assertEqual(self.checkout(email='invalid').status_code, 400)
         self.assertFalse(Payment.objects.exists())
